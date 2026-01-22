@@ -1,0 +1,11 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // classpet 컬렉션: 인증된 사용자만 접근 가능
+    // 컬렉션 이름이 classpet_로 시작하는 모든 문서
+    match /{collection}/{document=**} {
+      allow read, write: if request.auth != null
+                         && collection.matches('classpet_.*');
+    }
+  }
+}

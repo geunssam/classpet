@@ -1,0 +1,525 @@
+/**
+ * 학생 로그인 컴포넌트
+ * 학급 코드 입력 + 번호 선택 + PIN 입력 방식의 보안 로그인
+ */
+
+import { store, PET_TYPES } from '../store.js';
+import { router } from '../router.js';
+
+// 현재 선택된 학생 정보
+let selectedStudent = null;
+// 학급 코드 입력 모드
+let showClassCodeInput = false;
+
+/**
+ * 렌더링
+ */
+export function render() {
+    const students = store.getStudents() || [];
+    const settings = store.getSettings();
+    const classCode = store.getClassCode();
+    const isFirebaseEnabled = store.isFirebaseEnabled();
+
+    // Firebase 활성화 상태이고 학급 코드가 없으면 코드 입력 화면 표시
+    if (isFirebaseEnabled && !classCode) {
+        showClassCodeInput = true;
+    }
+
+    // 학급 코드 입력 화면
+    if (showClassCodeInput && isFirebaseEnabled) {
+        return renderClassCodeInput(settings);
+    }
+
+    return `
+        <div class="student-login-container min-h-[calc(100vh-200px)] flex flex-col items-center justify-center px-4">
+            <!-- 헤더 -->
+            <div class="text-center mb-8">
+                <div class="text-6xl mb-4 animate-bounce-slow">🐾</div>
+                <h1 class="text-2xl font-bold text-gray-800 mb-2">안녕!</h1>
+                <p class="text-gray-600">내 펫을 만나러 가볼까요?</p>
+                <p class="text-sm text-gray-400 mt-2">${settings?.className || '우리반'}</p>
+                ${classCode ? `<p class="text-xs text-primary mt-1">학급 코드: ${classCode}</p>` : ''}
+            </div>
+
+            <!-- 번호 선택 그리드 -->
+            <div class="w-full max-w-sm">
+                <p class="text-center text-sm text-gray-500 mb-4">나의 번호를 선택해주세요</p>
+
+                ${students.length > 0 ? `
+                    <div class="grid grid-cols-5 gap-3" id="studentNumberGrid">
+                        ${students.map(student => {
+                            const petEmoji = PET_TYPES[student.petType]?.stages.baby || '🐾';
+                            return `
+                                <button
+                                    class="student-number-btn aspect-square rounded-2xl bg-white border-2 border-gray-200 hover:border-primary hover:bg-primary/5 transition-all flex flex-col items-center justify-center gap-1 shadow-sm"
+                                    data-student-id="${student.id}"
+                                    data-student-name="${student.name}"
+                                    data-student-number="${student.number}"
+                                    data-pet-emoji="${petEmoji}"
+                                >
+                                    <span class="text-lg font-bold text-gray-700">${student.number}</span>
+                                    <span class="text-xs text-gray-400">${petEmoji}</span>
+                                </button>
+                            `;
+                        }).join('')}
+                    </div>
+                ` : `
+                    <div class="text-center py-8 text-gray-500">
+                        <div class="text-4xl mb-3">🙈</div>
+                        <p>아직 등록된 친구가 없어요</p>
+                        <p class="text-sm mt-2">선생님에게 말해주세요!</p>
+                    </div>
+                `}
+            </div>
+
+            <!-- 하단 버튼들 -->
+            <div class="mt-12 text-center space-y-3">
+                ${isFirebaseEnabled && classCode ? `
+                    <button id="changeClassCodeBtn" class="text-sm text-gray-400 hover:text-primary transition-colors">
+                        🔄 다른 학급으로 변경
+                    </button>
+                    <br>
+                ` : ''}
+                <a href="#login" class="text-sm text-gray-400 hover:text-primary transition-colors">
+                    ← 처음으로 돌아가기
+                </a>
+            </div>
+        </div>
+
+        <!-- PIN 입력 모달 -->
+        <div id="pinModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-white rounded-3xl p-6 w-full max-w-xs shadow-2xl">
+                <!-- 학생 정보 -->
+                <div class="text-center mb-6">
+                    <div id="pinModalEmoji" class="text-5xl mb-2">🐕</div>
+                    <p class="font-bold text-gray-800"><span id="pinModalName">김민준</span> (<span id="pinModalNumber">1</span>번)</p>
+                </div>
+
+                <!-- PIN 입력 안내 -->
+                <p class="text-center text-sm text-gray-600 mb-4">PIN을 입력해주세요</p>
+
+                <!-- PIN 입력 필드 -->
+                <div class="flex justify-center gap-2 mb-4" id="pinInputContainer">
+                    <input type="text" maxlength="1" class="pin-input" data-index="0" inputmode="numeric" pattern="[0-9]*">
+                    <input type="text" maxlength="1" class="pin-input" data-index="1" inputmode="numeric" pattern="[0-9]*">
+                    <input type="text" maxlength="1" class="pin-input" data-index="2" inputmode="numeric" pattern="[0-9]*">
+                    <input type="text" maxlength="1" class="pin-input" data-index="3" inputmode="numeric" pattern="[0-9]*">
+                </div>
+
+                <!-- 에러 메시지 -->
+                <p id="pinError" class="text-center text-sm text-red-500 mb-4 hidden">PIN이 틀렸어요. 다시 입력해주세요!</p>
+
+                <!-- 힌트 -->
+                <p class="text-center text-xs text-gray-400 mb-6">
+                    처음이에요? → <span id="pinHint" class="font-mono text-primary">0001</span>
+                </p>
+
+                <!-- 버튼 -->
+                <div class="flex gap-2">
+                    <button id="pinCancelBtn" class="flex-1 py-3 px-4 rounded-xl bg-gray-100 text-gray-600 font-medium hover:bg-gray-200 transition-colors">
+                        취소
+                    </button>
+                    <button id="pinConfirmBtn" class="flex-1 py-3 px-4 rounded-xl bg-primary text-white font-medium hover:bg-primary-dark transition-colors">
+                        확인
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+/**
+ * PIN 모달 열기
+ */
+function openPinModal(student, petEmoji) {
+    selectedStudent = student;
+
+    const modal = document.getElementById('pinModal');
+    const nameEl = document.getElementById('pinModalName');
+    const numberEl = document.getElementById('pinModalNumber');
+    const emojiEl = document.getElementById('pinModalEmoji');
+    const hintEl = document.getElementById('pinHint');
+    const errorEl = document.getElementById('pinError');
+
+    // 학생 정보 표시
+    nameEl.textContent = student.name;
+    numberEl.textContent = student.number;
+    emojiEl.textContent = petEmoji;
+    hintEl.textContent = String(student.number).padStart(4, '0');
+
+    // 에러 숨기기
+    errorEl.classList.add('hidden');
+
+    // PIN 입력 초기화
+    const pinInputs = document.querySelectorAll('.pin-input');
+    pinInputs.forEach(input => {
+        input.value = '';
+    });
+
+    // 모달 표시
+    modal.classList.remove('hidden');
+
+    // 첫 번째 입력 필드에 포커스
+    setTimeout(() => {
+        pinInputs[0].focus();
+    }, 100);
+}
+
+/**
+ * PIN 모달 닫기
+ */
+function closePinModal() {
+    const modal = document.getElementById('pinModal');
+    modal.classList.add('hidden');
+    selectedStudent = null;
+}
+
+/**
+ * PIN 검증 및 로그인
+ */
+function verifyAndLogin() {
+    if (!selectedStudent) return;
+
+    const pinInputs = document.querySelectorAll('.pin-input');
+    const pin = Array.from(pinInputs).map(input => input.value).join('');
+
+    // 4자리 확인
+    if (pin.length !== 4) {
+        showPinError();
+        return;
+    }
+
+    // PIN 검증
+    if (store.verifyStudentPin(selectedStudent.id, pin)) {
+        // 로그인 성공
+        const studentId = selectedStudent.id; // closePinModal 전에 ID 저장
+        const session = store.studentLogin(studentId);
+
+        if (session) {
+            closePinModal();
+
+            // 펫 선택 여부 확인
+            const hasPet = store.hasSelectedPet(studentId);
+
+            setTimeout(() => {
+                if (hasPet) {
+                    // 펫이 있으면 메인 화면으로
+                    router.navigate('student-main');
+                } else {
+                    // 펫이 없으면 펫 선택 화면으로
+                    router.navigate('pet-selection');
+                }
+            }, 200);
+        }
+    } else {
+        // 로그인 실패
+        showPinError();
+    }
+}
+
+/**
+ * PIN 에러 표시
+ */
+function showPinError() {
+    const errorEl = document.getElementById('pinError');
+    const pinInputs = document.querySelectorAll('.pin-input');
+
+    // 에러 메시지 표시
+    errorEl.classList.remove('hidden');
+
+    // 입력 필드 흔들기 애니메이션
+    const container = document.getElementById('pinInputContainer');
+    container.classList.add('shake');
+    setTimeout(() => {
+        container.classList.remove('shake');
+    }, 500);
+
+    // 입력 초기화 및 첫 필드에 포커스
+    pinInputs.forEach(input => {
+        input.value = '';
+        input.classList.add('border-red-400');
+    });
+
+    setTimeout(() => {
+        pinInputs.forEach(input => input.classList.remove('border-red-400'));
+        pinInputs[0].focus();
+    }, 300);
+}
+
+/**
+ * 렌더 후 이벤트 바인딩
+ */
+export function afterRender() {
+    const grid = document.getElementById('studentNumberGrid');
+    if (!grid) return;
+
+    // 번호 버튼 클릭 이벤트
+    grid.addEventListener('click', (e) => {
+        const btn = e.target.closest('.student-number-btn');
+        if (!btn) return;
+
+        const studentId = parseInt(btn.dataset.studentId);
+        const student = store.getStudent(studentId);
+        const petEmoji = btn.dataset.petEmoji;
+
+        if (student) {
+            // 버튼 선택 표시
+            document.querySelectorAll('.student-number-btn').forEach(b => {
+                b.classList.remove('ring-4', 'ring-primary', 'scale-105');
+            });
+            btn.classList.add('ring-4', 'ring-primary', 'scale-105');
+
+            // PIN 모달 열기
+            openPinModal(student, petEmoji);
+        }
+    });
+
+    // PIN 입력 이벤트
+    const pinInputs = document.querySelectorAll('.pin-input');
+    pinInputs.forEach((input, index) => {
+        // 숫자만 입력
+        input.addEventListener('input', (e) => {
+            const value = e.target.value.replace(/[^0-9]/g, '');
+            e.target.value = value;
+
+            // 다음 필드로 이동
+            if (value && index < 3) {
+                pinInputs[index + 1].focus();
+            }
+
+            // 에러 숨기기
+            document.getElementById('pinError').classList.add('hidden');
+        });
+
+        // 키보드 이벤트
+        input.addEventListener('keydown', (e) => {
+            // 백스페이스: 이전 필드로
+            if (e.key === 'Backspace' && !e.target.value && index > 0) {
+                pinInputs[index - 1].focus();
+            }
+            // Enter: 확인
+            if (e.key === 'Enter') {
+                verifyAndLogin();
+            }
+        });
+
+        // 포커스 시 전체 선택
+        input.addEventListener('focus', () => {
+            input.select();
+        });
+    });
+
+    // 취소 버튼
+    const cancelBtn = document.getElementById('pinCancelBtn');
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', () => {
+            closePinModal();
+            // 선택 해제
+            document.querySelectorAll('.student-number-btn').forEach(b => {
+                b.classList.remove('ring-4', 'ring-primary', 'scale-105');
+            });
+        });
+    }
+
+    // 확인 버튼
+    const confirmBtn = document.getElementById('pinConfirmBtn');
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', verifyAndLogin);
+    }
+
+    // 모달 배경 클릭 시 닫기
+    const modal = document.getElementById('pinModal');
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closePinModal();
+                document.querySelectorAll('.student-number-btn').forEach(b => {
+                    b.classList.remove('ring-4', 'ring-primary', 'scale-105');
+                });
+            }
+        });
+    }
+
+    // 학급 코드 변경 버튼
+    const changeClassCodeBtn = document.getElementById('changeClassCodeBtn');
+    if (changeClassCodeBtn) {
+        changeClassCodeBtn.addEventListener('click', () => {
+            showClassCodeInput = true;
+            router.handleRoute();
+        });
+    }
+
+    // 학급 코드 입력 이벤트
+    setupClassCodeInput();
+}
+
+/**
+ * 학급 코드 입력 화면 렌더링
+ */
+function renderClassCodeInput(settings) {
+    return `
+        <div class="student-login-container min-h-[calc(100vh-200px)] flex flex-col items-center justify-center px-4">
+            <!-- 헤더 -->
+            <div class="text-center mb-8">
+                <div class="text-6xl mb-4">🏫</div>
+                <h1 class="text-2xl font-bold text-gray-800 mb-2">학급 코드 입력</h1>
+                <p class="text-gray-600">선생님이 알려준 학급 코드를 입력해주세요</p>
+            </div>
+
+            <!-- 학급 코드 입력 -->
+            <div class="w-full max-w-sm">
+                <div class="bg-white rounded-2xl p-6 shadow-soft">
+                    <div class="flex justify-center gap-2 mb-4" id="classCodeInputContainer">
+                        <input type="text" maxlength="1" class="class-code-input w-12 h-14 text-center text-2xl font-bold border-2 border-gray-200 rounded-xl focus:border-primary focus:ring-0 uppercase" data-index="0">
+                        <input type="text" maxlength="1" class="class-code-input w-12 h-14 text-center text-2xl font-bold border-2 border-gray-200 rounded-xl focus:border-primary focus:ring-0 uppercase" data-index="1">
+                        <input type="text" maxlength="1" class="class-code-input w-12 h-14 text-center text-2xl font-bold border-2 border-gray-200 rounded-xl focus:border-primary focus:ring-0 uppercase" data-index="2">
+                        <input type="text" maxlength="1" class="class-code-input w-12 h-14 text-center text-2xl font-bold border-2 border-gray-200 rounded-xl focus:border-primary focus:ring-0 uppercase" data-index="3">
+                        <input type="text" maxlength="1" class="class-code-input w-12 h-14 text-center text-2xl font-bold border-2 border-gray-200 rounded-xl focus:border-primary focus:ring-0 uppercase" data-index="4">
+                        <input type="text" maxlength="1" class="class-code-input w-12 h-14 text-center text-2xl font-bold border-2 border-gray-200 rounded-xl focus:border-primary focus:ring-0 uppercase" data-index="5">
+                    </div>
+
+                    <!-- 에러 메시지 -->
+                    <p id="classCodeError" class="text-center text-sm text-red-500 mb-4 hidden">
+                        학급 코드가 올바르지 않아요. 다시 확인해주세요!
+                    </p>
+
+                    <!-- 로딩 -->
+                    <div id="classCodeLoading" class="text-center text-sm text-gray-500 mb-4 hidden">
+                        <span class="inline-block animate-spin mr-2">⏳</span>
+                        확인 중...
+                    </div>
+
+                    <button id="classCodeSubmitBtn" class="btn btn-primary w-full py-3 opacity-50 cursor-not-allowed" disabled>
+                        학급 참가하기
+                    </button>
+                </div>
+
+                <div class="mt-6 text-center">
+                    <p class="text-sm text-gray-400">
+                        학급 코드를 모르면 선생님께 물어보세요! 🙋
+                    </p>
+                </div>
+            </div>
+
+            <!-- 돌아가기 -->
+            <div class="mt-8 text-center">
+                <a href="#login" class="text-sm text-gray-400 hover:text-primary transition-colors">
+                    ← 처음으로 돌아가기
+                </a>
+            </div>
+        </div>
+    `;
+}
+
+/**
+ * 학급 코드 입력 이벤트 설정
+ */
+function setupClassCodeInput() {
+    const inputs = document.querySelectorAll('.class-code-input');
+    const submitBtn = document.getElementById('classCodeSubmitBtn');
+    const errorEl = document.getElementById('classCodeError');
+    const loadingEl = document.getElementById('classCodeLoading');
+
+    if (!inputs.length) return;
+
+    // 버튼 상태 업데이트
+    function updateSubmitButton() {
+        const code = getClassCodeValue();
+        if (submitBtn) {
+            if (code.length === 6) {
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            } else {
+                submitBtn.disabled = true;
+                submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+        }
+    }
+
+    // 코드 값 가져오기
+    function getClassCodeValue() {
+        return Array.from(inputs).map(i => i.value).join('').toUpperCase();
+    }
+
+    // 입력 이벤트
+    inputs.forEach((input, index) => {
+        input.addEventListener('input', (e) => {
+            // 영문+숫자만 허용
+            const value = e.target.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+            e.target.value = value;
+
+            // 다음 필드로 이동
+            if (value && index < 5) {
+                inputs[index + 1].focus();
+            }
+
+            // 에러 숨기기
+            if (errorEl) errorEl.classList.add('hidden');
+
+            updateSubmitButton();
+        });
+
+        input.addEventListener('keydown', (e) => {
+            // 백스페이스: 이전 필드로
+            if (e.key === 'Backspace' && !e.target.value && index > 0) {
+                inputs[index - 1].focus();
+            }
+            // Enter: 제출
+            if (e.key === 'Enter') {
+                submitBtn?.click();
+            }
+        });
+
+        input.addEventListener('focus', () => input.select());
+
+        // 붙여넣기 지원
+        input.addEventListener('paste', (e) => {
+            e.preventDefault();
+            const pasteData = e.clipboardData.getData('text').toUpperCase().replace(/[^A-Za-z0-9]/g, '');
+            if (pasteData.length === 6) {
+                for (let i = 0; i < 6; i++) {
+                    inputs[i].value = pasteData[i];
+                }
+                inputs[5].focus();
+                updateSubmitButton();
+            }
+        });
+    });
+
+    // 첫 번째 입력에 포커스
+    setTimeout(() => inputs[0]?.focus(), 100);
+
+    // 제출 버튼
+    if (submitBtn) {
+        submitBtn.addEventListener('click', async () => {
+            const code = getClassCodeValue();
+            if (code.length !== 6) return;
+
+            // 로딩 표시
+            if (loadingEl) loadingEl.classList.remove('hidden');
+            if (errorEl) errorEl.classList.add('hidden');
+            submitBtn.disabled = true;
+
+            try {
+                // 학급 코드 검증 및 참가
+                const success = await store.joinClass(code);
+
+                if (success) {
+                    showClassCodeInput = false;
+                    router.handleRoute(); // 화면 새로고침
+                } else {
+                    // 오프라인 모드거나 검증 실패 시 일단 설정만 저장
+                    store.setClassCode(code);
+                    showClassCodeInput = false;
+                    router.handleRoute();
+                }
+            } catch (error) {
+                console.error('학급 참가 실패:', error);
+                if (errorEl) errorEl.classList.remove('hidden');
+            } finally {
+                if (loadingEl) loadingEl.classList.add('hidden');
+                submitBtn.disabled = false;
+            }
+        });
+    }
+}
