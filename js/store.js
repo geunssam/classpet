@@ -615,11 +615,25 @@ class Store {
      * 교사의 모든 학급 가져오기
      */
     async getTeacherClasses() {
-        const user = this.getCurrentUser();
-        if (!user || !this.firebaseEnabled) return [];
+        // Firebase 상태 재확인 (타임아웃으로 인한 상태 불일치 방지)
+        if (!this.firebaseEnabled && firebase.isFirebaseInitialized()) {
+            this.firebaseEnabled = true;
+        }
+
+        // uid 가져오기: Firebase 우선, 없으면 세션에서
+        let uid = this.getCurrentUser()?.uid;
+        if (!uid) {
+            const session = this.getTeacherSession();
+            uid = session?.uid;
+        }
+
+        if (!uid || !this.firebaseEnabled) {
+            console.log('학급 목록 조회 불가: uid=', uid, 'firebaseEnabled=', this.firebaseEnabled);
+            return [];
+        }
 
         try {
-            return await firebase.getTeacherClasses(user.uid);
+            return await firebase.getTeacherClasses(uid);
         } catch (error) {
             console.error('학급 목록 조회 실패:', error);
             return [];
