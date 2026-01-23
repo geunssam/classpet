@@ -96,7 +96,7 @@ export function isFirebaseInitialized() {
  * Google 로그인
  */
 export async function signInWithGoogle() {
-    if (!auth) return null;
+    if (!auth) return { success: false, error: 'Firebase가 초기화되지 않았습니다' };
 
     try {
         const result = await signInWithPopup(auth, googleProvider);
@@ -106,10 +106,10 @@ export async function signInWithGoogle() {
         await createOrUpdateTeacherProfile(user);
 
         console.log('Google 로그인 성공:', user.email);
-        return user;
+        return { success: true, user };
     } catch (error) {
         console.error('Google 로그인 실패:', error);
-        throw error;
+        return { success: false, error: error.message };
     }
 }
 
