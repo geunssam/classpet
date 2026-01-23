@@ -145,7 +145,7 @@ export async function render() {
                                 ${generateStudentInputs(15)}
                             </div>
 
-                            <p class="text-xs text-gray-400 mt-2">※ 이름은 나중에 입력해도 됩니다</p>
+                            <p class="text-xs text-gray-400 mt-2">※ 이름을 비워두면 해당 번호는 등록되지 않습니다</p>
                         </div>
 
                         <div class="bg-blue-50 rounded-xl p-4 text-sm text-blue-700">
@@ -445,7 +445,7 @@ function updateStudentInputs() {
 }
 
 /**
- * 학생 명단 수집
+ * 학생 명단 수집 (이름이 있는 학생만)
  */
 function collectStudentData() {
     const students = [];
@@ -455,11 +455,14 @@ function collectStudentData() {
         const number = parseInt(input.dataset.studentNumber);
         const name = input.value.trim();
 
-        students.push({
-            number: number,
-            name: name || `${number}번 학생`, // 이름이 없으면 기본값
-            emoji: getRandomEmoji()
-        });
+        // 이름이 있는 학생만 추가 (빈 칸은 건너뛰기)
+        if (name) {
+            students.push({
+                number: number,
+                name: name,
+                emoji: getRandomEmoji()
+            });
+        }
     });
 
     return students;
