@@ -103,32 +103,48 @@ function setupAuthStateListener() {
         }
     });
 
-    // 초기 인증 상태 확인 (페이지 새로고침 시)
-    checkInitialAuthState();
+    // Firebase onAuthStateChanged를 사용하여 인증 상태 복원 대기
+    // Firebase SDK가 localStorage에서 인증 정보를 복원하는 동안 기다림
+    store.onAuthChange((user) => {
+        console.log('🔐 Firebase onAuthStateChanged:', user?.email || 'null');
+
+        if (user && !user.isAnonymous) {
+            // Google 로그인 사용자 - 세션 복원
+            const teacherSession = {
+                isLoggedIn: true,
+                isGoogleAuth: true,
+                uid: user.uid,
+                email: user.email,
+                displayName: user.displayName,
+                photoURL: user.photoURL,
+                loginTime: Date.now()
+            };
+            sessionStorage.setItem('classpet_teacher_session', JSON.stringify(teacherSession));
+
+            // 교사 UID 설정 (계층 구조용)
+            store.setCurrentTeacherUid(user.uid);
+
+            console.log('🔐 Google 로그인 상태 복원 완료:', user.email);
+
+            // 현재 로그인 화면이면 적절한 화면으로 이동
+            const currentHash = window.location.hash;
+            if (currentHash === '' || currentHash === '#' || currentHash === '#login') {
+                const currentClassId = store.getCurrentClassId();
+                if (currentClassId) {
+                    router.navigate('dashboard');
+                } else {
+                    router.navigate('class-select');
+                }
+            }
+        }
+    });
 }
 
 /**
- * 초기 인증 상태 확인
+ * 초기 인증 상태 확인 (레거시 - setupAuthStateListener로 대체됨)
  */
 async function checkInitialAuthState() {
-    try {
-        // Google 로그인 상태 확인
-        if (store.isGoogleTeacher()) {
-            const teacherSession = store.getTeacherSession();
-            console.log('🔐 Google 로그인 상태 복원:', teacherSession?.email);
-
-            // 현재 학급이 설정되어 있으면 대시보드로
-            const currentClassId = store.getCurrentClassId();
-            if (currentClassId && window.location.hash === '#login') {
-                router.navigate('dashboard');
-            } else if (!currentClassId && window.location.hash === '#login') {
-                // 학급 미선택 시 학급 선택 화면으로
-                router.navigate('class-select');
-            }
-        }
-    } catch (error) {
-        console.error('초기 인증 상태 확인 실패:', error);
-    }
+    // onAuthStateChanged에서 처리하므로 빈 함수로 유지
 }
 
 /**
