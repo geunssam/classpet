@@ -470,7 +470,9 @@ class Store {
      * 새 학급 생성
      */
     async createClass(classData) {
-        if (!this.firebaseEnabled) return null;
+        if (!this.firebaseEnabled) {
+            return { success: false, error: 'Firebase가 활성화되지 않았습니다' };
+        }
 
         try {
             const newClass = await firebase.createClass(classData);
@@ -483,12 +485,12 @@ class Store {
                     classCode: newClass.classCode,
                     classId: newClass.id
                 });
-                return newClass;
+                return { success: true, classId: newClass.id, classData: newClass };
             }
-            return null;
+            return { success: false, error: '학급 생성에 실패했습니다' };
         } catch (error) {
             console.error('학급 생성 실패:', error);
-            return null;
+            return { success: false, error: error.message };
         }
     }
 

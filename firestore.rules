@@ -31,8 +31,12 @@ service cloud.firestore {
       allow create: if isAuthenticated() &&
                        request.resource.data.ownerId == request.auth.uid;
 
-      // 학급 읽기/수정/삭제: 소유자만
-      allow read, update, delete: if isClassOwner(classId);
+      // 학급 읽기: 소유자 또는 쿼리 조건에 ownerId가 본인인 경우
+      allow read: if isAuthenticated() &&
+                     (resource.data.ownerId == request.auth.uid);
+
+      // 학급 수정/삭제: 소유자만
+      allow update, delete: if isClassOwner(classId);
 
       // ==================== 학급 하위 컬렉션 ====================
 
