@@ -1,6 +1,7 @@
 /**
  * Firebase 설정 및 초기화
- * Firebase 우선 구조 - Google 인증 + 다중 학급 지원
+ * 완전한 계층 구조: /teachers/{uid}/classes/{classId}/...
+ * 경로 자체가 소유권을 보장 (ownerId 필드 불필요)
  */
 
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
@@ -50,8 +51,9 @@ let isInitialized = false;
 // Google Auth Provider
 const googleProvider = new GoogleAuthProvider();
 
-// 현재 학급 ID (새 구조)
+// 현재 학급 정보 (계층 구조용)
 let currentClassId = null;
+let currentTeacherUid = null;
 
 // 실시간 리스너 해제 함수들
 const unsubscribeFunctions = [];
@@ -105,8 +107,15 @@ export async function signInWithGoogle() {
         // 교사 프로필 생성/업데이트
         await createOrUpdateTeacherProfile(user);
 
+        // 교사 UID 설정 (계층 구조용)
+        setCurrentTeacherUid(user.uid);
+
         console.log('Google 로그인 성공:', user.email);
-        return { success: true, user };
+        const returnValue = { success: true, user };
+        console.log('🔍 firebase-config 반환값:', returnValue);
+        console.log('🔍 user 객체:', user);
+        console.log('🔍 user.uid:', user?.uid);
+        return returnValue;
     } catch (error) {
         console.error('Google 로그인 실패:', error);
         return { success: false, error: error.message };
@@ -122,6 +131,9 @@ export async function firebaseSignOut() {
     try {
         await signOut(auth);
         currentClassId = null;
+        currentTeacherUid = null;
+        localStorage.removeItem('classpet_current_class_id');
+        localStorage.removeItem('classpet_current_teacher_uid');
         console.log('로그아웃 완료');
     } catch (error) {
         console.error('로그아웃 실패:', error);
@@ -242,6 +254,27 @@ export function generateClassCode() {
 }
 
 /**
+ * 현재 교사 UID 설정
+ */
+export function setCurrentTeacherUid(uid) {
+    currentTeacherUid = uid;
+    if (uid) {
+        localStorage.setItem('classpet_current_teacher_uid', uid);
+    } else {
+        localStorage.removeItem('classpet_current_teacher_uid');
+    }
+}
+
+/**
+ * 현재 교사 UID 가져오기
+ */
+export function getCurrentTeacherUid() {
+    if (currentTeacherUid) return currentTeacherUid;
+    currentTeacherUid = localStorage.getItem('classpet_current_teacher_uid');
+    return currentTeacherUid;
+}
+
+/**
  * 현재 학급 ID 설정
  */
 export function setCurrentClassId(classId) {
@@ -263,7 +296,17 @@ export function getCurrentClassId() {
 }
 
 /**
- * 새 학급 생성
+ * 현재 학급 전체 경로 (teacherUid + classId)
+ */
+export function getCurrentClassPath() {
+    const teacherUid = getCurrentTeacherUid();
+    const classId = getCurrentClassId();
+    if (!teacherUid || !classId) return null;
+    return { teacherUid, classId };
+}
+
+/**
+ * 새 학급 생성 (계층 구조: /teachers/{uid}/classes/{classId})
  */
 export async function createClass(classData) {
     if (!db) return null;
@@ -290,12 +333,13 @@ export async function createClass(classData) {
             }
         }
 
-        // 학급 문서 생성
-        const classRef = doc(collection(db, 'classes'));
+        // 계층 구조: /teachers/{uid}/classes/{classId}
+        const teacherUid = user.uid;
+        const classRef = doc(collection(db, 'teachers', teacherUid, 'classes'));
         const classId = classRef.id;
 
         const newClass = {
-            ownerId: user.uid,
+            // ownerId 제거: 경로 자체가 소유권 보장
             classCode: classCode,
             className: classData.className || '우리 반',
             schoolYear: classData.schoolYear || new Date().getFullYear(),
@@ -307,14 +351,18 @@ export async function createClass(classData) {
 
         await setDoc(classRef, newClass);
 
-        // 학급코드 → classId 매핑 저장
+        // 학급코드 → classId + teacherUid 매핑 저장 (학생 접속용)
         await setDoc(doc(db, 'classCodes', classCode), {
+            teacherUid: teacherUid,
             classId: classId,
             createdAt: serverTimestamp()
         });
 
-        console.log('학급 생성 완료:', classId, classCode);
-        return { id: classId, ...newClass };
+        // 현재 교사 UID 저장
+        setCurrentTeacherUid(teacherUid);
+
+        console.log('학급 생성 완료:', teacherUid, classId, classCode);
+        return { id: classId, teacherUid, ...newClass };
     } catch (error) {
         console.error('학급 생성 실패:', error);
         return null;
@@ -322,20 +370,19 @@ export async function createClass(classData) {
 }
 
 /**
- * 교사의 모든 학급 가져오기
+ * 교사의 모든 학급 가져오기 (계층 구조: /teachers/{uid}/classes)
  */
 export async function getTeacherClasses(uid) {
     if (!db || !uid) return [];
 
     try {
-        const classesRef = collection(db, 'classes');
-        // orderBy 제거 (복합 인덱스 필요 없이 작동)
-        const q = query(classesRef, where('ownerId', '==', uid));
-        const snapshot = await getDocs(q);
+        // 계층 구조: 경로 자체로 소유권 보장, where 쿼리 불필요
+        const classesRef = collection(db, 'teachers', uid, 'classes');
+        const snapshot = await getDocs(classesRef);
 
         const classes = [];
         snapshot.forEach(doc => {
-            classes.push({ id: doc.id, ...doc.data() });
+            classes.push({ id: doc.id, teacherUid: uid, ...doc.data() });
         });
 
         // 클라이언트에서 정렬 (최신순)
@@ -353,17 +400,25 @@ export async function getTeacherClasses(uid) {
 }
 
 /**
- * 학급 정보 가져오기
+ * 학급 정보 가져오기 (계층 구조: /teachers/{uid}/classes/{classId})
+ * @param {string} teacherUid - 교사 UID (null이면 현재 저장된 값 사용)
+ * @param {string} classId - 학급 ID
  */
-export async function getClass(classId) {
-    if (!db || !classId) return null;
+export async function getClass(teacherUid, classId) {
+    if (!db) return null;
+
+    // teacherUid가 없으면 현재 저장된 값 사용
+    const uid = teacherUid || getCurrentTeacherUid();
+    const cId = classId || getCurrentClassId();
+
+    if (!uid || !cId) return null;
 
     try {
-        const classRef = doc(db, 'classes', classId);
+        const classRef = doc(db, 'teachers', uid, 'classes', cId);
         const classDoc = await getDoc(classRef);
 
         if (classDoc.exists()) {
-            return { id: classDoc.id, ...classDoc.data() };
+            return { id: classDoc.id, teacherUid: uid, ...classDoc.data() };
         }
         return null;
     } catch (error) {
@@ -373,7 +428,8 @@ export async function getClass(classId) {
 }
 
 /**
- * 학급코드로 학급 ID 조회
+ * 학급코드로 학급 정보 조회 (계층 구조용: teacherUid + classId 반환)
+ * @returns {{ teacherUid: string, classId: string } | null}
  */
 export async function getClassIdByCode(code) {
     if (!db || !code) return null;
@@ -383,7 +439,11 @@ export async function getClassIdByCode(code) {
         const codeDoc = await getDoc(codeRef);
 
         if (codeDoc.exists()) {
-            return codeDoc.data().classId;
+            const data = codeDoc.data();
+            return {
+                teacherUid: data.teacherUid,
+                classId: data.classId
+            };
         }
         return null;
     } catch (error) {
@@ -396,24 +456,32 @@ export async function getClassIdByCode(code) {
  * 학급코드 유효성 검사
  */
 export async function validateClassCode(code) {
-    const classId = await getClassIdByCode(code);
-    return !!classId;
+    const result = await getClassIdByCode(code);
+    return !!result && !!result.classId && !!result.teacherUid;
 }
 
 /**
- * 학급 정보 업데이트
+ * 학급 정보 업데이트 (계층 구조)
+ * @param {string} teacherUid - 교사 UID (null이면 현재 저장된 값 사용)
+ * @param {string} classId - 학급 ID
+ * @param {object} updates - 업데이트할 데이터
  */
-export async function updateClass(classId, updates) {
-    if (!db || !classId) return null;
+export async function updateClass(teacherUid, classId, updates) {
+    if (!db) return null;
+
+    const uid = teacherUid || getCurrentTeacherUid();
+    const cId = classId || getCurrentClassId();
+
+    if (!uid || !cId) return null;
 
     try {
-        const classRef = doc(db, 'classes', classId);
+        const classRef = doc(db, 'teachers', uid, 'classes', cId);
         await updateDoc(classRef, {
             ...updates,
             updatedAt: serverTimestamp()
         });
 
-        return { id: classId, ...updates };
+        return { id: cId, teacherUid: uid, ...updates };
     } catch (error) {
         console.error('학급 업데이트 실패:', error);
         return null;
@@ -421,24 +489,31 @@ export async function updateClass(classId, updates) {
 }
 
 /**
- * 학급 삭제
+ * 학급 삭제 (계층 구조)
+ * @param {string} teacherUid - 교사 UID (null이면 현재 저장된 값 사용)
+ * @param {string} classId - 학급 ID
  */
-export async function deleteClass(classId) {
-    if (!db || !classId) return false;
+export async function deleteClass(teacherUid, classId) {
+    if (!db) return false;
+
+    const uid = teacherUid || getCurrentTeacherUid();
+    const cId = classId || getCurrentClassId();
+
+    if (!uid || !cId) return false;
 
     try {
         // 학급 정보 가져오기 (학급코드 확인용)
-        const classData = await getClass(classId);
+        const classData = await getClass(uid, cId);
 
         // 학급 삭제
-        await deleteDoc(doc(db, 'classes', classId));
+        await deleteDoc(doc(db, 'teachers', uid, 'classes', cId));
 
         // 학급코드 매핑 삭제
         if (classData?.classCode) {
             await deleteDoc(doc(db, 'classCodes', classData.classCode));
         }
 
-        console.log('학급 삭제 완료:', classId);
+        console.log('학급 삭제 완료:', uid, cId);
         return true;
     } catch (error) {
         console.error('학급 삭제 실패:', error);
@@ -446,17 +521,25 @@ export async function deleteClass(classId) {
     }
 }
 
-// ==================== 학생 데이터 ====================
+// ==================== 학생 데이터 (계층 구조) ====================
 
 /**
- * 학생 저장
+ * 학생 저장 (계층 구조: /teachers/{uid}/classes/{classId}/students/{studentId})
+ * @param {string} teacherUid - 교사 UID (null이면 현재 저장된 값 사용)
+ * @param {string} classId - 학급 ID (null이면 현재 저장된 값 사용)
+ * @param {object} student - 학생 데이터
  */
-export async function saveStudent(classId, student) {
-    if (!db || !classId) return null;
+export async function saveStudent(teacherUid, classId, student) {
+    if (!db) return null;
+
+    const uid = teacherUid || getCurrentTeacherUid();
+    const cId = classId || getCurrentClassId();
+
+    if (!uid || !cId) return null;
 
     try {
         const studentId = String(student.id);
-        const studentRef = doc(db, 'classes', classId, 'students', studentId);
+        const studentRef = doc(db, 'teachers', uid, 'classes', cId, 'students', studentId);
 
         await setDoc(studentRef, {
             ...student,
@@ -471,13 +554,18 @@ export async function saveStudent(classId, student) {
 }
 
 /**
- * 모든 학생 저장 (배치)
+ * 모든 학생 저장 (배치, 계층 구조)
  */
-export async function saveAllStudents(classId, students) {
-    if (!db || !classId || !students?.length) return null;
+export async function saveAllStudents(teacherUid, classId, students) {
+    if (!db || !students?.length) return null;
+
+    const uid = teacherUid || getCurrentTeacherUid();
+    const cId = classId || getCurrentClassId();
+
+    if (!uid || !cId) return null;
 
     try {
-        const promises = students.map(student => saveStudent(classId, student));
+        const promises = students.map(student => saveStudent(uid, cId, student));
         await Promise.all(promises);
         return students;
     } catch (error) {
@@ -487,13 +575,18 @@ export async function saveAllStudents(classId, students) {
 }
 
 /**
- * 모든 학생 가져오기
+ * 모든 학생 가져오기 (계층 구조)
  */
-export async function getAllStudents(classId) {
-    if (!db || !classId) return [];
+export async function getAllStudents(teacherUid, classId) {
+    if (!db) return [];
+
+    const uid = teacherUid || getCurrentTeacherUid();
+    const cId = classId || getCurrentClassId();
+
+    if (!uid || !cId) return [];
 
     try {
-        const studentsRef = collection(db, 'classes', classId, 'students');
+        const studentsRef = collection(db, 'teachers', uid, 'classes', cId, 'students');
         const snapshot = await getDocs(studentsRef);
 
         const students = [];
@@ -510,13 +603,18 @@ export async function getAllStudents(classId) {
 }
 
 /**
- * 학생 삭제
+ * 학생 삭제 (계층 구조)
  */
-export async function deleteStudent(classId, studentId) {
-    if (!db || !classId) return false;
+export async function deleteStudent(teacherUid, classId, studentId) {
+    if (!db) return false;
+
+    const uid = teacherUid || getCurrentTeacherUid();
+    const cId = classId || getCurrentClassId();
+
+    if (!uid || !cId) return false;
 
     try {
-        await deleteDoc(doc(db, 'classes', classId, 'students', String(studentId)));
+        await deleteDoc(doc(db, 'teachers', uid, 'classes', cId, 'students', String(studentId)));
         return true;
     } catch (error) {
         console.error('학생 삭제 실패:', error);
@@ -525,13 +623,18 @@ export async function deleteStudent(classId, studentId) {
 }
 
 /**
- * 학생 데이터 실시간 구독
+ * 학생 데이터 실시간 구독 (계층 구조)
  */
-export function subscribeToStudents(classId, callback) {
-    if (!db || !classId) return null;
+export function subscribeToStudents(teacherUid, classId, callback) {
+    if (!db) return null;
+
+    const uid = teacherUid || getCurrentTeacherUid();
+    const cId = classId || getCurrentClassId();
+
+    if (!uid || !cId) return null;
 
     try {
-        const studentsRef = collection(db, 'classes', classId, 'students');
+        const studentsRef = collection(db, 'teachers', uid, 'classes', cId, 'students');
         const unsubscribe = onSnapshot(studentsRef, (snapshot) => {
             const students = [];
             snapshot.forEach(doc => {
@@ -551,16 +654,21 @@ export function subscribeToStudents(classId, callback) {
     }
 }
 
-// ==================== 감정 기록 ====================
+// ==================== 감정 기록 (계층 구조) ====================
 
 /**
- * 감정 기록 저장
+ * 감정 기록 저장 (계층 구조: /teachers/{uid}/classes/{classId}/emotions/{emotionId})
  */
-export async function saveEmotion(classId, emotion) {
-    if (!db || !classId) return null;
+export async function saveEmotion(teacherUid, classId, emotion) {
+    if (!db) return null;
+
+    const uid = teacherUid || getCurrentTeacherUid();
+    const cId = classId || getCurrentClassId();
+
+    if (!uid || !cId) return null;
 
     try {
-        const emotionsRef = collection(db, 'classes', classId, 'emotions');
+        const emotionsRef = collection(db, 'teachers', uid, 'classes', cId, 'emotions');
 
         const emotionData = {
             ...emotion,
@@ -577,13 +685,18 @@ export async function saveEmotion(classId, emotion) {
 }
 
 /**
- * 감정 기록에 답장 추가
+ * 감정 기록에 답장 추가 (계층 구조)
  */
-export async function addReplyToEmotion(classId, emotionId, message) {
-    if (!db || !classId || !emotionId) return null;
+export async function addReplyToEmotion(teacherUid, classId, emotionId, message) {
+    if (!db || !emotionId) return null;
+
+    const uid = teacherUid || getCurrentTeacherUid();
+    const cId = classId || getCurrentClassId();
+
+    if (!uid || !cId) return null;
 
     try {
-        const emotionRef = doc(db, 'classes', classId, 'emotions', emotionId);
+        const emotionRef = doc(db, 'teachers', uid, 'classes', cId, 'emotions', emotionId);
         await updateDoc(emotionRef, {
             reply: {
                 message: message,
@@ -601,14 +714,19 @@ export async function addReplyToEmotion(classId, emotionId, message) {
 }
 
 /**
- * 오늘의 감정 기록 가져오기
+ * 오늘의 감정 기록 가져오기 (계층 구조)
  */
-export async function getTodayEmotions(classId) {
-    if (!db || !classId) return [];
+export async function getTodayEmotions(teacherUid, classId) {
+    if (!db) return [];
+
+    const uid = teacherUid || getCurrentTeacherUid();
+    const cId = classId || getCurrentClassId();
+
+    if (!uid || !cId) return [];
 
     try {
         const today = new Date().toISOString().split('T')[0];
-        const emotionsRef = collection(db, 'classes', classId, 'emotions');
+        const emotionsRef = collection(db, 'teachers', uid, 'classes', cId, 'emotions');
         const q = query(
             emotionsRef,
             where('date', '==', today),
@@ -629,13 +747,18 @@ export async function getTodayEmotions(classId) {
 }
 
 /**
- * 특정 학생의 감정 기록 가져오기
+ * 특정 학생의 감정 기록 가져오기 (계층 구조)
  */
-export async function getStudentEmotions(classId, studentId, limitCount = 30) {
-    if (!db || !classId) return [];
+export async function getStudentEmotions(teacherUid, classId, studentId, limitCount = 30) {
+    if (!db) return [];
+
+    const uid = teacherUid || getCurrentTeacherUid();
+    const cId = classId || getCurrentClassId();
+
+    if (!uid || !cId) return [];
 
     try {
-        const emotionsRef = collection(db, 'classes', classId, 'emotions');
+        const emotionsRef = collection(db, 'teachers', uid, 'classes', cId, 'emotions');
         const q = query(
             emotionsRef,
             where('studentId', '==', studentId),
@@ -657,13 +780,18 @@ export async function getStudentEmotions(classId, studentId, limitCount = 30) {
 }
 
 /**
- * 날짜별 감정 기록 가져오기
+ * 날짜별 감정 기록 가져오기 (계층 구조)
  */
-export async function getEmotionsByDate(classId, date) {
-    if (!db || !classId) return [];
+export async function getEmotionsByDate(teacherUid, classId, date) {
+    if (!db) return [];
+
+    const uid = teacherUid || getCurrentTeacherUid();
+    const cId = classId || getCurrentClassId();
+
+    if (!uid || !cId) return [];
 
     try {
-        const emotionsRef = collection(db, 'classes', classId, 'emotions');
+        const emotionsRef = collection(db, 'teachers', uid, 'classes', cId, 'emotions');
         const q = query(
             emotionsRef,
             where('date', '==', date),
@@ -684,14 +812,19 @@ export async function getEmotionsByDate(classId, date) {
 }
 
 /**
- * 감정 기록 실시간 구독 (오늘 기록)
+ * 감정 기록 실시간 구독 (오늘 기록, 계층 구조)
  */
-export function subscribeToTodayEmotions(classId, callback) {
-    if (!db || !classId) return null;
+export function subscribeToTodayEmotions(teacherUid, classId, callback) {
+    if (!db) return null;
+
+    const uid = teacherUid || getCurrentTeacherUid();
+    const cId = classId || getCurrentClassId();
+
+    if (!uid || !cId) return null;
 
     try {
         const today = new Date().toISOString().split('T')[0];
-        const emotionsRef = collection(db, 'classes', classId, 'emotions');
+        const emotionsRef = collection(db, 'teachers', uid, 'classes', cId, 'emotions');
         const q = query(
             emotionsRef,
             where('date', '==', today),
@@ -716,16 +849,21 @@ export function subscribeToTodayEmotions(classId, callback) {
     }
 }
 
-// ==================== 칭찬 기록 ====================
+// ==================== 칭찬 기록 (계층 구조) ====================
 
 /**
- * 칭찬 기록 저장
+ * 칭찬 기록 저장 (계층 구조: /teachers/{uid}/classes/{classId}/praises/{praiseId})
  */
-export async function savePraise(classId, praise) {
-    if (!db || !classId) return null;
+export async function savePraise(teacherUid, classId, praise) {
+    if (!db) return null;
+
+    const uid = teacherUid || getCurrentTeacherUid();
+    const cId = classId || getCurrentClassId();
+
+    if (!uid || !cId) return null;
 
     try {
-        const praisesRef = collection(db, 'classes', classId, 'praises');
+        const praisesRef = collection(db, 'teachers', uid, 'classes', cId, 'praises');
 
         const praiseData = {
             ...praise,
@@ -742,14 +880,19 @@ export async function savePraise(classId, praise) {
 }
 
 /**
- * 오늘의 칭찬 기록 가져오기
+ * 오늘의 칭찬 기록 가져오기 (계층 구조)
  */
-export async function getTodayPraises(classId) {
-    if (!db || !classId) return [];
+export async function getTodayPraises(teacherUid, classId) {
+    if (!db) return [];
+
+    const uid = teacherUid || getCurrentTeacherUid();
+    const cId = classId || getCurrentClassId();
+
+    if (!uid || !cId) return [];
 
     try {
         const today = new Date().toISOString().split('T')[0];
-        const praisesRef = collection(db, 'classes', classId, 'praises');
+        const praisesRef = collection(db, 'teachers', uid, 'classes', cId, 'praises');
         const q = query(
             praisesRef,
             where('date', '==', today),
@@ -770,13 +913,18 @@ export async function getTodayPraises(classId) {
 }
 
 /**
- * 모든 칭찬 기록 가져오기
+ * 모든 칭찬 기록 가져오기 (계층 구조)
  */
-export async function getAllPraises(classId, limitCount = 500) {
-    if (!db || !classId) return [];
+export async function getAllPraises(teacherUid, classId, limitCount = 500) {
+    if (!db) return [];
+
+    const uid = teacherUid || getCurrentTeacherUid();
+    const cId = classId || getCurrentClassId();
+
+    if (!uid || !cId) return [];
 
     try {
-        const praisesRef = collection(db, 'classes', classId, 'praises');
+        const praisesRef = collection(db, 'teachers', uid, 'classes', cId, 'praises');
         const q = query(
             praisesRef,
             orderBy('createdAt', 'desc'),
@@ -796,16 +944,21 @@ export async function getAllPraises(classId, limitCount = 500) {
     }
 }
 
-// ==================== 시간표 ====================
+// ==================== 시간표 (계층 구조) ====================
 
 /**
- * 시간표 저장
+ * 시간표 저장 (계층 구조: /teachers/{uid}/classes/{classId}/timetable/schedule)
  */
-export async function saveTimetable(classId, timetable) {
-    if (!db || !classId) return null;
+export async function saveTimetable(teacherUid, classId, timetable) {
+    if (!db) return null;
+
+    const uid = teacherUid || getCurrentTeacherUid();
+    const cId = classId || getCurrentClassId();
+
+    if (!uid || !cId) return null;
 
     try {
-        const timetableRef = doc(db, 'classes', classId, 'timetable', 'schedule');
+        const timetableRef = doc(db, 'teachers', uid, 'classes', cId, 'timetable', 'schedule');
         await setDoc(timetableRef, {
             ...timetable,
             updatedAt: serverTimestamp()
@@ -819,13 +972,18 @@ export async function saveTimetable(classId, timetable) {
 }
 
 /**
- * 시간표 가져오기
+ * 시간표 가져오기 (계층 구조)
  */
-export async function getTimetable(classId) {
-    if (!db || !classId) return null;
+export async function getTimetable(teacherUid, classId) {
+    if (!db) return null;
+
+    const uid = teacherUid || getCurrentTeacherUid();
+    const cId = classId || getCurrentClassId();
+
+    if (!uid || !cId) return null;
 
     try {
-        const timetableRef = doc(db, 'classes', classId, 'timetable', 'schedule');
+        const timetableRef = doc(db, 'teachers', uid, 'classes', cId, 'timetable', 'schedule');
         const timetableDoc = await getDoc(timetableRef);
 
         if (timetableDoc.exists()) {
@@ -841,16 +999,21 @@ export async function getTimetable(classId) {
     }
 }
 
-// ==================== 메모/노트 ====================
+// ==================== 메모/노트 (계층 구조) ====================
 
 /**
- * 메모 저장
+ * 메모 저장 (계층 구조: /teachers/{uid}/classes/{classId}/notes/{noteId})
  */
-export async function saveNote(classId, note) {
-    if (!db || !classId) return null;
+export async function saveNote(teacherUid, classId, note) {
+    if (!db) return null;
+
+    const uid = teacherUid || getCurrentTeacherUid();
+    const cId = classId || getCurrentClassId();
+
+    if (!uid || !cId) return null;
 
     try {
-        const notesRef = collection(db, 'classes', classId, 'notes');
+        const notesRef = collection(db, 'teachers', uid, 'classes', cId, 'notes');
 
         const noteData = {
             ...note,
@@ -860,7 +1023,7 @@ export async function saveNote(classId, note) {
 
         if (note.id) {
             // 기존 노트 업데이트
-            const noteRef = doc(db, 'classes', classId, 'notes', String(note.id));
+            const noteRef = doc(db, 'teachers', uid, 'classes', cId, 'notes', String(note.id));
             await setDoc(noteRef, noteData, { merge: true });
             return { id: note.id, ...noteData };
         } else {
@@ -875,13 +1038,18 @@ export async function saveNote(classId, note) {
 }
 
 /**
- * 모든 메모 가져오기
+ * 모든 메모 가져오기 (계층 구조)
  */
-export async function getAllNotes(classId) {
-    if (!db || !classId) return [];
+export async function getAllNotes(teacherUid, classId) {
+    if (!db) return [];
+
+    const uid = teacherUid || getCurrentTeacherUid();
+    const cId = classId || getCurrentClassId();
+
+    if (!uid || !cId) return [];
 
     try {
-        const notesRef = collection(db, 'classes', classId, 'notes');
+        const notesRef = collection(db, 'teachers', uid, 'classes', cId, 'notes');
         const q = query(notesRef, orderBy('createdAt', 'desc'));
         const snapshot = await getDocs(q);
 
@@ -898,13 +1066,18 @@ export async function getAllNotes(classId) {
 }
 
 /**
- * 메모 삭제
+ * 메모 삭제 (계층 구조)
  */
-export async function deleteNote(classId, noteId) {
-    if (!db || !classId) return false;
+export async function deleteNote(teacherUid, classId, noteId) {
+    if (!db) return false;
+
+    const uid = teacherUid || getCurrentTeacherUid();
+    const cId = classId || getCurrentClassId();
+
+    if (!uid || !cId) return false;
 
     try {
-        await deleteDoc(doc(db, 'classes', classId, 'notes', String(noteId)));
+        await deleteDoc(doc(db, 'teachers', uid, 'classes', cId, 'notes', String(noteId)));
         return true;
     } catch (error) {
         console.error('메모 삭제 실패:', error);
@@ -967,6 +1140,15 @@ export function getClassCode() {
  * Firebase 인스턴스 내보내기
  */
 export { db, auth, app };
+
+/**
+ * 추가 내보내기: 계층 구조 관련 함수들
+ */
+export {
+    setCurrentTeacherUid,
+    getCurrentTeacherUid,
+    getCurrentClassPath
+};
 
 // 자동 초기화 시도
 initializeFirebase();

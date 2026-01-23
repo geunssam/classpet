@@ -17,7 +17,8 @@ const STORAGE_KEYS = {
     NOTES: 'classpet_notes',
     NOTIFICATIONS: 'classpet_notifications',
     OFFLINE_QUEUE: 'classpet_offline_queue',
-    CURRENT_CLASS_ID: 'classpet_current_class_id'
+    CURRENT_CLASS_ID: 'classpet_current_class_id',
+    CURRENT_TEACHER_UID: 'classpet_current_teacher_uid'
 };
 
 // 세션 키 (sessionStorage 사용)
@@ -199,6 +200,7 @@ class Store {
         this.firebaseEnabled = false;
         this.firebaseListeners = [];
         this.currentClassId = null;
+        this.currentTeacherUid = null;  // 계층 구조용 교사 UID
         this.currentClassData = null;
         this.offlineQueue = [];
         this.isOnline = navigator.onLine;
@@ -217,8 +219,17 @@ class Store {
         // Firebase 초기화
         await this.initFirebase();
 
-        // 저장된 현재 학급 ID 복원
+        // 저장된 현재 학급 정보 복원 (계층 구조: teacherUid + classId)
         this.currentClassId = localStorage.getItem(STORAGE_KEYS.CURRENT_CLASS_ID);
+        this.currentTeacherUid = localStorage.getItem(STORAGE_KEYS.CURRENT_TEACHER_UID);
+
+        // Firebase 모듈에도 동기화
+        if (this.currentTeacherUid) {
+            firebase.setCurrentTeacherUid(this.currentTeacherUid);
+        }
+        if (this.currentClassId) {
+            firebase.setCurrentClassId(this.currentClassId);
+        }
 
         // 오프라인 큐 복원
         this.loadOfflineQueue();
@@ -318,24 +329,26 @@ class Store {
     }
 
     async executeQueuedAction(action) {
+        // 계층 구조: teacherUid + classId 필요
+        const teacherUid = action.teacherUid || this.currentTeacherUid;
         const classId = action.classId || this.currentClassId;
-        if (!classId) return;
+        if (!teacherUid || !classId) return;
 
         switch (action.type) {
             case 'saveStudent':
-                await firebase.saveStudent(classId, action.data);
+                await firebase.saveStudent(teacherUid, classId, action.data);
                 break;
             case 'saveEmotion':
-                await firebase.saveEmotion(classId, action.data);
+                await firebase.saveEmotion(teacherUid, classId, action.data);
                 break;
             case 'savePraise':
-                await firebase.savePraise(classId, action.data);
+                await firebase.savePraise(teacherUid, classId, action.data);
                 break;
             case 'saveTimetable':
-                await firebase.saveTimetable(classId, action.data);
+                await firebase.saveTimetable(teacherUid, classId, action.data);
                 break;
             case 'saveNote':
-                await firebase.saveNote(classId, action.data);
+                await firebase.saveNote(teacherUid, classId, action.data);
                 break;
         }
     }
@@ -351,7 +364,23 @@ class Store {
         this.listeners.forEach(listener => listener(type, data));
     }
 
-    // ==================== 학급 관리 (새 구조) ====================
+    // ==================== 학급 관리 (계층 구조: teacherUid + classId) ====================
+
+    /**
+     * 현재 교사 UID 설정
+     */
+    setCurrentTeacherUid(uid) {
+        this.currentTeacherUid = uid;
+        firebase.setCurrentTeacherUid(uid);
+        localStorage.setItem(STORAGE_KEYS.CURRENT_TEACHER_UID, uid || '');
+    }
+
+    /**
+     * 현재 교사 UID 가져오기
+     */
+    getCurrentTeacherUid() {
+        return this.currentTeacherUid || firebase.getCurrentTeacherUid();
+    }
 
     /**
      * 현재 학급 ID 설정
@@ -371,10 +400,22 @@ class Store {
     }
 
     /**
+     * 현재 학급 전체 정보 (teacherUid + classId) 설정
+     */
+    setCurrentClass(teacherUid, classId) {
+        this.setCurrentTeacherUid(teacherUid);
+        this.setCurrentClassId(classId);
+    }
+
+    /**
      * 현재 학급 데이터 설정
      */
     setCurrentClassData(classData) {
         this.currentClassData = classData;
+        // classData에 teacherUid가 있으면 자동으로 설정
+        if (classData?.teacherUid) {
+            this.setCurrentTeacherUid(classData.teacherUid);
+        }
     }
 
     /**
@@ -390,8 +431,14 @@ class Store {
     async signInWithGoogle() {
         try {
             const result = await firebase.signInWithGoogle();
+            console.log('🔍 store.signInWithGoogle result:', result);
+            console.log('🔍 result.success:', result?.success);
+            console.log('🔍 result.user:', result?.user);
             if (result.success && result.user) {
                 this.firebaseEnabled = true;
+
+                // 교사 UID 저장 (계층 구조용)
+                this.setCurrentTeacherUid(result.user.uid);
 
                 // 교사 세션 저장 (Google 로그인 정보 포함)
                 const teacherSession = {
@@ -425,10 +472,12 @@ class Store {
         try {
             await firebase.firebaseSignOut();
             this.currentClassId = null;
+            this.currentTeacherUid = null;
             this.currentClassData = null;
             this.teacherLogout();
             this.studentLogout();
             localStorage.removeItem(STORAGE_KEYS.CURRENT_CLASS_ID);
+            localStorage.removeItem(STORAGE_KEYS.CURRENT_TEACHER_UID);
 
             // 인증 상태 변경 알림
             this.notify('auth', { isLoggedIn: false, user: null });
@@ -467,7 +516,7 @@ class Store {
     }
 
     /**
-     * 새 학급 생성
+     * 새 학급 생성 (계층 구조)
      */
     async createClass(classData) {
         if (!this.firebaseEnabled) {
@@ -477,15 +526,17 @@ class Store {
         try {
             const newClass = await firebase.createClass(classData);
             if (newClass) {
-                this.setCurrentClassId(newClass.id);
+                // 계층 구조: teacherUid + classId 저장
+                this.setCurrentClass(newClass.teacherUid, newClass.id);
                 this.setCurrentClassData(newClass);
                 // 로컬 설정도 업데이트
                 this.updateSettings({
                     ...classData,
                     classCode: newClass.classCode,
-                    classId: newClass.id
+                    classId: newClass.id,
+                    teacherUid: newClass.teacherUid
                 });
-                return { success: true, classId: newClass.id, classData: newClass };
+                return { success: true, classId: newClass.id, teacherUid: newClass.teacherUid, classData: newClass };
             }
             return { success: false, error: '학급 생성에 실패했습니다' };
         } catch (error) {
@@ -543,7 +594,7 @@ class Store {
     }
 
     /**
-     * 학급코드로 학급 참가 (학생용) - Firebase 전용
+     * 학급코드로 학급 참가 (학생용) - Firebase 전용 (계층 구조)
      */
     async joinClassByCode(code) {
         if (!this.firebaseEnabled) return null;
@@ -552,22 +603,24 @@ class Store {
             // 익명 인증
             await firebase.signInAnonymouslyIfNeeded();
 
-            // 학급코드로 classId 조회
-            const classId = await firebase.getClassIdByCode(code);
-            if (!classId) {
+            // 학급코드로 teacherUid + classId 조회 (계층 구조)
+            const classInfo = await firebase.getClassIdByCode(code);
+            if (!classInfo || !classInfo.teacherUid || !classInfo.classId) {
                 console.warn('유효하지 않은 학급코드:', code);
                 return null;
             }
 
-            // 학급 정보 가져오기
-            const classData = await firebase.getClass(classId);
+            const { teacherUid, classId } = classInfo;
+
+            // 학급 정보 가져오기 (계층 구조)
+            const classData = await firebase.getClass(teacherUid, classId);
             if (!classData) {
-                console.warn('학급 정보를 찾을 수 없음:', classId);
+                console.warn('학급 정보를 찾을 수 없음:', teacherUid, classId);
                 return null;
             }
 
-            // 현재 학급으로 설정
-            this.setCurrentClassId(classId);
+            // 현재 학급으로 설정 (계층 구조: teacherUid + classId)
+            this.setCurrentClass(teacherUid, classId);
             this.setCurrentClassData(classData);
 
             // 로컬 설정 업데이트
@@ -576,7 +629,8 @@ class Store {
                 schoolYear: classData.schoolYear,
                 semester: classData.semester,
                 classCode: classData.classCode,
-                classId: classId
+                classId: classId,
+                teacherUid: teacherUid
             });
 
             return classData;
@@ -595,29 +649,31 @@ class Store {
     }
 
     /**
-     * Firebase에서 현재 학급 데이터 로드 (학생 목록 등)
+     * Firebase에서 현재 학급 데이터 로드 (학생 목록 등) - 계층 구조
      */
     async loadClassDataFromFirebase() {
+        const teacherUid = this.getCurrentTeacherUid();
         const classId = this.getCurrentClassId();
-        if (!classId || !this.firebaseEnabled) return false;
+        if (!teacherUid || !classId || !this.firebaseEnabled) return false;
 
         try {
-            // 학생 목록 로드
-            const students = await firebase.getAllStudents(classId);
+            // 학생 목록 로드 (계층 구조)
+            const students = await firebase.getAllStudents(teacherUid, classId);
             if (students && students.length > 0) {
                 this.saveStudents(students);
                 console.log(`Firebase에서 ${students.length}명의 학생 로드 완료`);
             }
 
-            // 설정 정보 로드 (classData에서)
-            const classData = await firebase.getClass(classId);
+            // 설정 정보 로드 (classData에서) - 계층 구조
+            const classData = await firebase.getClass(teacherUid, classId);
             if (classData) {
                 this.updateSettings({
                     className: classData.className,
                     schoolYear: classData.schoolYear,
                     semester: classData.semester,
                     classCode: classData.classCode,
-                    classId: classId
+                    classId: classId,
+                    teacherUid: teacherUid
                 });
             }
 
@@ -709,40 +765,44 @@ class Store {
         students.forEach((s, i) => s.number = i + 1);
         this.saveStudents(students);
 
-        // Firebase에서도 삭제
-        if (this.firebaseEnabled && this.currentClassId) {
-            firebase.deleteStudent(this.currentClassId, studentId);
+        // Firebase에서도 삭제 (계층 구조)
+        const teacherUid = this.getCurrentTeacherUid();
+        const classId = this.getCurrentClassId();
+        if (this.firebaseEnabled && teacherUid && classId) {
+            firebase.deleteStudent(teacherUid, classId, studentId);
         }
     }
 
     /**
-     * Firebase에 학생 동기화
+     * Firebase에 학생 동기화 (계층 구조)
      */
     async syncStudentToFirebase(student) {
+        const teacherUid = this.getCurrentTeacherUid();
         const classId = this.getCurrentClassId();
-        if (!classId || !this.firebaseEnabled) return;
+        if (!teacherUid || !classId || !this.firebaseEnabled) return;
 
         if (this.isOnline) {
             try {
-                await firebase.saveStudent(classId, student);
+                await firebase.saveStudent(teacherUid, classId, student);
             } catch (error) {
                 console.warn('학생 Firebase 동기화 실패:', error);
-                this.addToOfflineQueue({ type: 'saveStudent', classId, data: student });
+                this.addToOfflineQueue({ type: 'saveStudent', teacherUid, classId, data: student });
             }
         } else {
-            this.addToOfflineQueue({ type: 'saveStudent', classId, data: student });
+            this.addToOfflineQueue({ type: 'saveStudent', teacherUid, classId, data: student });
         }
     }
 
     /**
-     * Firebase에서 학생 데이터 로드
+     * Firebase에서 학생 데이터 로드 (계층 구조)
      */
     async loadStudentsFromFirebase() {
+        const teacherUid = this.getCurrentTeacherUid();
         const classId = this.getCurrentClassId();
-        if (!classId || !this.firebaseEnabled) return null;
+        if (!teacherUid || !classId || !this.firebaseEnabled) return null;
 
         try {
-            const students = await firebase.getAllStudents(classId);
+            const students = await firebase.getAllStudents(teacherUid, classId);
             if (students && students.length > 0) {
                 this.saveStudents(students);
                 return students;
@@ -755,15 +815,16 @@ class Store {
     }
 
     /**
-     * 모든 학생 Firebase에 동기화
+     * 모든 학생 Firebase에 동기화 (계층 구조)
      */
     async syncAllStudentsToFirebase() {
+        const teacherUid = this.getCurrentTeacherUid();
         const classId = this.getCurrentClassId();
-        if (!classId || !this.firebaseEnabled) return false;
+        if (!teacherUid || !classId || !this.firebaseEnabled) return false;
 
         try {
             const students = this.getStudents() || [];
-            await firebase.saveAllStudents(classId, students);
+            await firebase.saveAllStudents(teacherUid, classId, students);
             return true;
         } catch (error) {
             console.error('학생 일괄 동기화 실패:', error);
@@ -873,26 +934,28 @@ class Store {
     }
 
     async syncTimetableToFirebase(timetable) {
+        const teacherUid = this.getCurrentTeacherUid();
         const classId = this.getCurrentClassId();
-        if (!classId || !this.firebaseEnabled) return;
+        if (!teacherUid || !classId || !this.firebaseEnabled) return;
 
         if (this.isOnline) {
             try {
-                await firebase.saveTimetable(classId, timetable);
+                await firebase.saveTimetable(teacherUid, classId, timetable);
             } catch (error) {
-                this.addToOfflineQueue({ type: 'saveTimetable', classId, data: timetable });
+                this.addToOfflineQueue({ type: 'saveTimetable', teacherUid, classId, data: timetable });
             }
         } else {
-            this.addToOfflineQueue({ type: 'saveTimetable', classId, data: timetable });
+            this.addToOfflineQueue({ type: 'saveTimetable', teacherUid, classId, data: timetable });
         }
     }
 
     async loadTimetableFromFirebase() {
+        const teacherUid = this.getCurrentTeacherUid();
         const classId = this.getCurrentClassId();
-        if (!classId || !this.firebaseEnabled) return null;
+        if (!teacherUid || !classId || !this.firebaseEnabled) return null;
 
         try {
-            const timetable = await firebase.getTimetable(classId);
+            const timetable = await firebase.getTimetable(teacherUid, classId);
             if (timetable) {
                 localStorage.setItem(STORAGE_KEYS.TIMETABLE, JSON.stringify(timetable));
                 return timetable;
@@ -935,17 +998,18 @@ class Store {
     }
 
     async syncPraiseToFirebase(praise) {
+        const teacherUid = this.getCurrentTeacherUid();
         const classId = this.getCurrentClassId();
-        if (!classId || !this.firebaseEnabled) return;
+        if (!teacherUid || !classId || !this.firebaseEnabled) return;
 
         if (this.isOnline) {
             try {
-                await firebase.savePraise(classId, praise);
+                await firebase.savePraise(teacherUid, classId, praise);
             } catch (error) {
-                this.addToOfflineQueue({ type: 'savePraise', classId, data: praise });
+                this.addToOfflineQueue({ type: 'savePraise', teacherUid, classId, data: praise });
             }
         } else {
-            this.addToOfflineQueue({ type: 'savePraise', classId, data: praise });
+            this.addToOfflineQueue({ type: 'savePraise', teacherUid, classId, data: praise });
         }
     }
 
@@ -996,17 +1060,18 @@ class Store {
     }
 
     async syncEmotionToFirebase(emotion) {
+        const teacherUid = this.getCurrentTeacherUid();
         const classId = this.getCurrentClassId();
-        if (!classId || !this.firebaseEnabled) return;
+        if (!teacherUid || !classId || !this.firebaseEnabled) return;
 
         if (this.isOnline) {
             try {
-                await firebase.saveEmotion(classId, emotion);
+                await firebase.saveEmotion(teacherUid, classId, emotion);
             } catch (error) {
-                this.addToOfflineQueue({ type: 'saveEmotion', classId, data: emotion });
+                this.addToOfflineQueue({ type: 'saveEmotion', teacherUid, classId, data: emotion });
             }
         } else {
-            this.addToOfflineQueue({ type: 'saveEmotion', classId, data: emotion });
+            this.addToOfflineQueue({ type: 'saveEmotion', teacherUid, classId, data: emotion });
         }
     }
 
@@ -1104,17 +1169,18 @@ class Store {
     }
 
     async syncNoteToFirebase(note) {
+        const teacherUid = this.getCurrentTeacherUid();
         const classId = this.getCurrentClassId();
-        if (!classId || !this.firebaseEnabled) return;
+        if (!teacherUid || !classId || !this.firebaseEnabled) return;
 
         if (this.isOnline) {
             try {
-                await firebase.saveNote(classId, note);
+                await firebase.saveNote(teacherUid, classId, note);
             } catch (error) {
-                this.addToOfflineQueue({ type: 'saveNote', classId, data: note });
+                this.addToOfflineQueue({ type: 'saveNote', teacherUid, classId, data: note });
             }
         } else {
-            this.addToOfflineQueue({ type: 'saveNote', classId, data: note });
+            this.addToOfflineQueue({ type: 'saveNote', teacherUid, classId, data: note });
         }
     }
 
@@ -1423,7 +1489,7 @@ class Store {
     }
 
     /**
-     * localStorage 데이터를 Firebase로 마이그레이션
+     * localStorage 데이터를 Firebase로 마이그레이션 (계층 구조)
      * @param {Function} progressCallback - 진행 상황 콜백 (message, percent)
      * @returns {Object} { success, message, stats }
      */
@@ -1436,8 +1502,9 @@ class Store {
             return { success: false, message: 'Google 계정으로 로그인해주세요.' };
         }
 
+        const teacherUid = this.getCurrentTeacherUid();
         const classId = this.getCurrentClassId();
-        if (!classId) {
+        if (!teacherUid || !classId) {
             return { success: false, message: '먼저 학급을 선택하거나 생성해주세요.' };
         }
 
@@ -1457,7 +1524,7 @@ class Store {
             if (students.length > 0) {
                 progressCallback(`학생 ${students.length}명 업로드 중...`, 10);
                 for (let i = 0; i < students.length; i++) {
-                    await firebase.saveStudent(classId, students[i]);
+                    await firebase.saveStudent(teacherUid, classId, students[i]);
                     stats.students++;
                 }
                 progressCallback(`학생 ${stats.students}명 완료`, 20);
@@ -1468,7 +1535,7 @@ class Store {
             if (praises.length > 0) {
                 progressCallback(`칭찬 ${praises.length}건 업로드 중...`, 25);
                 for (let i = 0; i < praises.length; i++) {
-                    await firebase.savePraise(classId, praises[i]);
+                    await firebase.savePraise(teacherUid, classId, praises[i]);
                     stats.praises++;
                 }
                 progressCallback(`칭찬 ${stats.praises}건 완료`, 40);
@@ -1479,7 +1546,7 @@ class Store {
             if (emotions.length > 0) {
                 progressCallback(`감정 기록 ${emotions.length}건 업로드 중...`, 45);
                 for (let i = 0; i < emotions.length; i++) {
-                    await firebase.saveEmotion(classId, emotions[i]);
+                    await firebase.saveEmotion(teacherUid, classId, emotions[i]);
                     stats.emotions++;
                 }
                 progressCallback(`감정 기록 ${stats.emotions}건 완료`, 60);
@@ -1489,7 +1556,7 @@ class Store {
             const timetable = this.getTimetable();
             if (timetable && Object.keys(timetable).length > 0) {
                 progressCallback('시간표 업로드 중...', 65);
-                await firebase.saveTimetable(classId, timetable);
+                await firebase.saveTimetable(teacherUid, classId, timetable);
                 stats.timetable = true;
                 progressCallback('시간표 완료', 80);
             }
@@ -1499,7 +1566,7 @@ class Store {
             if (notes.length > 0) {
                 progressCallback(`메모 ${notes.length}건 업로드 중...`, 85);
                 for (let i = 0; i < notes.length; i++) {
-                    await firebase.saveNote(classId, notes[i]);
+                    await firebase.saveNote(teacherUid, classId, notes[i]);
                     stats.notes++;
                 }
                 progressCallback(`메모 ${stats.notes}건 완료`, 95);
@@ -1523,7 +1590,7 @@ class Store {
     }
 
     /**
-     * 마이그레이션 가능 여부 확인
+     * 마이그레이션 가능 여부 확인 (계층 구조)
      */
     canMigrate() {
         const students = this.getStudents() || [];
@@ -1533,7 +1600,7 @@ class Store {
         const notes = this.getNotes() || [];
 
         return {
-            canMigrate: this.firebaseEnabled && this.isGoogleTeacher() && this.getCurrentClassId(),
+            canMigrate: this.firebaseEnabled && this.isGoogleTeacher() && this.getCurrentTeacherUid() && this.getCurrentClassId(),
             hasData: students.length > 0 || praises.length > 0 || emotions.length > 0 || Object.keys(timetable).length > 0 || notes.length > 0,
             counts: {
                 students: students.length,
