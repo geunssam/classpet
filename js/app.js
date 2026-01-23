@@ -329,8 +329,8 @@ function initRouter() {
         },
         // 학생 모드 라우트
         'student-login': {
-            render: () => {
-                const html = StudentLogin.render();
+            render: (params) => {
+                const html = StudentLogin.render(params);
                 setTimeout(() => StudentLogin.afterRender?.(), 0);
                 return html;
             }

@@ -58,10 +58,24 @@ class Router {
      * 현재 해시에서 라우트 정보 추출
      */
     parseHash() {
-        const hash = window.location.hash.slice(1) || 'login';
+        let hash = window.location.hash.slice(1) || 'login';
+        const params = {};
+
+        // 쿼리 파라미터 분리 (예: student-login?code=ABC123)
+        const queryIndex = hash.indexOf('?');
+        if (queryIndex !== -1) {
+            const queryString = hash.slice(queryIndex + 1);
+            hash = hash.slice(0, queryIndex);
+
+            // 쿼리 파라미터 파싱
+            const searchParams = new URLSearchParams(queryString);
+            searchParams.forEach((value, key) => {
+                params[key] = value;
+            });
+        }
+
         const parts = hash.split('/');
         const route = parts[0];
-        const params = {};
 
         // /route/param1/param2 형태 파싱
         if (parts.length > 1) {

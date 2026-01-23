@@ -10,15 +10,27 @@ import { router } from '../router.js';
 let selectedStudent = null;
 // 학급 코드 입력 모드
 let showClassCodeInput = false;
+// URL에서 전달된 학급 코드 (QR 스캔 시)
+let urlClassCode = null;
 
 /**
  * 렌더링
  */
-export function render() {
+export function render(params = {}) {
     const students = store.getStudents() || [];
     const settings = store.getSettings();
     const classCode = store.getClassCode();
     const isFirebaseEnabled = store.isFirebaseEnabled();
+
+    // URL에서 전달된 코드 파라미터 저장 (QR 코드 스캔 시)
+    if (params.code) {
+        urlClassCode = params.code.toUpperCase();
+    }
+
+    // URL 코드가 있고 아직 학급에 참가하지 않은 경우 → 로딩 화면 표시
+    if (urlClassCode && !classCode) {
+        return renderJoiningScreen(urlClassCode);
+    }
 
     // 학급 코드가 없으면 코드 입력 화면 표시 (Firebase 여부 관계없이)
     if (!classCode) {
@@ -250,6 +262,12 @@ function showPinError() {
  * 렌더 후 이벤트 바인딩
  */
 export function afterRender() {
+    // QR 코드로 참가 중인 경우 자동 처리
+    if (urlClassCode) {
+        handleAutoJoin();
+        return;
+    }
+
     const grid = document.getElementById('studentNumberGrid');
     if (!grid) return;
 
@@ -351,6 +369,89 @@ export function afterRender() {
 
     // 학급 코드 입력 이벤트
     setupClassCodeInput();
+}
+
+/**
+ * QR 코드 스캔 후 자동 학급 참가 처리
+ */
+async function handleAutoJoin() {
+    const code = urlClassCode;
+    if (!code) return;
+
+    const errorDiv = document.getElementById('joiningError');
+    const errorText = document.getElementById('joiningErrorText');
+    const retryBtn = document.getElementById('retryJoinBtn');
+    const manualBtn = document.getElementById('manualInputBtn');
+
+    try {
+        // 학급 참가 시도
+        const success = await store.joinClass(code);
+
+        if (success) {
+            // 성공: URL 코드 초기화 후 화면 새로고침
+            urlClassCode = null;
+            showClassCodeInput = false;
+            router.handleRoute();
+        } else {
+            // 실패: 에러 표시
+            if (errorDiv) {
+                errorDiv.classList.remove('hidden');
+                if (errorText) {
+                    errorText.textContent = '학급 코드가 올바르지 않아요. 선생님에게 확인해주세요!';
+                }
+            }
+        }
+    } catch (error) {
+        console.error('자동 학급 참가 실패:', error);
+        if (errorDiv) {
+            errorDiv.classList.remove('hidden');
+            if (errorText) {
+                errorText.textContent = '참가 중 오류가 발생했어요. 다시 시도해주세요.';
+            }
+        }
+    }
+
+    // 버튼 이벤트 바인딩
+    if (retryBtn) {
+        retryBtn.addEventListener('click', () => {
+            // 다시 시도
+            router.handleRoute();
+        });
+    }
+
+    if (manualBtn) {
+        manualBtn.addEventListener('click', () => {
+            // 직접 입력 화면으로
+            urlClassCode = null;
+            showClassCodeInput = true;
+            router.handleRoute();
+        });
+    }
+}
+
+/**
+ * QR 코드 스캔 후 학급 참가 중 로딩 화면
+ */
+function renderJoiningScreen(code) {
+    return `
+        <div class="student-login-container min-h-[calc(100vh-200px)] flex flex-col items-center justify-center px-4">
+            <div class="text-center">
+                <div class="text-6xl mb-6 animate-bounce">🐾</div>
+                <h1 class="text-2xl font-bold text-gray-800 mb-2">학급에 참가하는 중...</h1>
+                <p class="text-gray-500 mb-4">잠시만 기다려주세요</p>
+                <p class="text-sm text-primary font-mono font-bold">${code}</p>
+                <div class="mt-6">
+                    <span class="inline-block animate-spin text-2xl">⏳</span>
+                </div>
+            </div>
+            <!-- 에러 메시지 (숨김) -->
+            <div id="joiningError" class="hidden mt-6 text-center">
+                <p class="text-red-500 mb-4" id="joiningErrorText">학급 코드가 올바르지 않아요</p>
+                <button id="retryJoinBtn" class="btn btn-secondary mr-2">다시 시도</button>
+                <button id="manualInputBtn" class="btn btn-primary">직접 입력하기</button>
+            </div>
+        </div>
+    `;
 }
 
 /**
