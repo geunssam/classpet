@@ -647,6 +647,12 @@ class Store {
      */
     async joinClass(code) {
         try {
+            // Firebase 상태 재확인 (타임아웃으로 인한 상태 불일치 방지)
+            if (!this.firebaseEnabled && firebase.isFirebaseInitialized()) {
+                this.firebaseEnabled = true;
+                console.log('Firebase 상태 재동기화: 활성화 (joinClass)');
+            }
+
             // Firebase 활성화 시 Firebase에서 검증
             if (this.firebaseEnabled) {
                 const classData = await this.joinClassByCode(code);
