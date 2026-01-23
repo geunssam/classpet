@@ -19,6 +19,7 @@ import { showQuickPraise } from './components/QuickPraise.js';
 // 로그인 컴포넌트 임포트
 import * as LoginSelect from './components/LoginSelect.js';
 import * as TeacherLogin from './components/TeacherLogin.js';
+import * as ClassSelect from './components/ClassSelect.js';
 
 // 학생 모드 컴포넌트 임포트
 import * as StudentLogin from './components/StudentLogin.js';
@@ -42,6 +43,23 @@ import {
  * 앱 초기화
  */
 function initApp() {
+    // URL 파라미터로 학급 코드 자동 설정 (QR 스캔 시)
+    const urlParams = new URLSearchParams(window.location.search);
+    const codeParam = urlParams.get('code');
+    if (codeParam) {
+        store.setClassCode(codeParam.toUpperCase());
+        window.history.replaceState({}, '', window.location.pathname);
+        // DOM 로드 후 라우터 초기화하고 학생 로그인으로 이동
+        setTimeout(() => {
+            initRouter();
+            bindNavigation();
+            bindQuickPraiseButton();
+            registerGlobalFunctions();
+            router.navigate('student-login');
+        }, 0);
+        return; // 초기화 중단하고 학생 로그인으로
+    }
+
     // 오늘 날짜 표시
     updateCurrentDate();
 
@@ -67,7 +85,64 @@ function initApp() {
         }
     });
 
+    // Firebase 인증 상태 리스너 설정
+    setupAuthStateListener();
+
     console.log('🐾 클래스펫이 시작되었습니다!');
+}
+
+/**
+ * Firebase 인증 상태 리스너
+ * Google 로그인 상태 자동 감지 및 세션 복원
+ */
+function setupAuthStateListener() {
+    // store에서 인증 상태 변경 구독
+    store.subscribe((type, data) => {
+        if (type === 'auth') {
+            handleAuthStateChange(data);
+        }
+    });
+
+    // 초기 인증 상태 확인 (페이지 새로고침 시)
+    checkInitialAuthState();
+}
+
+/**
+ * 초기 인증 상태 확인
+ */
+async function checkInitialAuthState() {
+    try {
+        // Google 로그인 상태 확인
+        if (store.isGoogleTeacher()) {
+            const teacherSession = store.getTeacherSession();
+            console.log('🔐 Google 로그인 상태 복원:', teacherSession?.email);
+
+            // 현재 학급이 설정되어 있으면 대시보드로
+            const currentClassId = store.getCurrentClassId();
+            if (currentClassId && window.location.hash === '#login') {
+                router.navigate('dashboard');
+            } else if (!currentClassId && window.location.hash === '#login') {
+                // 학급 미선택 시 학급 선택 화면으로
+                router.navigate('class-select');
+            }
+        }
+    } catch (error) {
+        console.error('초기 인증 상태 확인 실패:', error);
+    }
+}
+
+/**
+ * 인증 상태 변경 처리
+ */
+function handleAuthStateChange(authData) {
+    if (authData?.isLoggedIn) {
+        // 로그인됨
+        console.log('🔐 인증 상태: 로그인됨', authData.user?.email);
+        updateClassInfo();
+    } else {
+        // 로그아웃됨
+        console.log('🔓 인증 상태: 로그아웃됨');
+    }
 }
 
 /**
@@ -88,6 +163,13 @@ function initRouter() {
             render: () => {
                 const html = TeacherLogin.render();
                 setTimeout(() => TeacherLogin.afterRender?.(), 0);
+                return html;
+            }
+        },
+        'class-select': {
+            render: async () => {
+                const html = await ClassSelect.render();
+                setTimeout(() => ClassSelect.afterRender?.(), 0);
                 return html;
             }
         },
@@ -227,7 +309,7 @@ function initRouter() {
     // 라우트 변경 시 헤더 업데이트
     router.onRouteChange = (route, params) => {
         const isStudentRoute = ['student-login', 'student-main', 'student-chat', 'pet-selection', 'pet-collection'].includes(route);
-        const isLoginRoute = ['login', 'teacher-login', 'student-login'].includes(route);
+        const isLoginRoute = ['login', 'teacher-login', 'student-login', 'class-select'].includes(route);
 
         if (!isStudentRoute && !isLoginRoute) {
             // 교사 모드로 돌아오면 헤더 복원

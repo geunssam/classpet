@@ -260,7 +260,7 @@ function renderHistoryView(students) {
 
                         return `
                             <div class="bg-white rounded-xl p-3 cursor-pointer hover:bg-gray-50"
-                                 onclick="window.classpet.router.navigate('student', { id: ${student.id} })">
+                                 onclick="window.classpet.showEmotionCheck(${student.id}, ${emotion.id})">
                                 <div class="flex items-center gap-3">
                                     <span class="text-2xl">${getPetEmoji(student.petType, student.level)}</span>
                                     <div class="flex-1">
@@ -406,13 +406,22 @@ export function unmount() {
 
 /**
  * 감정 체크 모달 표시
+ * @param {number} studentId - 학생 ID
+ * @param {number|null} emotionId - 특정 감정 기록 ID (기록 보기에서 클릭 시)
  */
-export function showEmotionCheck(studentId) {
+export function showEmotionCheck(studentId, emotionId = null) {
     const student = store.getStudent(studentId);
     if (!student) return;
 
-    const todayEmotions = store.getTodayEmotions();
-    const existingEmotion = todayEmotions.find(e => e.studentId === studentId);
+    // emotionId가 있으면 해당 감정 기록을 찾고, 없으면 오늘 감정 중 첫 번째
+    let existingEmotion = null;
+    if (emotionId) {
+        const emotionLog = store.getEmotionLog() || [];
+        existingEmotion = emotionLog.find(e => e.id === emotionId);
+    } else {
+        const todayEmotions = store.getTodayEmotions();
+        existingEmotion = todayEmotions.find(e => e.studentId === studentId);
+    }
     const studentNote = existingEmotion?.note || existingEmotion?.memo || '';
     const isStudentInput = existingEmotion?.source === 'student';
 

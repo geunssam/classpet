@@ -1,11 +1,11 @@
 /**
  * 클래스펫 상태 관리 모듈
- * LocalStorage를 활용한 데이터 영속성 관리
- * + Firebase Firestore 실시간 동기화
+ * Firebase 우선 구조 + LocalStorage 백업
+ * 다중 학급 지원
  */
 
 // Firebase 연동 모듈
-import * as firebaseModule from './firebase-config.js';
+import * as firebase from './firebase-config.js';
 
 // 저장소 키
 const STORAGE_KEYS = {
@@ -15,7 +15,9 @@ const STORAGE_KEYS = {
     PRAISE_LOG: 'classpet_praise_log',
     EMOTION_LOG: 'classpet_emotion_log',
     NOTES: 'classpet_notes',
-    NOTIFICATIONS: 'classpet_notifications'
+    NOTIFICATIONS: 'classpet_notifications',
+    OFFLINE_QUEUE: 'classpet_offline_queue',
+    CURRENT_CLASS_ID: 'classpet_current_class_id'
 };
 
 // 세션 키 (sessionStorage 사용)
@@ -37,13 +39,11 @@ const DEFAULT_SETTINGS = {
 const DEFAULT_TIMETABLE = {
     periods: ['1교시', '2교시', '3교시', '4교시', '5교시', '6교시'],
     days: ['월', '화', '수', '목', '금'],
-    schedule: {} // { 'mon-1': { subject: '국어', progress: 0 } }
+    schedule: {}
 };
 
 // 펫 타입 정의 (12종)
-// 분류별 초기 단계: 포유류 🎁(선물상자), 조류/파충류 🥚(알), 판타지 ✨(마법)
 const PET_TYPES = {
-    // 포유류 - 선물상자에서 시작
     dog: {
         name: '강아지',
         category: 'mammal',
@@ -84,7 +84,6 @@ const PET_TYPES = {
         category: 'mammal',
         stages: { egg: '🎁', baby: '🦁', growing: '🦁', adult: '🦁' }
     },
-    // 조류 - 알에서 시작
     chick: {
         name: '병아리',
         category: 'bird',
@@ -95,13 +94,11 @@ const PET_TYPES = {
         category: 'bird',
         stages: { egg: '🥚', baby: '🐧', growing: '🐧', adult: '🐧' }
     },
-    // 파충류 - 알에서 시작
     turtle: {
         name: '거북이',
         category: 'reptile',
         stages: { egg: '🥚', baby: '🐢', growing: '🐢', adult: '🐢' }
     },
-    // 판타지 - 마법에서 시작
     dragon: {
         name: '드래곤',
         category: 'fantasy',
@@ -128,103 +125,32 @@ const EMOTION_TYPES = {
     terrible: { icon: '😭', name: '힘들어요', color: '#F57C7C' }
 };
 
-// 펫 말투 스타일 (선생님 답장 → 펫 말투 변환용)
+// 펫 말투 스타일
 const PET_SPEECH_STYLES = {
-    dog: {
-        suffix: '멍',
-        endings: ['멍!', '왈왈!', '멍멍~'],
-        greeting: '꼬리 살랑살랑~'
-    },
-    cat: {
-        suffix: '냥',
-        endings: ['냥~', '야옹~', '냥냥!'],
-        greeting: '그루밍 중~'
-    },
-    rabbit: {
-        suffix: '깡총',
-        endings: ['깡총!', '토토~', '깡깡!'],
-        greeting: '귀 쫑긋~'
-    },
-    hamster: {
-        suffix: '햄',
-        endings: ['햄!', '쪼꼼~', '햄햄!'],
-        greeting: '볼 빵빵~'
-    },
-    fox: {
-        suffix: '콘',
-        endings: ['콘콘!', '여우~', '콘!'],
-        greeting: '꼬리 흔들~'
-    },
-    bear: {
-        suffix: '곰',
-        endings: ['곰곰!', '웅~', '곰!'],
-        greeting: '큰 포옹~'
-    },
-    panda: {
-        suffix: '다',
-        endings: ['빤다!', '대나무~', '판다!'],
-        greeting: '뒹굴뒹굴~'
-    },
-    lion: {
-        suffix: '으르렁',
-        endings: ['어흥!', '으르렁~', '왕!'],
-        greeting: '갈기 휘날리며~'
-    },
-    chick: {
-        suffix: '삐약',
-        endings: ['삐약!', '삐~', '삐삐!'],
-        greeting: '날개 파닥파닥~'
-    },
-    penguin: {
-        suffix: '펭',
-        endings: ['펭펭!', '뒤뚱~', '펭!'],
-        greeting: '배로 슬라이딩~'
-    },
-    turtle: {
-        suffix: '엉금',
-        endings: ['엉금!', '거북~', '느긋~'],
-        greeting: '천천히 다가가며~'
-    },
-    dragon: {
-        suffix: '드라곤',
-        endings: ['드라곤!', '용용~', '푸하~'],
-        greeting: '날개 펼치며~'
-    }
+    dog: { suffix: '멍', endings: ['멍!', '왈왈!', '멍멍~'], greeting: '꼬리 살랑살랑~' },
+    cat: { suffix: '냥', endings: ['냥~', '야옹~', '냥냥!'], greeting: '그루밍 중~' },
+    rabbit: { suffix: '깡총', endings: ['깡총!', '토토~', '깡깡!'], greeting: '귀 쫑긋~' },
+    hamster: { suffix: '햄', endings: ['햄!', '쪼꼼~', '햄햄!'], greeting: '볼 빵빵~' },
+    fox: { suffix: '콘', endings: ['콘콘!', '여우~', '콘!'], greeting: '꼬리 흔들~' },
+    bear: { suffix: '곰', endings: ['곰곰!', '웅~', '곰!'], greeting: '큰 포옹~' },
+    panda: { suffix: '다', endings: ['빤다!', '대나무~', '판다!'], greeting: '뒹굴뒹굴~' },
+    lion: { suffix: '으르렁', endings: ['어흥!', '으르렁~', '왕!'], greeting: '갈기 휘날리며~' },
+    chick: { suffix: '삐약', endings: ['삐약!', '삐~', '삐삐!'], greeting: '날개 파닥파닥~' },
+    penguin: { suffix: '펭', endings: ['펭펭!', '뒤뚱~', '펭!'], greeting: '배로 슬라이딩~' },
+    turtle: { suffix: '엉금', endings: ['엉금!', '거북~', '느긋~'], greeting: '천천히 다가가며~' },
+    dragon: { suffix: '드라곤', endings: ['드라곤!', '용용~', '푸하~'], greeting: '날개 펼치며~' }
 };
 
-// 펫 반응 메시지 (학생 모드용)
+// 펫 반응 메시지
 const PET_REACTIONS = {
-    great: {
-        animation: 'pet-jump',
-        message: '야호! 🎉 나도 기뻐!',
-        emoji: '✨'
-    },
-    good: {
-        animation: 'pet-wiggle',
-        message: '다행이다 🌟',
-        emoji: '💫'
-    },
-    soso: {
-        animation: 'pet-tilt',
-        message: '음... 알겠어 💭',
-        emoji: '🤔'
-    },
-    bad: {
-        animation: 'pet-approach',
-        message: '괜찮아, 내가 옆에 있을게 💕',
-        emoji: '🫂'
-    },
-    terrible: {
-        animation: 'pet-hug',
-        message: '힘들었구나... 🫂 말해줘서 고마워',
-        emoji: '💝'
-    }
+    great: { animation: 'pet-jump', message: '야호! 🎉 나도 기뻐!', emoji: '✨' },
+    good: { animation: 'pet-wiggle', message: '다행이다 🌟', emoji: '💫' },
+    soso: { animation: 'pet-tilt', message: '음... 알겠어 💭', emoji: '🤔' },
+    bad: { animation: 'pet-approach', message: '괜찮아, 내가 옆에 있을게 💕', emoji: '🫂' },
+    terrible: { animation: 'pet-hug', message: '힘들었구나... 🫂 말해줘서 고마워', emoji: '💝' }
 };
 
-// 샘플 학생 데이터 (학기 초 상태 - 펫 미선택)
-// PIN: 학번 4자리 (1번 → 0001, 12번 → 0012)
-// petType: null = 펫 미선택 상태
-// completedPets: 레벨 15 달성 후 완성된 펫 기록
+// 샘플 학생 데이터
 const SAMPLE_STUDENTS = [
     { id: 1, name: '김민준', number: 1, pin: '0001', petType: null, exp: 0, level: 1, totalPraises: 0, completedPets: [] },
     { id: 2, name: '이서연', number: 2, pin: '0002', petType: null, exp: 0, level: 1, totalPraises: 0, completedPets: [] },
@@ -265,73 +191,443 @@ const SAMPLE_TIMETABLE = {
 
 /**
  * 스토어 클래스
+ * Firebase 우선 + LocalStorage 백업 구조
  */
 class Store {
     constructor() {
         this.listeners = new Set();
         this.firebaseEnabled = false;
         this.firebaseListeners = [];
+        this.currentClassId = null;
+        this.currentClassData = null;
+        this.offlineQueue = [];
+        this.isOnline = navigator.onLine;
+
+        // 네트워크 상태 감지
+        window.addEventListener('online', () => this.handleOnline());
+        window.addEventListener('offline', () => this.handleOffline());
+
         this.init();
     }
 
     /**
      * 초기화
      */
-    init() {
-        // Firebase 초기화 시도
-        this.initFirebase();
-        // 설정 불러오기 또는 초기화
-        if (!this.getSettings()) {
-            this.saveSettings(DEFAULT_SETTINGS);
-        }
+    async init() {
+        // Firebase 초기화
+        await this.initFirebase();
 
-        // 학생 데이터 없으면 샘플 데이터 로드
-        if (!this.getStudents() || this.getStudents().length === 0) {
-            this.saveStudents(SAMPLE_STUDENTS);
-        }
+        // 저장된 현재 학급 ID 복원
+        this.currentClassId = localStorage.getItem(STORAGE_KEYS.CURRENT_CLASS_ID);
 
-        // 시간표 데이터 없으면 샘플 데이터 로드
-        if (!this.getTimetable() || Object.keys(this.getTimetable()).length === 0) {
-            this.saveTimetable(SAMPLE_TIMETABLE);
-        }
+        // 오프라인 큐 복원
+        this.loadOfflineQueue();
 
-        // 칭찬 로그 초기화
-        if (!this.getPraiseLog()) {
-            this.savePraiseLog([]);
-        }
-
-        // 감정 로그 초기화
-        if (!this.getEmotionLog()) {
-            this.saveEmotionLog([]);
-        }
-
-        // 메모 초기화
-        if (!this.getNotes()) {
-            this.saveNotes([]);
-        }
-
-        // 알림 초기화
-        if (!this.getNotifications()) {
-            this.saveNotifications([]);
-        }
+        // 로컬 데이터 초기화 (Firebase 연결 없을 때 폴백용)
+        this.initLocalData();
     }
 
     /**
-     * 변경 리스너 등록
+     * 로컬 데이터 초기화 (폴백용)
      */
+    initLocalData() {
+        if (!this.getSettings()) {
+            this.saveSettings(DEFAULT_SETTINGS);
+        }
+        if (!this.getStudents() || this.getStudents().length === 0) {
+            this.saveStudents(SAMPLE_STUDENTS);
+        }
+        if (!this.getTimetable() || Object.keys(this.getTimetable()).length === 0) {
+            this.saveTimetable(SAMPLE_TIMETABLE);
+        }
+        if (!this.getPraiseLog()) this.savePraiseLog([]);
+        if (!this.getEmotionLog()) this.saveEmotionLog([]);
+        if (!this.getNotes()) this.saveNotes([]);
+        if (!this.getNotifications()) this.saveNotifications([]);
+    }
+
+    /**
+     * Firebase 초기화
+     */
+    async initFirebase() {
+        try {
+            const result = firebase.initializeFirebase();
+            if (result) {
+                this.firebaseEnabled = firebase.isFirebaseInitialized();
+                console.log('Firebase 연동:', this.firebaseEnabled ? '활성화' : '비활성화');
+            }
+        } catch (error) {
+            console.warn('Firebase 초기화 실패:', error);
+            this.firebaseEnabled = false;
+        }
+    }
+
+    // ==================== 네트워크 상태 관리 ====================
+
+    handleOnline() {
+        this.isOnline = true;
+        console.log('온라인 상태로 전환');
+        this.processOfflineQueue();
+    }
+
+    handleOffline() {
+        this.isOnline = false;
+        console.log('오프라인 상태로 전환');
+    }
+
+    // ==================== 오프라인 큐 관리 ====================
+
+    loadOfflineQueue() {
+        const queue = localStorage.getItem(STORAGE_KEYS.OFFLINE_QUEUE);
+        this.offlineQueue = queue ? JSON.parse(queue) : [];
+    }
+
+    saveOfflineQueue() {
+        localStorage.setItem(STORAGE_KEYS.OFFLINE_QUEUE, JSON.stringify(this.offlineQueue));
+    }
+
+    addToOfflineQueue(action) {
+        this.offlineQueue.push({
+            ...action,
+            timestamp: new Date().toISOString()
+        });
+        this.saveOfflineQueue();
+    }
+
+    async processOfflineQueue() {
+        if (!this.isOnline || !this.firebaseEnabled || this.offlineQueue.length === 0) {
+            return;
+        }
+
+        console.log(`오프라인 큐 처리 시작: ${this.offlineQueue.length}개`);
+
+        const queue = [...this.offlineQueue];
+        this.offlineQueue = [];
+
+        for (const action of queue) {
+            try {
+                await this.executeQueuedAction(action);
+            } catch (error) {
+                console.error('큐 처리 실패:', action, error);
+                this.offlineQueue.push(action);
+            }
+        }
+
+        this.saveOfflineQueue();
+        console.log('오프라인 큐 처리 완료');
+    }
+
+    async executeQueuedAction(action) {
+        const classId = action.classId || this.currentClassId;
+        if (!classId) return;
+
+        switch (action.type) {
+            case 'saveStudent':
+                await firebase.saveStudent(classId, action.data);
+                break;
+            case 'saveEmotion':
+                await firebase.saveEmotion(classId, action.data);
+                break;
+            case 'savePraise':
+                await firebase.savePraise(classId, action.data);
+                break;
+            case 'saveTimetable':
+                await firebase.saveTimetable(classId, action.data);
+                break;
+            case 'saveNote':
+                await firebase.saveNote(classId, action.data);
+                break;
+        }
+    }
+
+    // ==================== 변경 리스너 ====================
+
     subscribe(listener) {
         this.listeners.add(listener);
         return () => this.listeners.delete(listener);
     }
 
-    /**
-     * 변경 알림
-     */
     notify(type, data) {
         this.listeners.forEach(listener => listener(type, data));
     }
 
-    // === 설정 관련 ===
+    // ==================== 학급 관리 (새 구조) ====================
+
+    /**
+     * 현재 학급 ID 설정
+     */
+    setCurrentClassId(classId) {
+        this.currentClassId = classId;
+        firebase.setCurrentClassId(classId);
+        localStorage.setItem(STORAGE_KEYS.CURRENT_CLASS_ID, classId || '');
+        this.notify('classChange', classId);
+    }
+
+    /**
+     * 현재 학급 ID 가져오기
+     */
+    getCurrentClassId() {
+        return this.currentClassId || firebase.getCurrentClassId();
+    }
+
+    /**
+     * 현재 학급 데이터 설정
+     */
+    setCurrentClassData(classData) {
+        this.currentClassData = classData;
+    }
+
+    /**
+     * 현재 학급 데이터 가져오기
+     */
+    getCurrentClassData() {
+        return this.currentClassData;
+    }
+
+    /**
+     * Google 로그인
+     */
+    async signInWithGoogle() {
+        try {
+            const result = await firebase.signInWithGoogle();
+            if (result.success && result.user) {
+                this.firebaseEnabled = true;
+
+                // 교사 세션 저장 (Google 로그인 정보 포함)
+                const teacherSession = {
+                    isLoggedIn: true,
+                    isGoogleAuth: true,
+                    uid: result.user.uid,
+                    email: result.user.email,
+                    displayName: result.user.displayName,
+                    photoURL: result.user.photoURL,
+                    loginTime: Date.now()
+                };
+                sessionStorage.setItem(SESSION_KEYS.TEACHER_SESSION, JSON.stringify(teacherSession));
+
+                // 인증 상태 변경 알림
+                this.notify('auth', { isLoggedIn: true, user: result.user });
+                this.notify('teacherLogin', teacherSession);
+
+                return { success: true, user: result.user };
+            }
+            return { success: false, error: '로그인에 실패했습니다' };
+        } catch (error) {
+            console.error('Google 로그인 실패:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * 로그아웃
+     */
+    async signOut() {
+        try {
+            await firebase.firebaseSignOut();
+            this.currentClassId = null;
+            this.currentClassData = null;
+            this.teacherLogout();
+            this.studentLogout();
+            localStorage.removeItem(STORAGE_KEYS.CURRENT_CLASS_ID);
+
+            // 인증 상태 변경 알림
+            this.notify('auth', { isLoggedIn: false, user: null });
+        } catch (error) {
+            console.error('로그아웃 실패:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * 현재 Firebase 사용자
+     */
+    getCurrentUser() {
+        return firebase.getCurrentUser();
+    }
+
+    /**
+     * 교사인지 확인 (Google 로그인)
+     */
+    isGoogleTeacher() {
+        // Firebase 인증 상태 먼저 확인
+        if (firebase.isTeacherUser()) {
+            return true;
+        }
+
+        // 세션 스토리지에서 Google 로그인 정보 확인 (페이지 새로고침 시)
+        const session = this.getTeacherSession();
+        return session?.isGoogleAuth === true;
+    }
+
+    /**
+     * 인증 상태 리스너
+     */
+    onAuthChange(callback) {
+        return firebase.onAuthChange(callback);
+    }
+
+    /**
+     * 새 학급 생성
+     */
+    async createClass(classData) {
+        if (!this.firebaseEnabled) return null;
+
+        try {
+            const newClass = await firebase.createClass(classData);
+            if (newClass) {
+                this.setCurrentClassId(newClass.id);
+                this.setCurrentClassData(newClass);
+                // 로컬 설정도 업데이트
+                this.updateSettings({
+                    ...classData,
+                    classCode: newClass.classCode,
+                    classId: newClass.id
+                });
+                return newClass;
+            }
+            return null;
+        } catch (error) {
+            console.error('학급 생성 실패:', error);
+            return null;
+        }
+    }
+
+    /**
+     * 교사의 모든 학급 가져오기
+     */
+    async getTeacherClasses() {
+        const user = this.getCurrentUser();
+        if (!user || !this.firebaseEnabled) return [];
+
+        try {
+            return await firebase.getTeacherClasses(user.uid);
+        } catch (error) {
+            console.error('학급 목록 조회 실패:', error);
+            return [];
+        }
+    }
+
+    /**
+     * 학급 참가 (학생용) - StudentLogin.js에서 호출
+     * @param {string} code - 6자리 학급코드
+     * @returns {boolean} 성공 여부
+     */
+    async joinClass(code) {
+        try {
+            // Firebase 활성화 시 Firebase에서 검증
+            if (this.firebaseEnabled) {
+                const classData = await this.joinClassByCode(code);
+                if (classData) {
+                    // Firebase에서 학생 목록 로드
+                    await this.loadClassDataFromFirebase();
+                    return true;
+                }
+                return false;
+            }
+
+            // Firebase 비활성화 시 로컬 검증
+            const settings = this.getSettings();
+            if (settings?.classCode === code) {
+                return true;
+            }
+
+            // 새 학급코드 저장 (오프라인 모드)
+            this.setClassCode(code);
+            return true;
+        } catch (error) {
+            console.error('학급 참가 오류:', error);
+            return false;
+        }
+    }
+
+    /**
+     * 학급코드로 학급 참가 (학생용) - Firebase 전용
+     */
+    async joinClassByCode(code) {
+        if (!this.firebaseEnabled) return null;
+
+        try {
+            // 익명 인증
+            await firebase.signInAnonymouslyIfNeeded();
+
+            // 학급코드로 classId 조회
+            const classId = await firebase.getClassIdByCode(code);
+            if (!classId) {
+                console.warn('유효하지 않은 학급코드:', code);
+                return null;
+            }
+
+            // 학급 정보 가져오기
+            const classData = await firebase.getClass(classId);
+            if (!classData) {
+                console.warn('학급 정보를 찾을 수 없음:', classId);
+                return null;
+            }
+
+            // 현재 학급으로 설정
+            this.setCurrentClassId(classId);
+            this.setCurrentClassData(classData);
+
+            // 로컬 설정 업데이트
+            this.updateSettings({
+                className: classData.className,
+                schoolYear: classData.schoolYear,
+                semester: classData.semester,
+                classCode: classData.classCode,
+                classId: classId
+            });
+
+            return classData;
+        } catch (error) {
+            console.error('학급 참가 실패:', error);
+            return null;
+        }
+    }
+
+    /**
+     * 학급코드 유효성 검사
+     */
+    async validateClassCode(code) {
+        if (!this.firebaseEnabled) return false;
+        return await firebase.validateClassCode(code);
+    }
+
+    /**
+     * Firebase에서 현재 학급 데이터 로드 (학생 목록 등)
+     */
+    async loadClassDataFromFirebase() {
+        const classId = this.getCurrentClassId();
+        if (!classId || !this.firebaseEnabled) return false;
+
+        try {
+            // 학생 목록 로드
+            const students = await firebase.getAllStudents(classId);
+            if (students && students.length > 0) {
+                this.saveStudents(students);
+                console.log(`Firebase에서 ${students.length}명의 학생 로드 완료`);
+            }
+
+            // 설정 정보 로드 (classData에서)
+            const classData = await firebase.getClass(classId);
+            if (classData) {
+                this.updateSettings({
+                    className: classData.className,
+                    schoolYear: classData.schoolYear,
+                    semester: classData.semester,
+                    classCode: classData.classCode,
+                    classId: classId
+                });
+            }
+
+            return true;
+        } catch (error) {
+            console.error('Firebase 학급 데이터 로드 실패:', error);
+            return false;
+        }
+    }
+
+    // ==================== 설정 관련 ====================
+
     getSettings() {
         const data = localStorage.getItem(STORAGE_KEYS.SETTINGS);
         return data ? JSON.parse(data) : null;
@@ -349,7 +645,8 @@ class Store {
         return updated;
     }
 
-    // === 학생 관련 ===
+    // ==================== 학생 관련 ====================
+
     getStudents() {
         const data = localStorage.getItem(STORAGE_KEYS.STUDENTS);
         return data ? JSON.parse(data) : null;
@@ -372,51 +669,124 @@ class Store {
         const newStudent = {
             id: newId,
             number: newNumber,
-            pin: String(newNumber).padStart(4, '0'), // 학번 4자리 PIN
+            pin: String(newNumber).padStart(4, '0'),
             exp: 0,
             level: 1,
             totalPraises: 0,
-            petType: null, // 펫 미선택 상태
-            completedPets: [], // 완성된 펫 목록
+            petType: null,
+            completedPets: [],
             ...student
         };
         students.push(newStudent);
         this.saveStudents(students);
+
+        // Firebase 동기화
+        this.syncStudentToFirebase(newStudent);
+
         return newStudent;
     }
 
+    updateStudent(studentId, updates) {
+        const students = this.getStudents() || [];
+        const index = students.findIndex(s => s.id === studentId);
+        if (index !== -1) {
+            students[index] = { ...students[index], ...updates };
+            this.saveStudents(students);
+
+            // Firebase 동기화
+            this.syncStudentToFirebase(students[index]);
+
+            return students[index];
+        }
+        return null;
+    }
+
+    deleteStudent(studentId) {
+        let students = this.getStudents() || [];
+        students = students.filter(s => s.id !== studentId);
+        students.forEach((s, i) => s.number = i + 1);
+        this.saveStudents(students);
+
+        // Firebase에서도 삭제
+        if (this.firebaseEnabled && this.currentClassId) {
+            firebase.deleteStudent(this.currentClassId, studentId);
+        }
+    }
+
     /**
-     * 학생 펫 선택 (펫 이름 포함)
-     * @param {number} studentId - 학생 ID
-     * @param {string} petType - 펫 타입
-     * @param {string} petName - 펫 이름 (선택, 없으면 펫 타입명 사용)
+     * Firebase에 학생 동기화
      */
+    async syncStudentToFirebase(student) {
+        const classId = this.getCurrentClassId();
+        if (!classId || !this.firebaseEnabled) return;
+
+        if (this.isOnline) {
+            try {
+                await firebase.saveStudent(classId, student);
+            } catch (error) {
+                console.warn('학생 Firebase 동기화 실패:', error);
+                this.addToOfflineQueue({ type: 'saveStudent', classId, data: student });
+            }
+        } else {
+            this.addToOfflineQueue({ type: 'saveStudent', classId, data: student });
+        }
+    }
+
+    /**
+     * Firebase에서 학생 데이터 로드
+     */
+    async loadStudentsFromFirebase() {
+        const classId = this.getCurrentClassId();
+        if (!classId || !this.firebaseEnabled) return null;
+
+        try {
+            const students = await firebase.getAllStudents(classId);
+            if (students && students.length > 0) {
+                this.saveStudents(students);
+                return students;
+            }
+            return null;
+        } catch (error) {
+            console.error('Firebase 학생 로드 실패:', error);
+            return null;
+        }
+    }
+
+    /**
+     * 모든 학생 Firebase에 동기화
+     */
+    async syncAllStudentsToFirebase() {
+        const classId = this.getCurrentClassId();
+        if (!classId || !this.firebaseEnabled) return false;
+
+        try {
+            const students = this.getStudents() || [];
+            await firebase.saveAllStudents(classId, students);
+            return true;
+        } catch (error) {
+            console.error('학생 일괄 동기화 실패:', error);
+            return false;
+        }
+    }
+
+    // === 펫 관련 ===
+
     selectPet(studentId, petType, petName = null) {
         if (!PET_TYPES[petType]) return null;
         const finalPetName = petName?.trim() || PET_TYPES[petType].name;
         return this.updateStudent(studentId, { petType, petName: finalPetName });
     }
 
-    /**
-     * 학생이 펫을 선택했는지 확인
-     */
     hasSelectedPet(studentId) {
         const student = this.getStudent(studentId);
         return student && student.petType !== null;
     }
 
-    /**
-     * 펫 완성 처리 및 새 펫 선택 (레벨 15 달성 시)
-     * @param {number} studentId - 학생 ID
-     * @param {string} newPetType - 새로 선택할 펫 타입
-     * @param {string} newPetName - 새 펫 이름
-     */
     completeAndChangePet(studentId, newPetType, newPetName = null) {
         const student = this.getStudent(studentId);
         if (!student || !student.petType) return null;
         if (!PET_TYPES[newPetType]) return null;
 
-        // 현재 펫을 완성 목록에 추가
         const completedPets = student.completedPets || [];
         completedPets.push({
             type: student.petType,
@@ -424,7 +794,6 @@ class Store {
             completedAt: new Date().toISOString().split('T')[0]
         });
 
-        // 새 펫으로 변경 (레벨 1, 경험치 0으로 초기화)
         const finalPetName = newPetName?.trim() || PET_TYPES[newPetType].name;
         return this.updateStudent(studentId, {
             petType: newPetType,
@@ -435,96 +804,53 @@ class Store {
         });
     }
 
-    /**
-     * 학생의 완성된 펫 목록 가져오기
-     */
     getCompletedPets(studentId) {
         const student = this.getStudent(studentId);
         return student?.completedPets || [];
     }
 
-    /**
-     * 학생이 특정 펫을 완성했는지 확인
-     */
     hasCompletedPet(studentId, petType) {
         const completedPets = this.getCompletedPets(studentId);
         return completedPets.some(p => p.type === petType);
     }
 
-    /**
-     * 학생이 펫을 소유하고 있는지 확인 (현재 키우는 중이거나 완성한 펫)
-     */
     hasPet(studentId, petType) {
         const student = this.getStudent(studentId);
         if (!student) return false;
-        // 현재 키우는 펫이거나 완성한 펫
         return student.petType === petType || this.hasCompletedPet(studentId, petType);
     }
 
-    // === PIN 관련 함수 ===
+    // === PIN 관련 ===
 
-    /**
-     * 학생 PIN 검증
-     */
     verifyStudentPin(studentId, pin) {
         const student = this.getStudent(studentId);
         if (!student) return false;
-
-        // PIN이 없으면 학번 4자리로 비교 (이전 데이터 호환)
         const studentPin = student.pin || String(student.number).padStart(4, '0');
         return studentPin === pin;
     }
 
-    /**
-     * 학생 PIN 초기화 (학번 4자리로)
-     */
     resetStudentPin(studentId) {
         const student = this.getStudent(studentId);
         if (!student) return null;
-
         const defaultPin = String(student.number).padStart(4, '0');
         return this.updateStudent(studentId, { pin: defaultPin });
     }
 
-    /**
-     * 학생 PIN 변경
-     */
     updateStudentPin(studentId, newPin) {
         if (!newPin || newPin.length !== 4 || !/^\d{4}$/.test(newPin)) {
-            return null; // 4자리 숫자가 아니면 실패
+            return null;
         }
         return this.updateStudent(studentId, { pin: newPin });
     }
 
-    /**
-     * 학생의 기본 PIN 가져오기 (학번 4자리)
-     */
     getDefaultPin(studentId) {
         const student = this.getStudent(studentId);
         if (!student) return null;
         return String(student.number).padStart(4, '0');
     }
 
-    updateStudent(studentId, updates) {
-        const students = this.getStudents() || [];
-        const index = students.findIndex(s => s.id === studentId);
-        if (index !== -1) {
-            students[index] = { ...students[index], ...updates };
-            this.saveStudents(students);
-            return students[index];
-        }
-        return null;
-    }
+    // ==================== 시간표 관련 ====================
 
-    deleteStudent(studentId) {
-        let students = this.getStudents() || [];
-        students = students.filter(s => s.id !== studentId);
-        // 번호 재정렬
-        students.forEach((s, i) => s.number = i + 1);
-        this.saveStudents(students);
-    }
-
-    // === 시간표 관련 ===
     getTimetable() {
         const data = localStorage.getItem(STORAGE_KEYS.TIMETABLE);
         return data ? JSON.parse(data) : null;
@@ -533,6 +859,9 @@ class Store {
     saveTimetable(timetable) {
         localStorage.setItem(STORAGE_KEYS.TIMETABLE, JSON.stringify(timetable));
         this.notify('timetable', timetable);
+
+        // Firebase 동기화
+        this.syncTimetableToFirebase(timetable);
     }
 
     updateTimetableCell(key, value) {
@@ -541,7 +870,40 @@ class Store {
         this.saveTimetable(timetable);
     }
 
-    // === 칭찬 로그 관련 ===
+    async syncTimetableToFirebase(timetable) {
+        const classId = this.getCurrentClassId();
+        if (!classId || !this.firebaseEnabled) return;
+
+        if (this.isOnline) {
+            try {
+                await firebase.saveTimetable(classId, timetable);
+            } catch (error) {
+                this.addToOfflineQueue({ type: 'saveTimetable', classId, data: timetable });
+            }
+        } else {
+            this.addToOfflineQueue({ type: 'saveTimetable', classId, data: timetable });
+        }
+    }
+
+    async loadTimetableFromFirebase() {
+        const classId = this.getCurrentClassId();
+        if (!classId || !this.firebaseEnabled) return null;
+
+        try {
+            const timetable = await firebase.getTimetable(classId);
+            if (timetable) {
+                localStorage.setItem(STORAGE_KEYS.TIMETABLE, JSON.stringify(timetable));
+                return timetable;
+            }
+            return null;
+        } catch (error) {
+            console.error('Firebase 시간표 로드 실패:', error);
+            return null;
+        }
+    }
+
+    // ==================== 칭찬 로그 관련 ====================
+
     getPraiseLog() {
         const data = localStorage.getItem(STORAGE_KEYS.PRAISE_LOG);
         return data ? JSON.parse(data) : null;
@@ -559,15 +921,30 @@ class Store {
             timestamp: new Date().toISOString(),
             ...praise
         };
-        log.unshift(newPraise); // 최신순
+        log.unshift(newPraise);
 
-        // 최대 500개 유지
-        if (log.length > 500) {
-            log.pop();
-        }
-
+        if (log.length > 500) log.pop();
         this.savePraiseLog(log);
+
+        // Firebase 동기화
+        this.syncPraiseToFirebase(newPraise);
+
         return newPraise;
+    }
+
+    async syncPraiseToFirebase(praise) {
+        const classId = this.getCurrentClassId();
+        if (!classId || !this.firebaseEnabled) return;
+
+        if (this.isOnline) {
+            try {
+                await firebase.savePraise(classId, praise);
+            } catch (error) {
+                this.addToOfflineQueue({ type: 'savePraise', classId, data: praise });
+            }
+        } else {
+            this.addToOfflineQueue({ type: 'savePraise', classId, data: praise });
+        }
     }
 
     getPraisesByStudent(studentId) {
@@ -586,7 +963,8 @@ class Store {
         return log.filter(p => p.timestamp.startsWith(today));
     }
 
-    // === 감정 로그 관련 ===
+    // ==================== 감정 로그 관련 ====================
+
     getEmotionLog() {
         const data = localStorage.getItem(STORAGE_KEYS.EMOTION_LOG);
         return data ? JSON.parse(data) : null;
@@ -606,13 +984,28 @@ class Store {
         };
         log.unshift(newEmotion);
 
-        // 최대 1000개 유지
-        if (log.length > 1000) {
-            log.pop();
-        }
-
+        if (log.length > 1000) log.pop();
         this.saveEmotionLog(log);
+
+        // Firebase 동기화
+        this.syncEmotionToFirebase(newEmotion);
+
         return newEmotion;
+    }
+
+    async syncEmotionToFirebase(emotion) {
+        const classId = this.getCurrentClassId();
+        if (!classId || !this.firebaseEnabled) return;
+
+        if (this.isOnline) {
+            try {
+                await firebase.saveEmotion(classId, emotion);
+            } catch (error) {
+                this.addToOfflineQueue({ type: 'saveEmotion', classId, data: emotion });
+            }
+        } else {
+            this.addToOfflineQueue({ type: 'saveEmotion', classId, data: emotion });
+        }
     }
 
     getEmotionsByStudent(studentId) {
@@ -636,11 +1029,8 @@ class Store {
         });
     }
 
-    // === 선생님 답장 관련 ===
+    // === 답장 관련 ===
 
-    /**
-     * 감정 기록에 선생님 답장 추가
-     */
     addReplyToEmotion(emotionId, message) {
         const log = this.getEmotionLog() || [];
         const index = log.findIndex(e => e.id === emotionId);
@@ -649,7 +1039,7 @@ class Store {
             log[index].reply = {
                 message: message,
                 timestamp: new Date().toISOString(),
-                read: false  // 학생이 아직 읽지 않음
+                read: false
             };
             this.saveEmotionLog(log);
             return log[index];
@@ -657,9 +1047,6 @@ class Store {
         return null;
     }
 
-    /**
-     * 학생이 답장을 읽음으로 표시
-     */
     markReplyAsRead(emotionId) {
         const log = this.getEmotionLog() || [];
         const index = log.findIndex(e => e.id === emotionId);
@@ -672,30 +1059,22 @@ class Store {
         return null;
     }
 
-    /**
-     * 특정 학생의 읽지 않은 답장 개수
-     */
     getUnreadReplyCount(studentId) {
         const log = this.getEmotionLog() || [];
         return log.filter(e =>
-            e.studentId === studentId &&
-            e.reply &&
-            !e.reply.read
+            e.studentId === studentId && e.reply && !e.reply.read
         ).length;
     }
 
-    /**
-     * 특정 학생의 최근 답장이 있는 감정 기록 조회
-     */
     getEmotionsWithReply(studentId) {
         const log = this.getEmotionLog() || [];
         return log.filter(e =>
-            e.studentId === studentId &&
-            e.reply
+            e.studentId === studentId && e.reply
         ).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
     }
 
-    // === 메모/상담 기록 관련 ===
+    // ==================== 메모/노트 관련 ====================
+
     getNotes() {
         const data = localStorage.getItem(STORAGE_KEYS.NOTES);
         return data ? JSON.parse(data) : null;
@@ -715,7 +1094,26 @@ class Store {
         };
         notes.unshift(newNote);
         this.saveNotes(notes);
+
+        // Firebase 동기화
+        this.syncNoteToFirebase(newNote);
+
         return newNote;
+    }
+
+    async syncNoteToFirebase(note) {
+        const classId = this.getCurrentClassId();
+        if (!classId || !this.firebaseEnabled) return;
+
+        if (this.isOnline) {
+            try {
+                await firebase.saveNote(classId, note);
+            } catch (error) {
+                this.addToOfflineQueue({ type: 'saveNote', classId, data: note });
+            }
+        } else {
+            this.addToOfflineQueue({ type: 'saveNote', classId, data: note });
+        }
     }
 
     updateNote(noteId, updates) {
@@ -740,7 +1138,8 @@ class Store {
         return notes.filter(n => n.studentId === studentId);
     }
 
-    // === 통계 관련 ===
+    // ==================== 통계 관련 ====================
+
     getStats() {
         const students = this.getStudents() || [];
         const todayPraises = this.getTodayPraises();
@@ -748,19 +1147,16 @@ class Store {
         const todayEmotions = this.getTodayEmotions();
         const needAttention = this.getStudentsNeedingAttention();
 
-        // 카테고리별 칭찬 수
         const categoryStats = {};
         Object.keys(PRAISE_CATEGORIES).forEach(cat => {
             categoryStats[cat] = allPraises.filter(p => p.category === cat).length;
         });
 
-        // 레벨 분포
         const levelDistribution = {};
         students.forEach(s => {
             levelDistribution[s.level] = (levelDistribution[s.level] || 0) + 1;
         });
 
-        // MVP (오늘 칭찬 많이 받은 학생)
         const todayPraiseCount = {};
         todayPraises.forEach(p => {
             todayPraiseCount[p.studentId] = (todayPraiseCount[p.studentId] || 0) + 1;
@@ -793,7 +1189,174 @@ class Store {
         };
     }
 
-    // === 데이터 백업/복원 ===
+    // ==================== 세션 관리 ====================
+
+    studentLogin(studentId) {
+        const student = this.getStudent(studentId);
+        if (!student) return null;
+
+        const session = {
+            studentId: student.id,
+            studentName: student.name,
+            loginTime: new Date().toISOString()
+        };
+
+        sessionStorage.setItem(SESSION_KEYS.STUDENT_SESSION, JSON.stringify(session));
+        this.notify('studentLogin', session);
+        return session;
+    }
+
+    studentLogout() {
+        sessionStorage.removeItem(SESSION_KEYS.STUDENT_SESSION);
+        this.notify('studentLogout', null);
+    }
+
+    getStudentSession() {
+        const data = sessionStorage.getItem(SESSION_KEYS.STUDENT_SESSION);
+        return data ? JSON.parse(data) : null;
+    }
+
+    isStudentLoggedIn() {
+        const session = this.getStudentSession();
+        if (!session) return false;
+        const student = this.getStudent(session.studentId);
+        return !!student;
+    }
+
+    getCurrentStudent() {
+        const session = this.getStudentSession();
+        if (!session) return null;
+        return this.getStudent(session.studentId);
+    }
+
+    hasStudentCheckedEmotionToday(studentId) {
+        const todayEmotions = this.getTodayEmotions();
+        return todayEmotions.some(e => e.studentId === studentId);
+    }
+
+    getStudentTodayEmotion(studentId) {
+        const todayEmotions = this.getTodayEmotions();
+        return todayEmotions.find(e => e.studentId === studentId) || null;
+    }
+
+    getStudentTodayEmotions(studentId) {
+        const todayEmotions = this.getTodayEmotions();
+        return todayEmotions.filter(e => e.studentId === studentId);
+    }
+
+    // === 교사 세션 ===
+
+    teacherLogin() {
+        const settings = this.getSettings();
+        const user = this.getCurrentUser();
+
+        const session = {
+            teacherName: user?.displayName || settings?.teacherName || '선생님',
+            email: user?.email || null,
+            uid: user?.uid || null,
+            isGoogleAuth: !!user && !user.isAnonymous,
+            loginTime: new Date().toISOString()
+        };
+
+        sessionStorage.setItem(SESSION_KEYS.TEACHER_SESSION, JSON.stringify(session));
+        this.notify('teacherLogin', session);
+        return session;
+    }
+
+    teacherLogout() {
+        sessionStorage.removeItem(SESSION_KEYS.TEACHER_SESSION);
+        this.notify('teacherLogout', null);
+    }
+
+    getTeacherSession() {
+        const data = sessionStorage.getItem(SESSION_KEYS.TEACHER_SESSION);
+        return data ? JSON.parse(data) : null;
+    }
+
+    isTeacherLoggedIn() {
+        return !!this.getTeacherSession();
+    }
+
+    // ==================== 알림 관리 ====================
+
+    getNotifications() {
+        const data = localStorage.getItem(STORAGE_KEYS.NOTIFICATIONS);
+        return data ? JSON.parse(data) : null;
+    }
+
+    saveNotifications(notifications) {
+        localStorage.setItem(STORAGE_KEYS.NOTIFICATIONS, JSON.stringify(notifications));
+        this.notify('notifications', notifications);
+    }
+
+    addNotification(notification) {
+        const notifications = this.getNotifications() || [];
+        const newNotification = {
+            id: Date.now(),
+            timestamp: new Date().toISOString(),
+            read: false,
+            ...notification
+        };
+        notifications.unshift(newNotification);
+
+        if (notifications.length > 100) notifications.pop();
+        this.saveNotifications(notifications);
+        return newNotification;
+    }
+
+    markNotificationRead(notificationId) {
+        const notifications = this.getNotifications() || [];
+        const index = notifications.findIndex(n => n.id === notificationId);
+        if (index !== -1) {
+            notifications[index].read = true;
+            this.saveNotifications(notifications);
+        }
+    }
+
+    markAllNotificationsRead() {
+        const notifications = this.getNotifications() || [];
+        notifications.forEach(n => n.read = true);
+        this.saveNotifications(notifications);
+    }
+
+    getUnreadNotificationCount() {
+        const notifications = this.getNotifications() || [];
+        return notifications.filter(n => !n.read).length;
+    }
+
+    deleteNotification(notificationId) {
+        let notifications = this.getNotifications() || [];
+        notifications = notifications.filter(n => n.id !== notificationId);
+        this.saveNotifications(notifications);
+    }
+
+    getTodayUnreadNotifications() {
+        const notifications = this.getNotifications() || [];
+        const today = new Date().toISOString().split('T')[0];
+        return notifications.filter(n => !n.read && n.timestamp.startsWith(today));
+    }
+
+    createEmotionNotification(studentId, emotion, memo) {
+        const student = this.getStudent(studentId);
+        if (!student) return null;
+
+        const emotionType = EMOTION_TYPES[emotion];
+        const notification = {
+            type: 'emotion',
+            studentId,
+            studentName: student.name,
+            emotion,
+            emotionIcon: emotionType?.icon || '😊',
+            emotionName: emotionType?.name || '기분',
+            memo: memo || null,
+            message: `${student.name}이(가) 오늘의 기분을 알려줬어요! ${emotionType?.icon || '😊'}`
+        };
+
+        return this.addNotification(notification);
+    }
+
+    // ==================== 데이터 백업/복원 ====================
+
     exportData() {
         return {
             settings: this.getSettings(),
@@ -820,541 +1383,164 @@ class Store {
         Object.values(STORAGE_KEYS).forEach(key => {
             localStorage.removeItem(key);
         });
-        this.init();
+        this.currentClassId = null;
+        this.currentClassData = null;
+        this.initLocalData();
         this.notify('clear', null);
     }
 
-    // === 학생 세션 관리 ===
+    // ==================== Firebase 관련 유틸리티 ====================
 
-    /**
-     * 학생 로그인 (세션 생성)
-     */
-    studentLogin(studentId) {
-        const student = this.getStudent(studentId);
-        if (!student) return null;
-
-        const session = {
-            studentId: student.id,
-            studentName: student.name,
-            loginTime: new Date().toISOString()
-        };
-
-        sessionStorage.setItem(SESSION_KEYS.STUDENT_SESSION, JSON.stringify(session));
-        this.notify('studentLogin', session);
-        return session;
-    }
-
-    /**
-     * 학생 로그아웃 (세션 삭제)
-     */
-    studentLogout() {
-        sessionStorage.removeItem(SESSION_KEYS.STUDENT_SESSION);
-        this.notify('studentLogout', null);
-    }
-
-    /**
-     * 현재 로그인된 학생 세션 가져오기
-     */
-    getStudentSession() {
-        const data = sessionStorage.getItem(SESSION_KEYS.STUDENT_SESSION);
-        return data ? JSON.parse(data) : null;
-    }
-
-    /**
-     * 학생 세션이 유효한지 확인
-     */
-    isStudentLoggedIn() {
-        const session = this.getStudentSession();
-        if (!session) return false;
-
-        // 학생이 아직 존재하는지 확인
-        const student = this.getStudent(session.studentId);
-        return !!student;
-    }
-
-    /**
-     * 현재 로그인된 학생 정보 가져오기
-     */
-    getCurrentStudent() {
-        const session = this.getStudentSession();
-        if (!session) return null;
-        return this.getStudent(session.studentId);
-    }
-
-    /**
-     * 학생이 오늘 감정을 기록했는지 확인
-     */
-    hasStudentCheckedEmotionToday(studentId) {
-        const todayEmotions = this.getTodayEmotions();
-        return todayEmotions.some(e => e.studentId === studentId);
-    }
-
-    /**
-     * 학생의 오늘 감정 기록 가져오기
-     */
-    getStudentTodayEmotion(studentId) {
-        const todayEmotions = this.getTodayEmotions();
-        return todayEmotions.find(e => e.studentId === studentId) || null;
-    }
-
-    // === 교사 세션 관리 ===
-
-    /**
-     * 교사 로그인 (세션 생성)
-     */
-    teacherLogin() {
-        const settings = this.getSettings();
-        const session = {
-            teacherName: settings?.teacherName || '선생님',
-            loginTime: new Date().toISOString()
-        };
-
-        sessionStorage.setItem(SESSION_KEYS.TEACHER_SESSION, JSON.stringify(session));
-        this.notify('teacherLogin', session);
-        return session;
-    }
-
-    /**
-     * 교사 로그아웃 (세션 삭제)
-     */
-    teacherLogout() {
-        sessionStorage.removeItem(SESSION_KEYS.TEACHER_SESSION);
-        this.notify('teacherLogout', null);
-    }
-
-    /**
-     * 현재 교사 세션 가져오기
-     */
-    getTeacherSession() {
-        const data = sessionStorage.getItem(SESSION_KEYS.TEACHER_SESSION);
-        return data ? JSON.parse(data) : null;
-    }
-
-    /**
-     * 교사가 로그인되어 있는지 확인
-     */
-    isTeacherLoggedIn() {
-        return !!this.getTeacherSession();
-    }
-
-    // === 알림 관리 ===
-
-    /**
-     * 알림 목록 가져오기
-     */
-    getNotifications() {
-        const data = localStorage.getItem(STORAGE_KEYS.NOTIFICATIONS);
-        return data ? JSON.parse(data) : null;
-    }
-
-    /**
-     * 알림 목록 저장
-     */
-    saveNotifications(notifications) {
-        localStorage.setItem(STORAGE_KEYS.NOTIFICATIONS, JSON.stringify(notifications));
-        this.notify('notifications', notifications);
-    }
-
-    /**
-     * 새 알림 추가
-     */
-    addNotification(notification) {
-        const notifications = this.getNotifications() || [];
-        const newNotification = {
-            id: Date.now(),
-            timestamp: new Date().toISOString(),
-            read: false,
-            ...notification
-        };
-        notifications.unshift(newNotification);
-
-        // 최대 100개 유지
-        if (notifications.length > 100) {
-            notifications.pop();
-        }
-
-        this.saveNotifications(notifications);
-        return newNotification;
-    }
-
-    /**
-     * 알림 읽음 처리
-     */
-    markNotificationRead(notificationId) {
-        const notifications = this.getNotifications() || [];
-        const index = notifications.findIndex(n => n.id === notificationId);
-        if (index !== -1) {
-            notifications[index].read = true;
-            this.saveNotifications(notifications);
-        }
-    }
-
-    /**
-     * 모든 알림 읽음 처리
-     */
-    markAllNotificationsRead() {
-        const notifications = this.getNotifications() || [];
-        notifications.forEach(n => n.read = true);
-        this.saveNotifications(notifications);
-    }
-
-    /**
-     * 읽지 않은 알림 개수
-     */
-    getUnreadNotificationCount() {
-        const notifications = this.getNotifications() || [];
-        return notifications.filter(n => !n.read).length;
-    }
-
-    /**
-     * 알림 삭제
-     */
-    deleteNotification(notificationId) {
-        let notifications = this.getNotifications() || [];
-        notifications = notifications.filter(n => n.id !== notificationId);
-        this.saveNotifications(notifications);
-    }
-
-    /**
-     * 오늘의 읽지 않은 알림 가져오기
-     */
-    getTodayUnreadNotifications() {
-        const notifications = this.getNotifications() || [];
-        const today = new Date().toISOString().split('T')[0];
-        return notifications.filter(n => !n.read && n.timestamp.startsWith(today));
-    }
-
-    /**
-     * 학생 감정 기록 시 알림 생성
-     */
-    createEmotionNotification(studentId, emotion, memo) {
-        const student = this.getStudent(studentId);
-        if (!student) return null;
-
-        const emotionType = EMOTION_TYPES[emotion];
-        const notification = {
-            type: 'emotion',
-            studentId,
-            studentName: student.name,
-            emotion,
-            emotionIcon: emotionType?.icon || '😊',
-            emotionName: emotionType?.name || '기분',
-            memo: memo || null,
-            message: `${student.name}이(가) 오늘의 기분을 알려줬어요! ${emotionType?.icon || '😊'}`
-        };
-
-        return this.addNotification(notification);
-    }
-
-    // ==================== Firebase 연동 ====================
-
-    /**
-     * Firebase 초기화
-     */
-    async initFirebase() {
-        try {
-            const result = firebaseModule.initializeFirebase();
-            if (result) {
-                this.firebaseEnabled = firebaseModule.isFirebaseInitialized();
-                if (this.firebaseEnabled) {
-                    await firebaseModule.signInAnonymouslyIfNeeded();
-                    console.log('Firebase 연동 활성화');
-                }
-            }
-        } catch (error) {
-            console.warn('Firebase 초기화 실패 (오프라인 모드):', error);
-            this.firebaseEnabled = false;
-        }
-    }
-
-    /**
-     * Firebase 활성화 여부 확인
-     */
     isFirebaseEnabled() {
-        return this.firebaseEnabled && firebaseModule.isFirebaseInitialized();
+        return this.firebaseEnabled && firebase.isFirebaseInitialized();
     }
 
-    // === 학급 코드 관련 ===
-
-    /**
-     * 학급 코드 생성
-     */
     generateClassCode() {
-        return firebaseModule.generateClassCode();
+        return firebase.generateClassCode();
     }
 
-    /**
-     * 학급 코드 설정
-     */
+    // 레거시 호환
     setClassCode(code) {
-        firebaseModule.setClassCode(code);
-        // 학급 코드 설정 후 설정에 저장
+        firebase.setClassCode(code);
         const settings = this.getSettings();
         if (settings) {
             this.updateSettings({ classCode: code });
         }
     }
 
-    /**
-     * 현재 학급 코드 가져오기
-     */
     getClassCode() {
-        return firebaseModule.getClassCode();
+        return firebase.getClassCode();
     }
 
-    /**
-     * 학급 코드 유효성 검사
-     */
-    async validateClassCode(code) {
-        if (!this.isFirebaseEnabled()) return false;
-        return await firebaseModule.validateClassCode(code);
-    }
-
-    /**
-     * 새 학급 생성 (Firebase)
-     */
-    async createClass(settings) {
-        if (!this.isFirebaseEnabled()) return null;
-
-        // 새 학급 코드 생성
-        const classCode = this.generateClassCode();
-        firebaseModule.setClassCode(classCode);
-
-        // 설정 저장
-        const result = await firebaseModule.saveClassSettings({
-            ...settings,
-            classCode
-        });
-
-        if (result) {
-            // 로컬에도 저장
-            this.updateSettings({ ...settings, classCode });
-            return classCode;
-        }
-        return null;
-    }
-
-    /**
-     * 학급 참가 (학생용)
-     */
-    async joinClass(code) {
-        if (!this.isFirebaseEnabled()) return false;
-
-        const isValid = await this.validateClassCode(code);
-        if (isValid) {
-            firebaseModule.setClassCode(code);
-            // 학급 설정 가져오기
-            const settings = await firebaseModule.getClassSettings();
-            if (settings) {
-                this.saveSettings({ ...this.getSettings(), ...settings, classCode: code });
-            }
-            return true;
-        }
-        return false;
-    }
-
-    // === Firebase 동기화 함수들 ===
-
-    /**
-     * 감정 기록 저장 (Firebase + LocalStorage)
-     */
-    async addEmotionWithSync(emotion) {
-        // 로컬에 저장
-        const localResult = this.addEmotion(emotion);
-
-        // Firebase에 동기화
-        if (this.isFirebaseEnabled() && this.getClassCode()) {
-            try {
-                await firebaseModule.saveEmotion({
-                    ...emotion,
-                    timestamp: localResult.timestamp
-                });
-                console.log('감정 Firebase 동기화 완료');
-            } catch (error) {
-                console.warn('감정 Firebase 동기화 실패:', error);
-            }
-        }
-
-        return localResult;
-    }
-
-    /**
-     * 학생 저장 (Firebase + LocalStorage)
-     */
-    async saveStudentWithSync(student) {
-        // 로컬에 저장
-        const students = this.getStudents() || [];
-        const index = students.findIndex(s => s.id === student.id);
-        if (index !== -1) {
-            students[index] = { ...students[index], ...student };
-        } else {
-            students.push(student);
-        }
-        this.saveStudents(students);
-
-        // Firebase에 동기화
-        if (this.isFirebaseEnabled() && this.getClassCode()) {
-            try {
-                await firebaseModule.saveStudent(student);
-                console.log('학생 Firebase 동기화 완료');
-            } catch (error) {
-                console.warn('학생 Firebase 동기화 실패:', error);
-            }
-        }
-
-        return student;
-    }
-
-    /**
-     * 모든 학생 Firebase에 동기화
-     */
-    async syncAllStudentsToFirebase() {
-        if (!this.isFirebaseEnabled() || !this.getClassCode()) return false;
-
-        try {
-            const students = this.getStudents() || [];
-            await firebaseModule.saveAllStudents(students);
-            console.log('모든 학생 Firebase 동기화 완료');
-            return true;
-        } catch (error) {
-            console.warn('학생 일괄 동기화 실패:', error);
-            return false;
-        }
-    }
-
-    /**
-     * Firebase에서 오늘의 감정 가져오기
-     */
-    async getTodayEmotionsFromFirebase() {
-        if (!this.isFirebaseEnabled() || !this.getClassCode()) {
-            return this.getTodayEmotions(); // 로컬 데이터 반환
-        }
-
-        try {
-            const emotions = await firebaseModule.getTodayEmotions();
-            return emotions.map(e => ({
-                ...e,
-                timestamp: firebaseModule.timestampToISO(e.createdAt) || e.timestamp
-            }));
-        } catch (error) {
-            console.warn('Firebase 감정 조회 실패:', error);
-            return this.getTodayEmotions();
-        }
-    }
-
-    /**
-     * 오늘의 감정 실시간 구독
-     */
-    subscribeToTodayEmotions(callback) {
-        if (!this.isFirebaseEnabled() || !this.getClassCode()) {
-            return null;
-        }
-
-        const unsubscribe = firebaseModule.subscribeToTodayEmotions((emotions) => {
-            const formattedEmotions = emotions.map(e => ({
-                ...e,
-                timestamp: firebaseModule.timestampToISO(e.createdAt) || e.timestamp
-            }));
-            callback(formattedEmotions);
-        });
-
-        if (unsubscribe) {
-            this.firebaseListeners.push(unsubscribe);
-        }
-        return unsubscribe;
-    }
-
-    /**
-     * 학생 데이터 실시간 구독
-     */
-    subscribeToStudents(callback) {
-        if (!this.isFirebaseEnabled() || !this.getClassCode()) {
-            return null;
-        }
-
-        const unsubscribe = firebaseModule.subscribeToStudents(callback);
-        if (unsubscribe) {
-            this.firebaseListeners.push(unsubscribe);
-        }
-        return unsubscribe;
-    }
-
-    /**
-     * 모든 Firebase 구독 해제
-     */
     unsubscribeAllFirebase() {
         this.firebaseListeners.forEach(unsub => {
             if (typeof unsub === 'function') unsub();
         });
         this.firebaseListeners = [];
-        firebaseModule.unsubscribeAll();
+        firebase.unsubscribeAll();
     }
 
     /**
-     * 칭찬 기록 저장 (Firebase + LocalStorage)
+     * localStorage 데이터를 Firebase로 마이그레이션
+     * @param {Function} progressCallback - 진행 상황 콜백 (message, percent)
+     * @returns {Object} { success, message, stats }
      */
-    async addPraiseWithSync(praise) {
-        // 로컬에 저장
-        const localResult = this.addPraise(praise);
+    async migrateToFirebase(progressCallback = () => {}) {
+        if (!this.firebaseEnabled) {
+            return { success: false, message: 'Firebase가 활성화되지 않았습니다.' };
+        }
 
-        // Firebase에 동기화
-        if (this.isFirebaseEnabled() && this.getClassCode()) {
-            try {
-                await firebaseModule.savePraise({
-                    ...praise,
-                    timestamp: localResult.timestamp
-                });
-                console.log('칭찬 Firebase 동기화 완료');
-            } catch (error) {
-                console.warn('칭찬 Firebase 동기화 실패:', error);
+        if (!this.isGoogleTeacher()) {
+            return { success: false, message: 'Google 계정으로 로그인해주세요.' };
+        }
+
+        const classId = this.getCurrentClassId();
+        if (!classId) {
+            return { success: false, message: '먼저 학급을 선택하거나 생성해주세요.' };
+        }
+
+        const stats = {
+            students: 0,
+            praises: 0,
+            emotions: 0,
+            timetable: false,
+            notes: 0
+        };
+
+        try {
+            progressCallback('마이그레이션 시작...', 0);
+
+            // 1. 학생 데이터 마이그레이션 (20%)
+            const students = this.getStudents() || [];
+            if (students.length > 0) {
+                progressCallback(`학생 ${students.length}명 업로드 중...`, 10);
+                for (let i = 0; i < students.length; i++) {
+                    await firebase.saveStudent(classId, students[i]);
+                    stats.students++;
+                }
+                progressCallback(`학생 ${stats.students}명 완료`, 20);
             }
-        }
 
-        return localResult;
+            // 2. 칭찬 데이터 마이그레이션 (40%)
+            const praises = this.getPraiseLog() || [];
+            if (praises.length > 0) {
+                progressCallback(`칭찬 ${praises.length}건 업로드 중...`, 25);
+                for (let i = 0; i < praises.length; i++) {
+                    await firebase.savePraise(classId, praises[i]);
+                    stats.praises++;
+                }
+                progressCallback(`칭찬 ${stats.praises}건 완료`, 40);
+            }
+
+            // 3. 감정 데이터 마이그레이션 (60%)
+            const emotions = this.getEmotionLog() || [];
+            if (emotions.length > 0) {
+                progressCallback(`감정 기록 ${emotions.length}건 업로드 중...`, 45);
+                for (let i = 0; i < emotions.length; i++) {
+                    await firebase.saveEmotion(classId, emotions[i]);
+                    stats.emotions++;
+                }
+                progressCallback(`감정 기록 ${stats.emotions}건 완료`, 60);
+            }
+
+            // 4. 시간표 마이그레이션 (80%)
+            const timetable = this.getTimetable();
+            if (timetable && Object.keys(timetable).length > 0) {
+                progressCallback('시간표 업로드 중...', 65);
+                await firebase.saveTimetable(classId, timetable);
+                stats.timetable = true;
+                progressCallback('시간표 완료', 80);
+            }
+
+            // 5. 메모 마이그레이션 (100%)
+            const notes = this.getNotes() || [];
+            if (notes.length > 0) {
+                progressCallback(`메모 ${notes.length}건 업로드 중...`, 85);
+                for (let i = 0; i < notes.length; i++) {
+                    await firebase.saveNote(classId, notes[i]);
+                    stats.notes++;
+                }
+                progressCallback(`메모 ${stats.notes}건 완료`, 95);
+            }
+
+            progressCallback('마이그레이션 완료!', 100);
+
+            return {
+                success: true,
+                message: '마이그레이션이 완료되었습니다!',
+                stats
+            };
+        } catch (error) {
+            console.error('마이그레이션 실패:', error);
+            return {
+                success: false,
+                message: `마이그레이션 중 오류: ${error.message}`,
+                stats
+            };
+        }
     }
 
     /**
-     * 특정 학생의 감정 히스토리 가져오기 (Firebase)
+     * 마이그레이션 가능 여부 확인
      */
-    async getStudentEmotionHistory(studentId, limit = 30) {
-        if (!this.isFirebaseEnabled() || !this.getClassCode()) {
-            // 로컬 데이터 반환
-            return this.getEmotionsByStudent(studentId).slice(0, limit);
-        }
+    canMigrate() {
+        const students = this.getStudents() || [];
+        const praises = this.getPraiseLog() || [];
+        const emotions = this.getEmotionLog() || [];
+        const timetable = this.getTimetable() || {};
+        const notes = this.getNotes() || [];
 
-        try {
-            const emotions = await firebaseModule.getStudentEmotions(studentId, limit);
-            return emotions.map(e => ({
-                ...e,
-                timestamp: firebaseModule.timestampToISO(e.createdAt) || e.timestamp
-            }));
-        } catch (error) {
-            console.warn('학생 감정 히스토리 조회 실패:', error);
-            return this.getEmotionsByStudent(studentId).slice(0, limit);
-        }
-    }
-
-    /**
-     * 날짜별 감정 기록 가져오기 (Firebase)
-     */
-    async getEmotionsByDate(date) {
-        if (!this.isFirebaseEnabled() || !this.getClassCode()) {
-            // 로컬 데이터 반환
-            const log = this.getEmotionLog() || [];
-            return log.filter(e => e.timestamp.startsWith(date));
-        }
-
-        try {
-            const emotions = await firebaseModule.getEmotionsByDate(date);
-            return emotions.map(e => ({
-                ...e,
-                timestamp: firebaseModule.timestampToISO(e.createdAt) || e.timestamp
-            }));
-        } catch (error) {
-            console.warn('날짜별 감정 조회 실패:', error);
-            const log = this.getEmotionLog() || [];
-            return log.filter(e => e.timestamp.startsWith(date));
-        }
+        return {
+            canMigrate: this.firebaseEnabled && this.isGoogleTeacher() && this.getCurrentClassId(),
+            hasData: students.length > 0 || praises.length > 0 || emotions.length > 0 || Object.keys(timetable).length > 0 || notes.length > 0,
+            counts: {
+                students: students.length,
+                praises: praises.length,
+                emotions: emotions.length,
+                timetable: Object.keys(timetable).length,
+                notes: notes.length
+            }
+        };
     }
 }
 
@@ -1363,10 +1549,6 @@ const store = new Store();
 
 /**
  * 선생님 메시지를 펫 말투로 변환
- * @param {string} message - 원본 메시지
- * @param {string} petType - 펫 타입 (dog, cat, rabbit 등)
- * @param {string} petName - 펫 이름
- * @returns {object} { petMessage: 변환된 메시지, greeting: 인사 }
  */
 function convertToPetSpeech(message, petType, petName) {
     const style = PET_SPEECH_STYLES[petType];
@@ -1375,11 +1557,8 @@ function convertToPetSpeech(message, petType, petName) {
     }
 
     let petMessage = message.trim();
-
-    // 1. "선생님" → "나"로 변경 (펫이 말하는 것처럼)
     petMessage = petMessage.replace(/선생님/g, '나');
 
-    // 2. 끝에 있는 이모지 분리
     const emojiRegex = /[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]+$/u;
     const emojiMatch = petMessage.match(emojiRegex);
     let trailingEmoji = '';
@@ -1388,25 +1567,19 @@ function convertToPetSpeech(message, petType, petName) {
         petMessage = petMessage.slice(0, -emojiMatch[0].length).trim();
     }
 
-    // 3. 각 문장 끝에 펫 말투 추가
     const suffix = style.suffix;
-
-    // 문장 구분자로 나누기 (!, ?, . 다음에 공백이 있는 경우)
-    // 각 문장 끝에 펫 말투 삽입
     petMessage = petMessage
-        .replace(/([^!?.~]+)([!]+)/g, `$1 ${suffix}$2`)  // ! 앞에 말투
-        .replace(/([^!?.~]+)([?]+)/g, `$1 ${suffix}$2`)  // ? 앞에 말투
-        .replace(/([^!?.~]+)(\.)/g, `$1 ${suffix}$2`)    // . 앞에 말투
-        .replace(/([^!?.~]+)(~)/g, `$1 ${suffix}$2`);    // ~ 앞에 말투
+        .replace(/([^!?.~]+)([!]+)/g, `$1 ${suffix}$2`)
+        .replace(/([^!?.~]+)([?]+)/g, `$1 ${suffix}$2`)
+        .replace(/([^!?.~]+)(\.)/g, `$1 ${suffix}$2`)
+        .replace(/([^!?.~]+)(~)/g, `$1 ${suffix}$2`);
 
-    // 마지막에 문장부호가 없으면 말투 + ! 추가
     const lastChar = petMessage.slice(-1);
     if (!['!', '?', '.', '~'].includes(lastChar)) {
         const randomEnding = style.endings[Math.floor(Math.random() * style.endings.length)];
         petMessage = `${petMessage} ${randomEnding}`;
     }
 
-    // 이모지 다시 붙이기
     petMessage = petMessage + trailingEmoji;
 
     return {

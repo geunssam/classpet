@@ -35,9 +35,9 @@ export function render() {
     // 경험치 계산
     const expPercent = getExpProgress(student.exp, student.level);
 
-    // 오늘 감정 체크 여부
-    const todayEmotion = store.getStudentTodayEmotion(student.id);
-    const hasCheckedToday = !!todayEmotion;
+    // 오늘 감정 기록 (복수)
+    const todayEmotions = store.getStudentTodayEmotions(student.id);
+    const hasEmotionsToday = todayEmotions.length > 0;
 
     return `
         <div class="student-mode-container pb-8">
@@ -81,89 +81,88 @@ export function render() {
             <div id="petSpeechBubble" class="pet-speech-bubble bg-white rounded-2xl p-4 shadow-soft mx-4 mb-6 relative">
                 <div class="speech-arrow"></div>
                 <p id="petMessage" class="text-center text-gray-700">
-                    ${hasCheckedToday
-                        ? `오늘도 만나서 반가워, ${getNameWithSuffix(student.name)}! 💕`
+                    ${hasEmotionsToday
+                        ? `또 이야기하고 싶은 거야? ${getNameWithSuffix(student.name)}! 언제든 말해줘! 💕`
                         : `안녕, ${getNameWithSuffix(student.name)}! 오늘 기분이 어때? 🐾`
                     }
                 </p>
             </div>
 
-            ${hasCheckedToday ? `
-                <!-- 오늘 이미 체크한 경우 -->
-                <div class="text-center px-4">
-                    <div class="bg-green-50 rounded-2xl p-4 mb-4">
-                        <p class="text-green-600 font-medium">오늘 이미 기분을 알려줬어요!</p>
-                        <div class="mt-2 flex items-center justify-center gap-2">
-                            <span class="text-2xl">${EMOTION_TYPES[todayEmotion.emotion]?.icon || '😊'}</span>
-                            <span class="text-gray-600">${EMOTION_TYPES[todayEmotion.emotion]?.name || ''}</span>
+            ${hasEmotionsToday ? `
+                <!-- 오늘 보낸 마음 목록 -->
+                <div class="px-4 mb-6">
+                    <div class="bg-blue-50 rounded-2xl p-4">
+                        <p class="text-blue-600 font-medium text-center mb-3">📝 오늘 보낸 마음 (${todayEmotions.length}개)</p>
+                        <div class="space-y-3 max-h-64 overflow-y-auto">
+                            ${todayEmotions.map(emotion => {
+                                const emotionTime = new Date(emotion.timestamp).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+                                const hasReply = !!emotion.reply;
+                                const petSpeech = hasReply ? convertToPetSpeech(emotion.reply.message, student.petType, petName) : null;
+                                const petStyle = PET_SPEECH_STYLES[student.petType] || {};
+                                return `
+                                <div class="bg-white rounded-xl p-3 shadow-sm">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <span class="text-xl">${EMOTION_TYPES[emotion.emotion]?.icon || '😊'}</span>
+                                        <span class="text-xs text-gray-400">${emotionTime}</span>
+                                        ${hasReply ? `<span class="ml-auto text-xs ${!emotion.reply.read ? 'text-red-500 font-bold' : 'text-green-500'}">💌 ${!emotion.reply.read ? 'NEW' : '답장 있음'}</span>` : ''}
+                                    </div>
+                                    ${(emotion.note || emotion.memo) ? `
+                                        <p class="text-sm text-gray-600 italic pl-7">"${emotion.note || emotion.memo}"</p>
+                                    ` : ''}
+                                    ${hasReply ? `
+                                        <div class="mt-2 pl-7 pt-2 border-t border-gray-100">
+                                            <div class="flex items-center gap-1 mb-1">
+                                                <span class="text-sm">${petEmoji}</span>
+                                                <span class="text-xs text-amber-600 font-medium">${petName}의 답장</span>
+                                            </div>
+                                            <p class="text-sm text-gray-700">"${petSpeech.petMessage}"</p>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            `;}).join('')}
                         </div>
-                        ${(todayEmotion.note || todayEmotion.memo) ? `
-                            <p class="mt-3 text-sm text-gray-500 italic">"${todayEmotion.note || todayEmotion.memo}"</p>
-                        ` : ''}
                     </div>
-
-                    ${todayEmotion.reply ? (() => {
-                        // 펫 말투로 변환
-                        const petSpeech = convertToPetSpeech(todayEmotion.reply.message, student.petType, petName);
-                        const petStyle = PET_SPEECH_STYLES[student.petType] || {};
-                        return `
-                    <!-- 펫의 답장 (선생님이 펫을 통해 전달) -->
-                    <div class="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-4 mb-4 border-2 border-amber-300 ${!todayEmotion.reply.read ? 'animate-pulse' : ''}"
-                         id="teacherReplyCard" data-emotion-id="${todayEmotion.id}">
-                        <div class="flex items-center justify-center gap-2 mb-3">
-                            <span class="text-2xl">${petEmoji}</span>
-                            <span class="text-amber-700 font-bold">${petName}의 말</span>
-                            ${!todayEmotion.reply.read ? '<span class="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full animate-bounce">NEW</span>' : ''}
-                        </div>
-                        <p class="text-xs text-amber-600 text-center mb-2 italic">${petStyle.greeting || ''}</p>
-                        <p class="text-gray-700 text-center font-medium">"${petSpeech.petMessage}"</p>
-                        <p class="mt-3 text-xs text-gray-400 text-center">
-                            ${new Date(todayEmotion.reply.timestamp).toLocaleString('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                        </p>
-                    </div>
-                    `;
-                    })() : ''}
-
-                    <p class="text-sm text-gray-400">내일 또 만나자! 🌟</p>
                 </div>
-            ` : `
-                <!-- 감정 선택 -->
-                <div class="emotion-check-area px-4">
-                    <p class="text-center text-sm text-gray-500 mb-4">오늘 기분을 펫에게 알려주세요</p>
+            ` : ''}
 
-                    <!-- 감정 버튼들 -->
-                    <div class="flex justify-center gap-3 mb-6" id="emotionButtons">
-                        ${Object.entries(EMOTION_TYPES).map(([key, emotion]) => `
-                            <button
-                                class="emotion-select-btn w-14 h-14 rounded-full bg-gray-50 hover:bg-gray-100 flex items-center justify-center text-3xl transition-all border-3 border-transparent hover:scale-110"
-                                data-emotion="${key}"
-                                title="${emotion.name}"
-                            >
-                                ${emotion.icon}
-                            </button>
-                        `).join('')}
-                    </div>
+            <!-- 감정 선택 (항상 표시) -->
+            <div class="emotion-check-area px-4">
+                <p class="text-center text-sm text-gray-500 mb-4">
+                    ${hasEmotionsToday ? '💭 지금 기분도 알려줘!' : '오늘 기분을 펫에게 알려주세요'}
+                </p>
 
-                    <!-- 감정 선택 이유 -->
-                    <div class="mb-4">
-                        <textarea
-                            id="petMemo"
-                            class="w-full p-4 border-2 border-gray-200 rounded-2xl resize-none focus:border-primary focus:ring-0 transition-colors"
-                            rows="3"
-                            placeholder="그 감정을 선택한 이유는 뭘까? 왜 그런 감정을 느꼈어?"
-                        ></textarea>
-                    </div>
-
-                    <!-- 전송 버튼 -->
-                    <button
-                        id="sendEmotionBtn"
-                        class="w-full btn btn-primary opacity-50 cursor-not-allowed transition-all"
-                        disabled
-                    >
-                        펫에게 말하기
-                    </button>
+                <!-- 감정 버튼들 -->
+                <div class="flex justify-center gap-3 mb-6" id="emotionButtons">
+                    ${Object.entries(EMOTION_TYPES).map(([key, emotion]) => `
+                        <button
+                            class="emotion-select-btn w-14 h-14 rounded-full bg-gray-50 hover:bg-gray-100 flex items-center justify-center text-3xl transition-all border-3 border-transparent hover:scale-110"
+                            data-emotion="${key}"
+                            title="${emotion.name}"
+                        >
+                            ${emotion.icon}
+                        </button>
+                    `).join('')}
                 </div>
-            `}
+
+                <!-- 감정 선택 이유 -->
+                <div class="mb-4">
+                    <textarea
+                        id="petMemo"
+                        class="w-full p-4 border-2 border-gray-200 rounded-2xl resize-none focus:border-primary focus:ring-0 transition-colors"
+                        rows="3"
+                        placeholder="그 감정을 선택한 이유는 뭘까? 왜 그런 감정을 느꼈어?"
+                    ></textarea>
+                </div>
+
+                <!-- 전송 버튼 -->
+                <button
+                    id="sendEmotionBtn"
+                    class="w-full btn btn-primary opacity-50 cursor-not-allowed transition-all"
+                    disabled
+                >
+                    펫에게 말하기
+                </button>
+            </div>
 
             ${isMaxLevel(student.level) ? `
                 <!-- 레벨 15 달성 - 새 펫 선택 안내 -->
@@ -285,20 +284,16 @@ export function render() {
  * 렌더 후 이벤트 바인딩
  */
 export function afterRender() {
-    // 선생님 답장 읽음 처리
-    const teacherReplyCard = document.getElementById('teacherReplyCard');
-    if (teacherReplyCard) {
-        const emotionId = parseInt(teacherReplyCard.dataset.emotionId);
-        if (emotionId) {
-            // 답장 카드가 표시되면 자동으로 읽음 처리
-            store.markReplyAsRead(emotionId);
-            // 애니메이션 제거 (NEW 뱃지도 숨기기)
-            setTimeout(() => {
-                teacherReplyCard.classList.remove('animate-pulse');
-                const newBadge = teacherReplyCard.querySelector('.bg-red-500');
-                if (newBadge) newBadge.style.display = 'none';
-            }, 2000);  // 2초 후 애니메이션 제거
-        }
+    // 선생님 답장 읽음 처리 (복수 기록 지원)
+    const student = store.getCurrentStudent();
+    if (student) {
+        const todayEmotions = store.getStudentTodayEmotions(student.id);
+        // 읽지 않은 답장들 자동 읽음 처리
+        todayEmotions.forEach(emotion => {
+            if (emotion.reply && !emotion.reply.read) {
+                store.markReplyAsRead(emotion.id);
+            }
+        });
     }
 
     // 로그아웃 버튼

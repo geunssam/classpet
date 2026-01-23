@@ -14,6 +14,10 @@ export function render() {
     const stats = store.getStats();
     const todayEmotions = store.getTodayEmotions();
     const needAttention = store.getStudentsNeedingAttention();
+    const isTeacher = store.isTeacherLoggedIn(); // 교사 세션 확인
+    const isGoogleTeacher = store.isGoogleTeacher(); // Google 로그인 여부
+    const currentClassId = store.getCurrentClassId();
+    const settings = store.getSettings();
 
     // 오늘 요일 계산
     const days = ['일', '월', '화', '수', '목', '금', '토'];
@@ -39,6 +43,28 @@ export function render() {
 
     return `
         <div class="space-y-4">
+            ${isGoogleTeacher ? `
+            <!-- 현재 학급 정보 (Google 로그인 시) -->
+            <div class="card bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 py-3">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center text-white text-lg">
+                            🏫
+                        </div>
+                        <div>
+                            <p class="font-bold text-gray-800">${settings?.className || '학급 이름 없음'}</p>
+                            <p class="text-xs text-gray-500">
+                                학급코드: <span class="font-mono font-bold text-primary">${settings?.classCode || '------'}</span>
+                            </p>
+                        </div>
+                    </div>
+                    <button id="switchClassBtn" class="px-3 py-1.5 text-sm bg-white border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 hover:border-primary hover:text-primary transition-colors">
+                        학급 전환
+                    </button>
+                </div>
+            </div>
+            ` : ''}
+
             <!-- 오늘의 요약 카드 -->
             <div class="card bg-gradient-to-br from-primary/10 to-success/10 py-3">
                 <div class="flex items-center justify-between">
@@ -54,45 +80,6 @@ export function render() {
                     </div>
                 </div>
             </div>
-
-            ${needAttention.length > 0 ? `
-            <!-- 주의 필요 알림 -->
-            <div class="card bg-danger/10 border-2 border-danger/30">
-                <div class="flex items-center gap-2 mb-3">
-                    <span class="text-xl">⚠️</span>
-                    <h3 class="font-semibold text-danger">관심이 필요한 학생</h3>
-                </div>
-                <div class="space-y-3">
-                    ${needAttention.map(student => {
-                        const emotion = todayEmotions.find(e => e.studentId === student.id);
-                        const emotionInfo = emotion ? EMOTION_TYPES[emotion.emotion] : null;
-                        return `
-                        <div class="bg-white rounded-xl p-3 cursor-pointer hover:bg-gray-50"
-                             onclick="window.classpet.router.navigate('student', { id: ${student.id} })">
-                            <div class="flex items-center gap-3">
-                                <span class="text-2xl">${getPetEmoji(student.petType, student.level)}</span>
-                                <div class="flex-1">
-                                    <div class="font-medium">${student.name}</div>
-                                    <div class="text-xs text-gray-500">${student.number}번</div>
-                                </div>
-                                ${emotionInfo ? `
-                                <div class="flex items-center gap-1 px-2 py-1 rounded-full" style="background-color: ${emotionInfo.color}20">
-                                    <span>${emotionInfo.icon}</span>
-                                    <span class="text-xs" style="color: ${emotionInfo.color}">${emotionInfo.name}</span>
-                                </div>
-                                ` : ''}
-                            </div>
-                            ${emotion?.note ? `
-                                <div class="mt-2 text-sm text-gray-600 bg-danger/5 rounded-lg p-2">
-                                    💬 "${emotion.note}"
-                                </div>
-                            ` : ''}
-                        </div>
-                        `;
-                    }).join('')}
-                </div>
-            </div>
-            ` : ''}
 
             ${mvpStudent ? `
             <!-- 오늘의 MVP -->
@@ -231,4 +218,12 @@ export function afterRender() {
     // 카드 페이드인 애니메이션
     const content = document.getElementById('content');
     fadeInCards(content, '.card');
+
+    // 학급 전환 버튼 (Google 로그인 시)
+    const switchClassBtn = document.getElementById('switchClassBtn');
+    if (switchClassBtn) {
+        switchClassBtn.addEventListener('click', () => {
+            router.navigate('class-select');
+        });
+    }
 }

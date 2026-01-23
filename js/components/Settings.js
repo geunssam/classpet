@@ -15,6 +15,8 @@ export function render() {
     const students = store.getStudents() || [];
     const classCode = store.getClassCode();
     const isFirebaseEnabled = store.isFirebaseEnabled();
+    const isGoogleTeacher = store.isGoogleTeacher();
+    const teacherSession = store.getTeacherSession();
 
     return `
         <div class="settings-container pb-8">
@@ -26,8 +28,68 @@ export function render() {
                 <h1 class="text-xl font-bold text-gray-800">⚙️ 설정</h1>
             </div>
 
-            <!-- 학급 코드 섹션 (Firebase 활성화 시) -->
-            ${isFirebaseEnabled ? `
+            ${isGoogleTeacher ? `
+            <!-- Google 계정 정보 (Google 로그인 시) -->
+            <section class="mb-6">
+                <h2 class="section-title">
+                    <span>👤</span>
+                    <span>계정 정보</span>
+                </h2>
+                <div class="card">
+                    <div class="flex items-center gap-4">
+                        ${teacherSession?.photoURL
+                            ? `<img src="${teacherSession.photoURL}" class="w-14 h-14 rounded-full border-2 border-primary" alt="프로필">`
+                            : `<div class="w-14 h-14 rounded-full bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center text-white text-2xl">👩‍🏫</div>`
+                        }
+                        <div class="flex-1">
+                            <p class="font-bold text-gray-800">${teacherSession?.displayName || '선생님'}</p>
+                            <p class="text-sm text-gray-500">${teacherSession?.email || ''}</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-4 border-t border-gray-100 flex gap-3">
+                        <button id="manageClassesBtn" class="flex-1 py-2.5 bg-primary/10 text-primary rounded-xl hover:bg-primary/20 transition-colors font-medium text-sm">
+                            📚 학급 관리
+                        </button>
+                        <button id="googleLogoutBtn" class="flex-1 py-2.5 bg-gray-100 text-gray-600 rounded-xl hover:bg-gray-200 transition-colors font-medium text-sm">
+                            🚪 로그아웃
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 현재 학급 정보 -->
+            <section class="mb-6">
+                <h2 class="section-title">
+                    <span>🏫</span>
+                    <span>현재 학급</span>
+                </h2>
+                <div class="card">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="font-bold text-lg text-gray-800">${settings?.className || '학급 이름 없음'}</p>
+                            <p class="text-sm text-gray-500">${settings?.schoolYear || new Date().getFullYear()}년 ${settings?.semester || 1}학기</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-xs text-gray-400">학급코드</p>
+                            <p class="font-mono text-xl font-bold text-primary">${settings?.classCode || classCode || '------'}</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-4 border-t border-gray-100 grid grid-cols-2 gap-2">
+                        <button id="copyClassCodeBtn2" class="py-2 bg-gray-100 text-gray-600 rounded-xl hover:bg-gray-200 transition-colors text-sm">
+                            📋 코드 복사
+                        </button>
+                        <button id="showQRCodeBtn2" class="py-2 bg-primary/10 text-primary rounded-xl hover:bg-primary/20 transition-colors text-sm">
+                            📱 QR 코드
+                        </button>
+                    </div>
+                </div>
+            </section>
+            ` : ''}
+
+            <!-- 학급 코드 섹션 (Firebase 활성화 시, Google 미로그인) -->
+            ${isFirebaseEnabled && !isGoogleTeacher ? `
             <section class="mb-6">
                 <h2 class="section-title">
                     <span>🔗</span>
@@ -47,6 +109,9 @@ export function render() {
                             <div class="mt-4 flex justify-center gap-2">
                                 <button id="copyClassCodeBtn" class="text-sm px-4 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 transition-colors">
                                     📋 복사하기
+                                </button>
+                                <button id="showQRCodeBtn" class="text-sm px-4 py-2 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-colors">
+                                    📱 QR 코드
                                 </button>
                                 <button id="regenerateClassCodeBtn" class="text-sm px-4 py-2 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 transition-colors">
                                     🔄 새 코드 생성
@@ -168,6 +233,17 @@ export function render() {
                     <span>데이터 관리</span>
                 </h2>
                 <div class="card space-y-3">
+                    ${isGoogleTeacher ? `
+                    <!-- Firebase 마이그레이션 (Google 로그인 시) -->
+                    <button id="migrateToFirebaseBtn" class="w-full p-3 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 hover:from-blue-100 hover:to-indigo-100 transition-colors text-left flex items-center gap-3">
+                        <span class="text-xl">☁️</span>
+                        <div class="flex-1">
+                            <p class="font-medium text-blue-700">클라우드로 데이터 이전</p>
+                            <p class="text-xs text-blue-500">로컬 데이터를 Firebase로 업로드해요</p>
+                        </div>
+                        <span class="text-xs text-blue-400">→</span>
+                    </button>
+                    ` : ''}
                     <button id="exportDataBtn" class="w-full p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors text-left flex items-center gap-3">
                         <span class="text-xl">📤</span>
                         <div>
@@ -196,6 +272,47 @@ export function render() {
             <input type="file" id="importFileInput" accept=".json" class="hidden">
         </div>
     `;
+}
+
+/**
+ * QR 코드 표시 모달
+ */
+function showQRCodeModal() {
+    const classCode = store.getClassCode();
+    const url = `${window.location.origin}${window.location.pathname}?code=${classCode}`;
+
+    const modalContent = `
+        <div class="space-y-4">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-bold">📱 학급 QR 코드</h3>
+                <button onclick="window.classpet.closeModal()" class="text-gray-400 hover:text-gray-600">✕</button>
+            </div>
+            <div class="text-center py-4">
+                <canvas id="qrCanvas" class="mx-auto"></canvas>
+                <p class="text-2xl font-mono font-bold text-primary mt-4">${classCode}</p>
+                <p class="text-sm text-gray-500 mt-2">학생들이 스캔하면 바로 참가해요!</p>
+                <p class="text-xs text-gray-400 mt-2 break-all">${url}</p>
+            </div>
+        </div>
+    `;
+
+    setModalContent(modalContent);
+    openModal();
+
+    // QR 코드 생성 (QRCode 라이브러리 사용)
+    setTimeout(() => {
+        const canvas = document.getElementById('qrCanvas');
+        if (canvas && typeof QRCode !== 'undefined') {
+            QRCode.toCanvas(canvas, url, {
+                width: 200,
+                margin: 2,
+                color: {
+                    dark: '#7C9EF5',
+                    light: '#FFFFFF'
+                }
+            });
+        }
+    }, 100);
 }
 
 /**
@@ -355,6 +472,136 @@ function showResetDataConfirm() {
 }
 
 /**
+ * Firebase 마이그레이션 확인 모달
+ */
+function showMigrationConfirm() {
+    const migrationInfo = store.canMigrate();
+
+    if (!migrationInfo.canMigrate) {
+        showToast('마이그레이션을 위해 먼저 학급을 선택해주세요', 'warning');
+        return;
+    }
+
+    if (!migrationInfo.hasData) {
+        showToast('이전할 데이터가 없습니다', 'info');
+        return;
+    }
+
+    const { counts } = migrationInfo;
+
+    const modalContent = `
+        <div class="space-y-4">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-bold text-blue-700">☁️ 클라우드로 데이터 이전</h3>
+                <button onclick="window.classpet.closeModal()" class="text-gray-400 hover:text-gray-600">✕</button>
+            </div>
+
+            <div class="py-4">
+                <p class="text-gray-700 mb-4 text-center">
+                    다음 데이터를 Firebase로 이전합니다
+                </p>
+
+                <div class="bg-gray-50 rounded-xl p-4 space-y-2">
+                    ${counts.students > 0 ? `<div class="flex justify-between"><span>👥 학생</span><span class="font-bold">${counts.students}명</span></div>` : ''}
+                    ${counts.praises > 0 ? `<div class="flex justify-between"><span>⭐ 칭찬 기록</span><span class="font-bold">${counts.praises}건</span></div>` : ''}
+                    ${counts.emotions > 0 ? `<div class="flex justify-between"><span>💭 감정 기록</span><span class="font-bold">${counts.emotions}건</span></div>` : ''}
+                    ${counts.timetable > 0 ? `<div class="flex justify-between"><span>📅 시간표</span><span class="font-bold">${counts.timetable}개</span></div>` : ''}
+                    ${counts.notes > 0 ? `<div class="flex justify-between"><span>📝 메모</span><span class="font-bold">${counts.notes}개</span></div>` : ''}
+                </div>
+
+                <p class="text-xs text-gray-400 mt-3 text-center">
+                    * 기존 Firebase 데이터와 병합됩니다
+                </p>
+            </div>
+
+            <!-- 진행 상황 표시 영역 (처음에는 숨김) -->
+            <div id="migrationProgress" class="hidden">
+                <div class="bg-blue-50 rounded-xl p-4">
+                    <p id="migrationStatus" class="text-sm text-blue-700 mb-2">준비 중...</p>
+                    <div class="w-full bg-blue-200 rounded-full h-2">
+                        <div id="migrationProgressBar" class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="migrationButtons" class="flex gap-2">
+                <button onclick="window.classpet.closeModal()" class="flex-1 btn btn-secondary">
+                    취소
+                </button>
+                <button id="confirmMigrateBtn" class="flex-1 btn btn-primary">
+                    ☁️ 이전 시작
+                </button>
+            </div>
+        </div>
+    `;
+
+    setModalContent(modalContent);
+    openModal();
+
+    // 마이그레이션 시작 버튼
+    document.getElementById('confirmMigrateBtn').addEventListener('click', async () => {
+        const progressEl = document.getElementById('migrationProgress');
+        const buttonsEl = document.getElementById('migrationButtons');
+        const statusEl = document.getElementById('migrationStatus');
+        const progressBar = document.getElementById('migrationProgressBar');
+
+        // UI 전환
+        buttonsEl.classList.add('hidden');
+        progressEl.classList.remove('hidden');
+
+        // 마이그레이션 실행
+        const result = await store.migrateToFirebase((message, percent) => {
+            statusEl.textContent = message;
+            progressBar.style.width = `${percent}%`;
+        });
+
+        // 결과 처리
+        if (result.success) {
+            statusEl.textContent = '✅ ' + result.message;
+            statusEl.classList.remove('text-blue-700');
+            statusEl.classList.add('text-green-700');
+            progressBar.classList.remove('bg-blue-600');
+            progressBar.classList.add('bg-green-600');
+
+            const { stats } = result;
+            const summaryHtml = `
+                <div class="mt-3 text-xs text-gray-500">
+                    ${stats.students > 0 ? `학생 ${stats.students}명, ` : ''}
+                    ${stats.praises > 0 ? `칭찬 ${stats.praises}건, ` : ''}
+                    ${stats.emotions > 0 ? `감정 ${stats.emotions}건, ` : ''}
+                    ${stats.timetable ? '시간표, ' : ''}
+                    ${stats.notes > 0 ? `메모 ${stats.notes}개 ` : ''}
+                    이전 완료
+                </div>
+            `;
+            progressEl.querySelector('.bg-blue-50').classList.remove('bg-blue-50');
+            progressEl.querySelector('.bg-green-600')?.parentElement?.classList.remove('bg-blue-200');
+            progressEl.querySelector('.bg-green-600')?.parentElement?.classList.add('bg-green-200');
+            progressEl.insertAdjacentHTML('beforeend', summaryHtml);
+
+            setTimeout(() => {
+                closeModal();
+                showToast('데이터 이전이 완료되었습니다!', 'success');
+            }, 2000);
+        } else {
+            statusEl.textContent = '❌ ' + result.message;
+            statusEl.classList.remove('text-blue-700');
+            statusEl.classList.add('text-red-700');
+            progressBar.classList.remove('bg-blue-600');
+            progressBar.classList.add('bg-red-600');
+
+            // 다시 시도 버튼 표시
+            buttonsEl.classList.remove('hidden');
+            buttonsEl.innerHTML = `
+                <button onclick="window.classpet.closeModal()" class="flex-1 btn btn-secondary">
+                    닫기
+                </button>
+            `;
+        }
+    });
+}
+
+/**
  * 데이터 내보내기
  */
 function exportData() {
@@ -414,6 +661,52 @@ export function afterRender() {
         });
     }
 
+    // Google 계정 관련 버튼들
+    const manageClassesBtn = document.getElementById('manageClassesBtn');
+    if (manageClassesBtn) {
+        manageClassesBtn.addEventListener('click', () => {
+            router.navigate('class-select');
+        });
+    }
+
+    const googleLogoutBtn = document.getElementById('googleLogoutBtn');
+    if (googleLogoutBtn) {
+        googleLogoutBtn.addEventListener('click', async () => {
+            if (confirm('로그아웃 하시겠습니까?')) {
+                try {
+                    await store.signOut();
+                    showToast('로그아웃되었습니다', 'info');
+                    router.navigate('login');
+                } catch (error) {
+                    console.error('로그아웃 실패:', error);
+                    showToast('로그아웃에 실패했습니다', 'error');
+                }
+            }
+        });
+    }
+
+    // 현재 학급 코드 복사 버튼 (Google 로그인 시)
+    const copyClassCodeBtn2 = document.getElementById('copyClassCodeBtn2');
+    if (copyClassCodeBtn2) {
+        copyClassCodeBtn2.addEventListener('click', () => {
+            const settings = store.getSettings();
+            const classCode = settings?.classCode || store.getClassCode();
+            if (classCode) {
+                navigator.clipboard.writeText(classCode).then(() => {
+                    showToast('학급 코드가 복사되었어요!', 'success');
+                }).catch(() => {
+                    showToast('복사에 실패했어요. 직접 복사해주세요.', 'warning');
+                });
+            }
+        });
+    }
+
+    // 현재 학급 QR 코드 버튼 (Google 로그인 시)
+    const showQRCodeBtn2 = document.getElementById('showQRCodeBtn2');
+    if (showQRCodeBtn2) {
+        showQRCodeBtn2.addEventListener('click', showQRCodeModal);
+    }
+
     // 학급 코드 생성 버튼
     const generateClassCodeBtn = document.getElementById('generateClassCodeBtn');
     if (generateClassCodeBtn) {
@@ -459,6 +752,12 @@ export function afterRender() {
                 });
             }
         });
+    }
+
+    // QR 코드 버튼
+    const showQRCodeBtn = document.getElementById('showQRCodeBtn');
+    if (showQRCodeBtn) {
+        showQRCodeBtn.addEventListener('click', showQRCodeModal);
     }
 
     // 학급 코드 재생성 버튼
@@ -539,5 +838,11 @@ export function afterRender() {
     const resetDataBtn = document.getElementById('resetDataBtn');
     if (resetDataBtn) {
         resetDataBtn.addEventListener('click', showResetDataConfirm);
+    }
+
+    // Firebase 마이그레이션 버튼
+    const migrateToFirebaseBtn = document.getElementById('migrateToFirebaseBtn');
+    if (migrateToFirebaseBtn) {
+        migrateToFirebaseBtn.addEventListener('click', showMigrationConfirm);
     }
 }

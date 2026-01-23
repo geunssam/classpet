@@ -20,13 +20,13 @@ export function render() {
     const classCode = store.getClassCode();
     const isFirebaseEnabled = store.isFirebaseEnabled();
 
-    // Firebase 활성화 상태이고 학급 코드가 없으면 코드 입력 화면 표시
-    if (isFirebaseEnabled && !classCode) {
+    // 학급 코드가 없으면 코드 입력 화면 표시 (Firebase 여부 관계없이)
+    if (!classCode) {
         showClassCodeInput = true;
     }
 
     // 학급 코드 입력 화면
-    if (showClassCodeInput && isFirebaseEnabled) {
+    if (showClassCodeInput) {
         return renderClassCodeInput(settings);
     }
 
@@ -508,17 +508,32 @@ function setupClassCodeInput() {
                     showClassCodeInput = false;
                     router.handleRoute(); // 화면 새로고침
                 } else {
-                    // 오프라인 모드거나 검증 실패 시 일단 설정만 저장
-                    store.setClassCode(code);
-                    showClassCodeInput = false;
-                    router.handleRoute();
+                    // Firebase 검증 실패 시 에러 표시
+                    if (store.isFirebaseEnabled()) {
+                        if (errorEl) {
+                            errorEl.textContent = '학급 코드가 올바르지 않아요. 선생님에게 다시 확인해주세요!';
+                            errorEl.classList.remove('hidden');
+                        }
+                    } else {
+                        // 오프라인 모드: 로컬 저장 후 진행
+                        store.setClassCode(code);
+                        showClassCodeInput = false;
+                        router.handleRoute();
+                    }
                 }
             } catch (error) {
                 console.error('학급 참가 실패:', error);
-                if (errorEl) errorEl.classList.remove('hidden');
+                if (errorEl) {
+                    errorEl.textContent = '학급 참가 중 오류가 발생했어요. 잠시 후 다시 시도해주세요.';
+                    errorEl.classList.remove('hidden');
+                }
             } finally {
                 if (loadingEl) loadingEl.classList.add('hidden');
                 submitBtn.disabled = false;
+                // 버튼 상태 복원
+                if (code.length === 6) {
+                    submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
             }
         });
     }

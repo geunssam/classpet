@@ -1,8 +1,102 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // classpet 컬렉션: 인증된 사용자만 접근 가능
-    // 컬렉션 이름이 classpet_로 시작하는 모든 문서
+
+    // 헬퍼 함수: 학급 소유자인지 확인
+    function isClassOwner(classId) {
+      return request.auth != null &&
+             get(/databases/$(database)/documents/classes/$(classId)).data.ownerId == request.auth.uid;
+    }
+
+    // 헬퍼 함수: 인증된 사용자인지 확인
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // 헬퍼 함수: 교사 본인인지 확인
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    // ==================== 교사 프로필 ====================
+    // /teachers/{uid} - 본인만 읽기/쓰기 가능
+    match /teachers/{uid} {
+      allow read, write: if isOwner(uid);
+    }
+
+    // ==================== 학급 ====================
+    // /classes/{classId} - 소유자만 읽기/쓰기 가능
+    match /classes/{classId} {
+      // 학급 생성: 인증된 사용자 (ownerId가 본인인 경우)
+      allow create: if isAuthenticated() &&
+                       request.resource.data.ownerId == request.auth.uid;
+
+      // 학급 읽기/수정/삭제: 소유자만
+      allow read, update, delete: if isClassOwner(classId);
+
+      // ==================== 학급 하위 컬렉션 ====================
+
+      // 학생 데이터
+      match /students/{studentId} {
+        // 교사: 모든 권한
+        allow read, write: if isClassOwner(classId);
+
+        // 학생 (익명 인증): 본인 데이터 읽기 가능 (PIN 검증은 앱 레벨)
+        allow read: if isAuthenticated();
+      }
+
+      // 감정 기록
+      match /emotions/{emotionId} {
+        // 교사: 모든 권한
+        allow read, write: if isClassOwner(classId);
+
+        // 학생: 생성 가능, 본인 기록 읽기 가능
+        allow create: if isAuthenticated();
+        allow read: if isAuthenticated();
+      }
+
+      // 칭찬 기록
+      match /praises/{praiseId} {
+        // 교사: 모든 권한
+        allow read, write: if isClassOwner(classId);
+
+        // 학생: 읽기만 가능
+        allow read: if isAuthenticated();
+      }
+
+      // 시간표
+      match /timetable/{docId} {
+        // 교사: 모든 권한
+        allow read, write: if isClassOwner(classId);
+
+        // 학생: 읽기만 가능
+        allow read: if isAuthenticated();
+      }
+
+      // 메모/노트
+      match /notes/{noteId} {
+        // 교사만 접근 가능
+        allow read, write: if isClassOwner(classId);
+      }
+    }
+
+    // ==================== 학급 코드 매핑 ====================
+    // /classCodes/{code} - 인증된 사용자 읽기 가능, 교사만 생성 가능
+    match /classCodes/{code} {
+      // 읽기: 인증된 모든 사용자 (학생이 학급코드로 접속할 때)
+      allow read: if isAuthenticated();
+
+      // 생성: 인증된 사용자 (학급 생성 시)
+      allow create: if isAuthenticated();
+
+      // 수정/삭제: 해당 학급 소유자만
+      allow update, delete: if isAuthenticated() &&
+                               exists(/databases/$(database)/documents/classes/$(resource.data.classId)) &&
+                               get(/databases/$(database)/documents/classes/$(resource.data.classId)).data.ownerId == request.auth.uid;
+    }
+
+    // ==================== 레거시 지원 ====================
+    // 기존 classpet_{code} 컬렉션 (점진적 마이그레이션 지원)
     match /{collection}/{document=**} {
       allow read, write: if request.auth != null
                          && collection.matches('classpet_.*');

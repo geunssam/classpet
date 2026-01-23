@@ -7,7 +7,7 @@
 const STUDENT_MODE_ROUTES = ['student-login', 'student-main', 'student-chat', 'pet-selection', 'pet-collection'];
 
 // 로그인 관련 라우트 목록 (하단 네비 숨김)
-const LOGIN_ROUTES = ['login', 'teacher-login', 'student-login'];
+const LOGIN_ROUTES = ['login', 'teacher-login', 'student-login', 'class-select'];
 
 class Router {
     constructor() {
