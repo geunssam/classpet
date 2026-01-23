@@ -265,24 +265,21 @@ export function afterRender() {
                 // QR 코드에 담을 URL (학급 참가 링크)
                 const joinUrl = `${window.location.origin}${window.location.pathname}#student-login?code=${classCode}`;
 
-                // QRCode 라이브러리 사용
+                // QRCode 라이브러리 사용 (qrcodejs)
                 if (typeof QRCode !== 'undefined') {
-                    QRCode.toCanvas(joinUrl, {
-                        width: 200,
-                        margin: 2,
-                        color: {
-                            dark: '#6366f1',  // primary 색상
-                            light: '#ffffff'
-                        }
-                    }, (error, canvas) => {
-                        if (error) {
-                            console.error('QR 코드 생성 실패:', error);
-                            qrCodeContainer.innerHTML = '<p class="text-red-500 text-sm">QR 코드 생성 실패</p>';
-                        } else {
-                            canvas.style.borderRadius = '12px';
-                            qrCodeContainer.appendChild(canvas);
-                        }
-                    });
+                    try {
+                        new QRCode(qrCodeContainer, {
+                            text: joinUrl,
+                            width: 180,
+                            height: 180,
+                            colorDark: '#6366f1',  // primary 색상
+                            colorLight: '#ffffff',
+                            correctLevel: QRCode.CorrectLevel.M
+                        });
+                    } catch (error) {
+                        console.error('QR 코드 생성 실패:', error);
+                        qrCodeContainer.innerHTML = '<p class="text-red-500 text-sm">QR 코드 생성 실패</p>';
+                    }
                 } else {
                     qrCodeContainer.innerHTML = '<p class="text-gray-500 text-sm">QR 코드 라이브러리를 불러올 수 없습니다</p>';
                 }
