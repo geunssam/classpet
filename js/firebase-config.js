@@ -329,12 +329,20 @@ export async function getTeacherClasses(uid) {
 
     try {
         const classesRef = collection(db, 'classes');
-        const q = query(classesRef, where('ownerId', '==', uid), orderBy('createdAt', 'desc'));
+        // orderBy 제거 (복합 인덱스 필요 없이 작동)
+        const q = query(classesRef, where('ownerId', '==', uid));
         const snapshot = await getDocs(q);
 
         const classes = [];
         snapshot.forEach(doc => {
             classes.push({ id: doc.id, ...doc.data() });
+        });
+
+        // 클라이언트에서 정렬 (최신순)
+        classes.sort((a, b) => {
+            const aTime = a.createdAt?.toDate?.() || new Date(0);
+            const bTime = b.createdAt?.toDate?.() || new Date(0);
+            return bTime - aTime;
         });
 
         return classes;
