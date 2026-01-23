@@ -111,11 +111,19 @@ export async function signInWithGoogle() {
         setCurrentTeacherUid(user.uid);
 
         console.log('Google 로그인 성공:', user.email);
-        const returnValue = { success: true, user };
-        console.log('🔍 firebase-config 반환값:', returnValue);
-        console.log('🔍 user 객체:', user);
-        console.log('🔍 user.uid:', user?.uid);
-        return returnValue;
+
+        // Firebase User 객체에서 필요한 속성만 추출 (복잡한 객체 전달 문제 방지)
+        const userData = {
+            uid: user.uid,
+            email: user.email,
+            displayName: user.displayName,
+            photoURL: user.photoURL,
+            emailVerified: user.emailVerified,
+            isAnonymous: user.isAnonymous
+        };
+
+        console.log('🔍 반환할 userData:', userData);
+        return { success: true, user: userData };
     } catch (error) {
         console.error('Google 로그인 실패:', error);
         return { success: false, error: error.message };
