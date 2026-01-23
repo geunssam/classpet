@@ -1,8 +1,14 @@
 # Netlify configuration for ClassPet
+# Updated: Force rebuild for COOP headers
 
 [build]
   # No build command needed - static site
   publish = "."
+
+[build.processing]
+  skip_processing = false
+[build.processing.html]
+  pretty_urls = false
 
 # SPA 라우팅을 위한 리다이렉트 설정
 [[redirects]]
