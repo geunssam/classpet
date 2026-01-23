@@ -579,6 +579,12 @@ class Store {
      * 새 학급 생성 (계층 구조)
      */
     async createClass(classData) {
+        // Firebase 상태 재확인 (타임아웃으로 인한 상태 불일치 방지)
+        if (!this.firebaseEnabled && firebase.isFirebaseInitialized()) {
+            this.firebaseEnabled = true;
+            console.log('Firebase 상태 재동기화: 활성화');
+        }
+
         if (!this.firebaseEnabled) {
             return { success: false, error: 'Firebase가 활성화되지 않았습니다' };
         }
