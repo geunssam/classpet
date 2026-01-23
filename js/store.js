@@ -431,32 +431,36 @@ class Store {
     async signInWithGoogle() {
         try {
             const result = await firebase.signInWithGoogle();
-            console.log('🔍 store.signInWithGoogle result:', result);
+            console.log('🔍 store.signInWithGoogle result:', JSON.stringify(result, null, 2));
             console.log('🔍 result.success:', result?.success);
-            console.log('🔍 result.user:', result?.user);
-            if (result.success && result.user) {
+            console.log('🔍 result.user exists:', !!result?.user);
+            console.log('🔍 result.user type:', typeof result?.user);
+
+            // user 객체가 있으면 성공으로 처리 (success 플래그와 무관하게)
+            const user = result?.user;
+            if (user) {
                 this.firebaseEnabled = true;
 
                 // 교사 UID 저장 (계층 구조용)
-                this.setCurrentTeacherUid(result.user.uid);
+                this.setCurrentTeacherUid(user.uid);
 
                 // 교사 세션 저장 (Google 로그인 정보 포함)
                 const teacherSession = {
                     isLoggedIn: true,
                     isGoogleAuth: true,
-                    uid: result.user.uid,
-                    email: result.user.email,
-                    displayName: result.user.displayName,
-                    photoURL: result.user.photoURL,
+                    uid: user.uid,
+                    email: user.email,
+                    displayName: user.displayName,
+                    photoURL: user.photoURL,
                     loginTime: Date.now()
                 };
                 sessionStorage.setItem(SESSION_KEYS.TEACHER_SESSION, JSON.stringify(teacherSession));
 
                 // 인증 상태 변경 알림
-                this.notify('auth', { isLoggedIn: true, user: result.user });
+                this.notify('auth', { isLoggedIn: true, user: user });
                 this.notify('teacherLogin', teacherSession);
 
-                return { success: true, user: result.user };
+                return { success: true, user: user };
             }
             return { success: false, error: '로그인에 실패했습니다' };
         } catch (error) {
