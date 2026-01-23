@@ -2,7 +2,7 @@
 # Updated: Force rebuild for COOP headers
 
 [build]
-  # No build command needed - static site
+  command = "npm run build"
   publish = "."
 
 [build.processing]
