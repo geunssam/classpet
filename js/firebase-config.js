@@ -419,11 +419,30 @@ export async function createClass(classData) {
             createdAt: serverTimestamp()
         });
 
+        // 학생 데이터가 있으면 학생들도 추가
+        if (classData.students && Array.isArray(classData.students)) {
+            const studentsRef = collection(db, 'teachers', teacherUid, 'classes', classId, 'students');
+
+            for (const student of classData.students) {
+                const studentDoc = doc(studentsRef);
+                await setDoc(studentDoc, {
+                    number: student.number,
+                    name: student.name,
+                    emoji: student.emoji || '🐶',
+                    points: 0,
+                    createdAt: serverTimestamp(),
+                    updatedAt: serverTimestamp()
+                });
+            }
+
+            console.log(`학생 ${classData.students.length}명 추가 완료`);
+        }
+
         // 현재 교사 UID 저장
         setCurrentTeacherUid(teacherUid);
 
         console.log('학급 생성 완료:', teacherUid, classId, classCode);
-        return { id: classId, teacherUid, ...newClass };
+        return { id: classId, teacherUid, studentCount: classData.students?.length || 0, ...newClass };
     } catch (error) {
         console.error('학급 생성 실패:', error);
         return null;

@@ -15,6 +15,27 @@ import { showToast } from '../utils/animations.js';
 let classes = [];
 let isLoading = true;
 let isCreating = false;
+let studentCount = 15; // 기본 학생 수
+
+/**
+ * 학생 입력 필드 HTML 생성
+ */
+function generateStudentInputs(count) {
+    let html = '';
+    for (let i = 1; i <= count; i++) {
+        html += `
+            <div class="flex items-center gap-3 student-input-row">
+                <span class="w-10 text-sm text-gray-500 text-right font-medium">${i}번</span>
+                <input type="text"
+                       class="student-name-input flex-1 p-2.5 border-2 border-gray-200 rounded-lg focus:border-primary focus:outline-none text-sm"
+                       placeholder="학생 이름"
+                       data-student-number="${i}"
+                       maxlength="20">
+            </div>
+        `;
+    }
+    return html;
+}
 
 /**
  * 렌더링
@@ -75,36 +96,56 @@ export async function render() {
 
             <!-- 새 학급 생성 모달 -->
             <div id="createClassModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                <div class="bg-white rounded-2xl w-full max-w-md p-6 animate-slide-up">
+                <div class="bg-white rounded-2xl w-full max-w-lg p-6 animate-slide-up max-h-[90vh] flex flex-col">
                     <h3 class="text-xl font-bold text-gray-800 mb-6">✨ 새 학급 만들기</h3>
 
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">학급 이름 *</label>
-                            <input type="text"
-                                   id="newClassName"
-                                   class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-primary focus:outline-none"
-                                   placeholder="예: 6학년 3반"
-                                   maxlength="30">
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-4 flex-1 overflow-hidden flex flex-col">
+                        <!-- 학년도 & 학급 이름 (한 줄) -->
+                        <div class="grid grid-cols-3 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">학년도</label>
                                 <input type="text"
                                        id="newSchoolYear"
-                                       class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-primary focus:outline-none"
-                                       placeholder="2025"
+                                       class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-primary focus:outline-none text-center"
+                                       placeholder="2026"
                                        value="${new Date().getFullYear()}"
                                        maxlength="4">
                             </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">학기</label>
-                                <select id="newSemester" class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-primary focus:outline-none">
-                                    <option value="1">1학기</option>
-                                    <option value="2">2학기</option>
-                                </select>
+                            <div class="col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">학급 이름 *</label>
+                                <input type="text"
+                                       id="newClassName"
+                                       class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-primary focus:outline-none"
+                                       placeholder="예: 6학년 2반"
+                                       maxlength="30">
                             </div>
+                        </div>
+
+                        <!-- 구분선 -->
+                        <hr class="border-gray-200">
+
+                        <!-- 학생 명단 섹션 -->
+                        <div class="flex-1 overflow-hidden flex flex-col min-h-0">
+                            <div class="flex items-center justify-between mb-3">
+                                <label class="text-sm font-medium text-gray-700">
+                                    학생 명단 (<span id="studentCount">15</span>명)
+                                </label>
+                                <div class="flex items-center gap-2">
+                                    <button type="button" id="removeStudentBtn" class="w-8 h-8 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-600 font-bold transition-colors">
+                                        −
+                                    </button>
+                                    <button type="button" id="addStudentBtn" class="w-8 h-8 flex items-center justify-center bg-primary hover:bg-primary-dark rounded-lg text-white font-bold transition-colors">
+                                        +
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- 스크롤 가능한 학생 입력 영역 -->
+                            <div id="studentInputContainer" class="flex-1 overflow-y-auto space-y-2 pr-2 min-h-[200px] max-h-[280px]">
+                                ${generateStudentInputs(15)}
+                            </div>
+
+                            <p class="text-xs text-gray-400 mt-2">※ 이름은 나중에 입력해도 됩니다</p>
                         </div>
 
                         <div class="bg-blue-50 rounded-xl p-4 text-sm text-blue-700">
@@ -117,7 +158,7 @@ export async function render() {
                             취소
                         </button>
                         <button id="confirmCreateBtn" class="flex-1 py-3 bg-primary text-white rounded-xl hover:bg-primary-dark transition-colors font-medium">
-                            만들기
+                            학급 만들기
                         </button>
                     </div>
                 </div>
@@ -295,6 +336,28 @@ export function afterRender() {
             }
         });
     }
+
+    // 학생 수 증가 버튼
+    const addStudentBtn = document.getElementById('addStudentBtn');
+    if (addStudentBtn) {
+        addStudentBtn.addEventListener('click', () => {
+            if (studentCount < 40) { // 최대 40명
+                studentCount++;
+                updateStudentInputs();
+            }
+        });
+    }
+
+    // 학생 수 감소 버튼
+    const removeStudentBtn = document.getElementById('removeStudentBtn');
+    if (removeStudentBtn) {
+        removeStudentBtn.addEventListener('click', () => {
+            if (studentCount > 1) { // 최소 1명
+                studentCount--;
+                updateStudentInputs();
+            }
+        });
+    }
 }
 
 /**
@@ -341,6 +404,73 @@ function closeCreateModal() {
     // 입력 초기화
     const nameInput = document.getElementById('newClassName');
     if (nameInput) nameInput.value = '';
+
+    // 학생 수 초기화
+    studentCount = 15;
+    updateStudentInputs();
+}
+
+/**
+ * 학생 입력 필드 업데이트
+ */
+function updateStudentInputs() {
+    const container = document.getElementById('studentInputContainer');
+    const countDisplay = document.getElementById('studentCount');
+
+    if (container) {
+        // 기존 입력값 저장
+        const existingValues = {};
+        container.querySelectorAll('.student-name-input').forEach(input => {
+            const num = input.dataset.studentNumber;
+            if (input.value.trim()) {
+                existingValues[num] = input.value;
+            }
+        });
+
+        // 새 입력 필드 생성
+        container.innerHTML = generateStudentInputs(studentCount);
+
+        // 기존 값 복원
+        container.querySelectorAll('.student-name-input').forEach(input => {
+            const num = input.dataset.studentNumber;
+            if (existingValues[num]) {
+                input.value = existingValues[num];
+            }
+        });
+    }
+
+    if (countDisplay) {
+        countDisplay.textContent = studentCount;
+    }
+}
+
+/**
+ * 학생 명단 수집
+ */
+function collectStudentData() {
+    const students = [];
+    const inputs = document.querySelectorAll('.student-name-input');
+
+    inputs.forEach(input => {
+        const number = parseInt(input.dataset.studentNumber);
+        const name = input.value.trim();
+
+        students.push({
+            number: number,
+            name: name || `${number}번 학생`, // 이름이 없으면 기본값
+            emoji: getRandomEmoji()
+        });
+    });
+
+    return students;
+}
+
+/**
+ * 랜덤 이모지 반환
+ */
+function getRandomEmoji() {
+    const emojis = ['🐶', '🐱', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐸', '🐵', '🐔', '🐧', '🐦', '🦆', '🦉', '🐴', '🦄', '🐝', '🐛', '🦋', '🐌', '🐞', '🐢', '🐍', '🦎', '🐙', '🦀', '🐠', '🐟', '🐬', '🐳', '🦈', '🐊'];
+    return emojis[Math.floor(Math.random() * emojis.length)];
 }
 
 /**
@@ -351,7 +481,6 @@ async function handleCreateClass() {
 
     const className = document.getElementById('newClassName')?.value.trim();
     const schoolYear = document.getElementById('newSchoolYear')?.value.trim();
-    const semester = document.getElementById('newSemester')?.value;
 
     // 유효성 검사
     if (!className) {
@@ -359,6 +488,9 @@ async function handleCreateClass() {
         document.getElementById('newClassName')?.focus();
         return;
     }
+
+    // 학생 데이터 수집
+    const students = collectStudentData();
 
     try {
         isCreating = true;
@@ -368,15 +500,16 @@ async function handleCreateClass() {
             confirmBtn.innerHTML = '생성 중...';
         }
 
-        // 학급 생성
+        // 학급 생성 (학생 데이터 포함)
         const result = await store.createClass({
             className,
             schoolYear: schoolYear || String(new Date().getFullYear()),
-            semester: semester || '1'
+            semester: '1', // 학기는 기본값 1로 설정
+            students: students
         });
 
         if (result.success) {
-            showToast(`${className} 학급이 생성되었습니다! 🎉`, 'success');
+            showToast(`${className} 학급이 생성되었습니다! (학생 ${students.length}명) 🎉`, 'success');
             closeCreateModal();
 
             // 목록 새로고침
@@ -397,7 +530,7 @@ async function handleCreateClass() {
         const confirmBtn = document.getElementById('confirmCreateBtn');
         if (confirmBtn) {
             confirmBtn.disabled = false;
-            confirmBtn.innerHTML = '만들기';
+            confirmBtn.innerHTML = '학급 만들기';
         }
     }
 }
