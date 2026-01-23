@@ -271,8 +271,15 @@ async function selectClass(classId) {
         // 선택된 학급 정보 찾기
         const selectedClass = classes.find(c => c.id === classId);
         if (selectedClass) {
+            // teacherUid도 설정
+            if (selectedClass.teacherUid) {
+                store.setCurrentTeacherUid(selectedClass.teacherUid);
+            }
             showToast(`${selectedClass.className} 학급이 선택되었습니다`, 'success');
         }
+
+        // Firebase에서 학생 데이터 로드
+        await store.loadClassDataFromFirebase();
 
         // 대시보드로 이동
         router.navigate('dashboard');
