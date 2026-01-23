@@ -204,6 +204,7 @@ class Store {
         this.currentClassData = null;
         this.offlineQueue = [];
         this.isOnline = navigator.onLine;
+        this.authLoading = true;  // Firebase 인증 초기화 중
 
         // 네트워크 상태 감지
         window.addEventListener('online', () => this.handleOnline());
@@ -462,10 +463,50 @@ class Store {
 
                 return { success: true, user: user };
             }
-            return { success: false, error: '로그인에 실패했습니다' };
+
+            // 리다이렉트 중인 경우 (pending 상태)
+            if (result?.pending) {
+                return { success: false, pending: true };
+            }
+
+            return { success: false, error: result?.error || '로그인에 실패했습니다' };
         } catch (error) {
             console.error('Google 로그인 실패:', error);
             throw error;
+        }
+    }
+
+    /**
+     * 리다이렉트 로그인 결과 확인 (페이지 로드 시)
+     */
+    async checkRedirectResult() {
+        try {
+            const result = await firebase.checkRedirectResult();
+            if (result?.success && result?.user) {
+                const user = result.user;
+                this.firebaseEnabled = true;
+                this.setCurrentTeacherUid(user.uid);
+
+                const teacherSession = {
+                    isLoggedIn: true,
+                    isGoogleAuth: true,
+                    uid: user.uid,
+                    email: user.email,
+                    displayName: user.displayName,
+                    photoURL: user.photoURL,
+                    loginTime: Date.now()
+                };
+                sessionStorage.setItem(SESSION_KEYS.TEACHER_SESSION, JSON.stringify(teacherSession));
+                this.notify('auth', { isLoggedIn: true, user: user });
+                this.notify('teacherLogin', teacherSession);
+
+                console.log('✅ 리다이렉트 로그인 완료:', user.email);
+                return { success: true, user: user };
+            }
+            return null;
+        } catch (error) {
+            console.error('리다이렉트 결과 확인 실패:', error);
+            return null;
         }
     }
 
@@ -517,6 +558,21 @@ class Store {
      */
     onAuthChange(callback) {
         return firebase.onAuthChange(callback);
+    }
+
+    /**
+     * 인증 로딩 상태 설정
+     */
+    setAuthLoading(loading) {
+        this.authLoading = loading;
+        this.notify('authLoading', loading);
+    }
+
+    /**
+     * 인증 로딩 상태 확인
+     */
+    isAuthLoading() {
+        return this.authLoading;
     }
 
     /**

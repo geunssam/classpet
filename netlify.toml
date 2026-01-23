@@ -10,10 +10,15 @@
   to = "/index.html"
   status = 200
 
-# 보안 헤더
+# 보안 헤더 + Firebase 팝업 로그인 허용
 [[headers]]
   for = "/*"
   [headers.values]
+    # Firebase Google 로그인 팝업 허용 (핵심!)
+    Cross-Origin-Opener-Policy = "same-origin-allow-popups"
+    Cross-Origin-Embedder-Policy = "unsafe-none"
+
+    # 기존 보안 헤더
     X-Frame-Options = "DENY"
     X-XSS-Protection = "1; mode=block"
     X-Content-Type-Options = "nosniff"

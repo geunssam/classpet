@@ -27,9 +27,13 @@ import {
     getAuth,
     signInAnonymously,
     signInWithPopup,
+    signInWithRedirect,
+    getRedirectResult,
     GoogleAuthProvider,
     onAuthStateChanged,
-    signOut
+    signOut,
+    setPersistence,
+    browserLocalPersistence
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 
 // Firebase 설정 - classpet-iwg 프로젝트
@@ -61,7 +65,7 @@ const unsubscribeFunctions = [];
 /**
  * Firebase 초기화
  */
-export function initializeFirebase(config = null) {
+export async function initializeFirebase(config = null) {
     if (isInitialized) return { app, db, auth };
 
     try {
@@ -75,6 +79,10 @@ export function initializeFirebase(config = null) {
         app = initializeApp(configToUse);
         db = getFirestore(app);
         auth = getAuth(app);
+
+        // 인증 지속성 설정 (새로고침 후에도 로그인 유지)
+        await setPersistence(auth, browserLocalPersistence);
+
         isInitialized = true;
 
         console.log('Firebase 초기화 완료');
@@ -95,39 +103,84 @@ export function isFirebaseInitialized() {
 // ==================== Google 인증 ====================
 
 /**
- * Google 로그인
+ * Google 로그인 (팝업 우선, 실패 시 리다이렉트)
+ * 시크릿 모드: 팝업 방식이 더 안정적
+ * 일반 모드: COOP 문제 시 리다이렉트로 전환
  */
 export async function signInWithGoogle() {
     if (!auth) return { success: false, error: 'Firebase가 초기화되지 않았습니다' };
 
     try {
+        console.log('🔐 Google 팝업 로그인 시도...');
         const result = await signInWithPopup(auth, googleProvider);
-        const user = result.user;
-
-        // 교사 프로필 생성/업데이트
-        await createOrUpdateTeacherProfile(user);
-
-        // 교사 UID 설정 (계층 구조용)
-        setCurrentTeacherUid(user.uid);
-
-        console.log('Google 로그인 성공:', user.email);
-
-        // Firebase User 객체에서 필요한 속성만 추출 (복잡한 객체 전달 문제 방지)
-        const userData = {
-            uid: user.uid,
-            email: user.email,
-            displayName: user.displayName,
-            photoURL: user.photoURL,
-            emailVerified: user.emailVerified,
-            isAnonymous: user.isAnonymous
-        };
-
-        console.log('🔍 반환할 userData:', userData);
-        return { success: true, user: userData };
+        return await processGoogleSignInResult(result);
     } catch (error) {
-        console.error('Google 로그인 실패:', error);
+        console.error('Google 팝업 로그인 오류:', error.code, error.message);
+
+        // 팝업 차단/닫힘 시 리다이렉트로 전환
+        if (error.code === 'auth/popup-blocked' ||
+            error.code === 'auth/popup-closed-by-user' ||
+            error.code === 'auth/cancelled-popup-request') {
+
+            console.log('🔄 팝업 실패, 리다이렉트 방식으로 전환...');
+            try {
+                await signInWithRedirect(auth, googleProvider);
+                return { success: false, pending: true, error: '리다이렉트 중...' };
+            } catch (redirectError) {
+                console.error('리다이렉트 로그인 오류:', redirectError);
+                return { success: false, error: redirectError.message };
+            }
+        }
+
+        // 그 외 오류는 그대로 반환
         return { success: false, error: error.message };
     }
+}
+
+/**
+ * 리다이렉트 로그인 결과 처리 (페이지 로드 시 호출)
+ */
+export async function checkRedirectResult() {
+    if (!auth) return null;
+
+    try {
+        const result = await getRedirectResult(auth);
+        if (result && result.user) {
+            console.log('🔐 리다이렉트 로그인 결과 처리...');
+            return await processGoogleSignInResult(result);
+        }
+        return null;
+    } catch (error) {
+        console.error('리다이렉트 결과 처리 오류:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+/**
+ * Google 로그인 결과 처리 (공통 로직)
+ */
+async function processGoogleSignInResult(result) {
+    const user = result.user;
+
+    // 교사 프로필 생성/업데이트
+    await createOrUpdateTeacherProfile(user);
+
+    // 교사 UID 설정 (계층 구조용)
+    setCurrentTeacherUid(user.uid);
+
+    console.log('✅ Google 로그인 성공:', user.email);
+
+    // Firebase User 객체에서 필요한 속성만 추출
+    const userData = {
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName,
+        photoURL: user.photoURL,
+        emailVerified: user.emailVerified,
+        isAnonymous: user.isAnonymous
+    };
+
+    return { success: true, user: userData };
 }
 
 /**
@@ -1148,15 +1201,6 @@ export function getClassCode() {
  * Firebase 인스턴스 내보내기
  */
 export { db, auth, app };
-
-/**
- * 추가 내보내기: 계층 구조 관련 함수들
- */
-export {
-    setCurrentTeacherUid,
-    getCurrentTeacherUid,
-    getCurrentClassPath
-};
 
 // 자동 초기화 시도
 initializeFirebase();

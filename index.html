@@ -59,6 +59,14 @@
     </script>
 </head>
 <body class="bg-cream min-h-screen font-sans">
+    <!-- 인증 로딩 화면 (Firebase 초기화 대기) -->
+    <div id="authLoadingScreen" class="fixed inset-0 bg-white z-[9999] flex items-center justify-center">
+        <div class="text-center">
+            <div class="text-6xl mb-4 animate-bounce">🐾</div>
+            <p class="text-lg font-semibold text-gray-700">클래스펫 시작 중...</p>
+        </div>
+    </div>
+
     <!-- 앱 컨테이너 -->
     <div id="app" class="max-w-md mx-auto bg-white min-h-screen shadow-soft relative pb-20">
         <!-- 헤더 -->
