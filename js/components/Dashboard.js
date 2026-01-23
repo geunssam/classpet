@@ -44,43 +44,27 @@ export function render() {
     return `
         <div class="space-y-4">
             ${isGoogleTeacher ? `
-            <!-- 현재 학급 정보 (Google 로그인 시) -->
-            <div class="card bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 py-3">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center text-white text-lg">
-                            🏫
-                        </div>
-                        <div>
-                            <p class="font-bold text-gray-800">${settings?.className || '학급 이름 없음'}</p>
-                            <p class="text-xs text-gray-500">
-                                학급코드: <span class="font-mono font-bold text-primary">${settings?.classCode || '------'}</span>
-                                <button id="showQrCodeBtn" class="ml-2 text-primary hover:text-primary-dark" title="QR 코드 보기">
-                                    📱
-                                </button>
-                            </p>
+            <!-- 현재 학급 정보 + QR 코드 (Google 로그인 시) -->
+            <div class="card bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 py-4">
+                <div class="flex items-center gap-4">
+                    <!-- QR 코드 영역 -->
+                    <div class="flex-shrink-0">
+                        <div id="qrCodeContainer" class="w-20 h-20 bg-white rounded-xl p-1 shadow-sm flex items-center justify-center">
+                            <!-- QR 코드가 여기에 생성됨 -->
                         </div>
                     </div>
-                    <button id="switchClassBtn" class="px-3 py-1.5 text-sm bg-white border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 hover:border-primary hover:text-primary transition-colors">
+                    <!-- 학급 정보 -->
+                    <div class="flex-1 min-w-0">
+                        <p class="font-bold text-gray-800 truncate">${settings?.className || '학급 이름 없음'}</p>
+                        <p class="text-xs text-gray-500 mt-1">학급코드</p>
+                        <p class="font-mono font-bold text-primary text-lg">${settings?.classCode || '------'}</p>
+                    </div>
+                    <!-- 학급 전환 버튼 -->
+                    <button id="switchClassBtn" class="flex-shrink-0 px-3 py-1.5 text-sm bg-white border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 hover:border-primary hover:text-primary transition-colors">
                         학급 전환
                     </button>
                 </div>
-            </div>
-
-            <!-- QR 코드 모달 -->
-            <div id="qrCodeModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                <div class="bg-white rounded-2xl w-full max-w-sm p-6 text-center">
-                    <h3 class="text-xl font-bold text-gray-800 mb-2">📱 학급 QR 코드</h3>
-                    <p class="text-sm text-gray-500 mb-4">${settings?.className || '학급'}</p>
-                    <div id="qrCodeContainer" class="flex justify-center mb-4">
-                        <!-- QR 코드가 여기에 생성됨 -->
-                    </div>
-                    <p class="text-lg font-mono font-bold text-primary mb-4">${settings?.classCode || '------'}</p>
-                    <p class="text-xs text-gray-400 mb-4">학생들이 이 QR 코드를 스캔하면<br>학급에 참가할 수 있어요!</p>
-                    <button id="closeQrModalBtn" class="w-full py-3 bg-gray-100 hover:bg-gray-200 rounded-xl text-gray-700 font-medium transition-colors">
-                        닫기
-                    </button>
-                </div>
+                <p class="text-xs text-gray-400 mt-3 text-center">학생들이 QR 코드를 스캔하면 학급에 참가할 수 있어요!</p>
             </div>
             ` : ''}
 
@@ -246,58 +230,34 @@ export function afterRender() {
         });
     }
 
-    // QR 코드 모달
-    const showQrCodeBtn = document.getElementById('showQrCodeBtn');
-    const qrCodeModal = document.getElementById('qrCodeModal');
-    const closeQrModalBtn = document.getElementById('closeQrModalBtn');
+    // QR 코드 바로 생성
     const qrCodeContainer = document.getElementById('qrCodeContainer');
+    if (qrCodeContainer) {
+        const settings = store.getSettings();
+        const classCode = settings?.classCode;
 
-    if (showQrCodeBtn && qrCodeModal) {
-        showQrCodeBtn.addEventListener('click', () => {
-            qrCodeModal.classList.remove('hidden');
+        if (classCode) {
+            // QR 코드에 담을 URL (학급 참가 링크)
+            const joinUrl = `${window.location.origin}${window.location.pathname}#student-login?code=${classCode}`;
 
-            // QR 코드 생성
-            const settings = store.getSettings();
-            const classCode = settings?.classCode;
-            if (classCode && qrCodeContainer) {
-                qrCodeContainer.innerHTML = ''; // 기존 QR 코드 제거
-
-                // QR 코드에 담을 URL (학급 참가 링크)
-                const joinUrl = `${window.location.origin}${window.location.pathname}#student-login?code=${classCode}`;
-
-                // QRCode 라이브러리 사용 (qrcodejs)
-                if (typeof QRCode !== 'undefined') {
-                    try {
-                        new QRCode(qrCodeContainer, {
-                            text: joinUrl,
-                            width: 180,
-                            height: 180,
-                            colorDark: '#6366f1',  // primary 색상
-                            colorLight: '#ffffff',
-                            correctLevel: QRCode.CorrectLevel.M
-                        });
-                    } catch (error) {
-                        console.error('QR 코드 생성 실패:', error);
-                        qrCodeContainer.innerHTML = '<p class="text-red-500 text-sm">QR 코드 생성 실패</p>';
-                    }
-                } else {
-                    qrCodeContainer.innerHTML = '<p class="text-gray-500 text-sm">QR 코드 라이브러리를 불러올 수 없습니다</p>';
+            // QRCode 라이브러리 사용 (qrcodejs)
+            if (typeof QRCode !== 'undefined') {
+                try {
+                    new QRCode(qrCodeContainer, {
+                        text: joinUrl,
+                        width: 72,
+                        height: 72,
+                        colorDark: '#6366f1',  // primary 색상
+                        colorLight: '#ffffff',
+                        correctLevel: QRCode.CorrectLevel.M
+                    });
+                } catch (error) {
+                    console.error('QR 코드 생성 실패:', error);
+                    qrCodeContainer.innerHTML = '<span class="text-2xl">📱</span>';
                 }
+            } else {
+                qrCodeContainer.innerHTML = '<span class="text-2xl">📱</span>';
             }
-        });
-
-        // 모달 닫기
-        if (closeQrModalBtn) {
-            closeQrModalBtn.addEventListener('click', () => {
-                qrCodeModal.classList.add('hidden');
-            });
         }
-
-        // 배경 클릭으로 닫기
-        qrCodeModal.addEventListener('click', (e) => {
-            if (e.target === qrCodeModal) {
-                qrCodeModal.classList.add('hidden');
-            }
-        });
     }
 }
