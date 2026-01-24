@@ -172,12 +172,12 @@ export function render() {
                 <div class="card">
                     <div class="flex items-center gap-3">
                         <div class="flex-1 min-w-0">
-                            <label class="text-xs text-gray-400 mb-1 block">학급 이름</label>
+                            <label class="text-sm font-medium text-gray-600 mb-1 block">학급 이름</label>
                             <input type="text" id="settingsClassName" value="${settings?.className || '우리반'}"
                                    class="w-full font-bold text-gray-800 py-2 px-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-primary" placeholder="예: 4학년 2반">
                         </div>
                         <div class="flex-1 min-w-0">
-                            <label class="text-xs text-gray-400 mb-1 block">선생님 이름</label>
+                            <label class="text-sm font-medium text-gray-600 mb-1 block">선생님 이름</label>
                             <input type="text" id="settingsTeacherName" value="${settings?.teacherName || '담임선생님'}"
                                    class="w-full font-bold text-gray-800 py-2 px-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-primary" placeholder="예: 김선생님">
                         </div>
