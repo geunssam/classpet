@@ -27,7 +27,7 @@ export function render() {
             <!-- 로그인 선택 버튼 -->
             <div class="w-full max-w-sm space-y-4">
                 <!-- Google 로그인 (교사) -->
-                <button id="googleLoginBtn" class="login-select-btn w-full p-5 bg-white/80 backdrop-blur-sm border-2 border-gray-200 text-gray-700 rounded-2xl shadow-md hover:shadow-lg hover:border-primary transition-all transform hover:-translate-y-1">
+                <button id="googleLoginBtn" class="login-select-btn w-full p-5 bg-gradient-to-r from-purple-300/10 via-blue-300/10 to-pink-200/10 backdrop-blur-sm text-gray-700 rounded-2xl shadow-md hover:shadow-lg transition-all transform hover:-translate-y-1 border-2 border-purple-400/50">
                     <div class="flex items-center gap-4">
                         <div class="w-10 h-10 flex items-center justify-center">
                             <svg viewBox="0 0 24 24" class="w-7 h-7">
@@ -39,9 +39,9 @@ export function render() {
                         </div>
                         <div class="text-left flex-1">
                             <p class="font-bold text-lg">Google로 로그인</p>
-                            <p class="text-sm text-gray-500">선생님 전용</p>
+                            <p class="text-sm text-gray-600">선생님 전용</p>
                         </div>
-                        <span class="text-2xl text-gray-400">→</span>
+                        <span class="text-2xl text-gray-600">→</span>
                     </div>
                 </button>
 
@@ -53,14 +53,14 @@ export function render() {
                 </div>
 
                 <!-- 학생 로그인 -->
-                <button id="studentLoginBtn" class="login-select-btn w-full p-5 bg-gradient-to-r from-success to-primary backdrop-blur-sm text-white rounded-2xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1">
+                <button id="studentLoginBtn" class="login-select-btn w-full p-5 bg-gradient-to-r from-purple-300/10 via-blue-300/10 to-pink-200/10 backdrop-blur-sm text-gray-700 rounded-2xl shadow-md hover:shadow-lg transition-all transform hover:-translate-y-1 border-2 border-purple-400/50">
                     <div class="flex items-center gap-4">
                         <span class="text-4xl">👦</span>
                         <div class="text-left flex-1">
                             <p class="font-bold text-lg">학생으로 입장</p>
-                            <p class="text-sm opacity-80">학급코드로 접속하기</p>
+                            <p class="text-sm text-gray-600">학급코드로 접속하기</p>
                         </div>
-                        <span class="text-2xl">→</span>
+                        <span class="text-2xl text-gray-600">→</span>
                     </div>
                 </button>
             </div>
