@@ -100,8 +100,8 @@ export function render() {
             </div>
             ` : ''}
 
-            <!-- 학급 코드 섹션 (Firebase 활성화 시, Google 미로그인) -->
-            ${isFirebaseEnabled && !isGoogleTeacher ? `
+            <!-- 학급 코드 섹션 (Google 미로그인 시에만 표시) -->
+            ${!isGoogleTeacher ? (isFirebaseEnabled ? `
             <section class="mb-6">
                 <h2 class="section-title">
                     <span>🔗</span>
@@ -161,7 +161,7 @@ export function render() {
                     </div>
                 </div>
             </section>
-            `}
+            `) : ''}
 
             <!-- 기본 정보 섹션 -->
             <section class="mb-6">
