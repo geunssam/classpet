@@ -200,7 +200,7 @@ function renderClassList() {
                             🏫
                         </div>
                         <p class="flex-1 font-bold text-gray-800 truncate">${cls.className || '이름 없는 학급'}</p>
-                        <p class="text-sm text-gray-500">${cls.studentCount ? `${cls.studentCount}명` : ''}</p>
+                        <p class="text-sm text-gray-500">${cls.studentCount || 0}명</p>
                     </div>
                 </button>
             `).join('')}
