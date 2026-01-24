@@ -92,7 +92,7 @@ export function render(params) {
                                 <span class="text-sm text-gray-400">${student.number}번</span>
                             </div>
                             <div class="flex items-center gap-2 mt-1">
-                                <span class="level-badge">Lv.${student.level}</span>
+                                <span class="level-badge">Lv.${student.level || 1}</span>
                                 <span class="text-xs px-2 py-0.5 rounded-full" style="background-color: ${rankTier.color}20; color: ${rankTier.color}">
                                     ${rank}위 · ${rankTier.label}
                                 </span>

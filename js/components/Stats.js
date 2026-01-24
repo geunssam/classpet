@@ -103,7 +103,7 @@ export function render() {
                             <span class="text-2xl">${getPetEmoji(student.petType, student.level)}</span>
                             <div class="flex-1 min-w-0 ml-2">
                                 <div class="font-medium">${student.name}</div>
-                                <div class="text-xs text-gray-400">Lv.${student.level} · EXP ${student.exp}</div>
+                                <div class="text-xs text-gray-400">Lv.${student.level || 1} · EXP ${student.exp}</div>
                             </div>
                             <span class="text-xs px-2 py-0.5 rounded-full" style="background-color: ${rankTier.color}20; color: ${rankTier.color}">
                                 ${rankTier.tier}

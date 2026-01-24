@@ -68,7 +68,7 @@ export function render() {
                 <!-- 레벨 & 경험치 -->
                 <div class="mt-4 px-8">
                     <div class="flex items-center justify-center gap-2 mb-2">
-                        <span class="level-badge">Lv.${student.level}</span>
+                        <span class="level-badge">Lv.${student.level || 1}</span>
                         <span class="text-sm text-gray-500">${expPercent}%</span>
                     </div>
                     <div class="exp-bar">

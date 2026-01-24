@@ -197,7 +197,7 @@ export function render() {
                                             <span class="text-2xl">${petEmoji}</span>
                                             <div>
                                                 <span class="font-medium text-gray-800">[${student.number}] ${student.name}</span>
-                                                <span class="text-xs text-gray-400 ml-2">Lv.${student.level}</span>
+                                                <span class="text-xs text-gray-400 ml-2">Lv.${student.level || 1}</span>
                                             </div>
                                         </div>
                                         <div class="flex items-center gap-2">

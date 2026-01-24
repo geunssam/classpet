@@ -130,7 +130,7 @@ function renderPetCard(student, stats) {
             <div class="text-sm font-medium mt-2 truncate">${student.name}</div>
             <div class="text-xs text-gray-400">${student.number}번</div>
             <div class="flex items-center justify-center gap-1 mt-1">
-                <span class="level-badge">Lv.${student.level}</span>
+                <span class="level-badge">Lv.${student.level || 1}</span>
             </div>
             <div class="exp-bar mt-2">
                 <div class="exp-bar-fill" style="width: ${expProgress}%"></div>
@@ -156,7 +156,7 @@ function renderPetListItem(student) {
                         <span class="text-xs text-gray-400">${student.number}번</span>
                     </div>
                     <div class="flex items-center gap-2 mt-1">
-                        <span class="level-badge">Lv.${student.level}</span>
+                        <span class="level-badge">Lv.${student.level || 1}</span>
                         <div class="flex-1 exp-bar">
                             <div class="exp-bar-fill" style="width: ${expProgress}%"></div>
                         </div>
@@ -232,7 +232,7 @@ function showQuickPraiseForStudent(studentId) {
             <div class="text-center py-4">
                 <span class="text-6xl pet-emoji">${getPetEmoji(student.petType, student.level)}</span>
                 <div class="mt-2">
-                    <span class="level-badge">Lv.${student.level}</span>
+                    <span class="level-badge">Lv.${student.level || 1}</span>
                 </div>
             </div>
 

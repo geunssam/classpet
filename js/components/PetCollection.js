@@ -197,7 +197,7 @@ function showPetDetail(petKey, status) {
             statusClass = 'text-amber-600 bg-amber-50';
             break;
         case 'current':
-            statusText = `🐾 키우는 중 (Lv.${student.level})`;
+            statusText = `🐾 키우는 중 (Lv.${student.level || 1})`;
             statusClass = 'text-blue-600 bg-blue-50';
             break;
         case 'locked':
