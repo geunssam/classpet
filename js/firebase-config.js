@@ -2,6 +2,7 @@
  * Firebase 설정 및 초기화
  * 완전한 계층 구조: /teachers/{uid}/classes/{classId}/...
  * 경로 자체가 소유권을 보장 (ownerId 필드 불필요)
+ * @updated 2025-01-24 - 학생 ID 처리 수정
  */
 
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
