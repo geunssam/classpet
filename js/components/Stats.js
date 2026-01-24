@@ -59,23 +59,26 @@ export function render() {
             <div class="card">
                 <h3 class="section-title">🏆 레벨 랭킹</h3>
                 ${rankedStudents.length > 0 ? `
-                <div class="space-y-2 max-h-[280px] overflow-y-auto">
+                <!-- 칼럼 헤더 -->
+                <div class="ranking-header">
+                    <span class="ranking-col-rank">순위</span>
+                    <span class="ranking-col-emoji">펫</span>
+                    <span class="ranking-col-number">번호</span>
+                    <span class="ranking-col-name">이름</span>
+                    <span class="ranking-col-level">레벨</span>
+                    <span class="ranking-col-exp">경험치</span>
+                </div>
+                <div class="space-y-2 max-h-[280px] overflow-y-auto overflow-x-hidden">
                     ${rankedStudents.map((student, index) => {
-                        const rankTier = getRankTier(index + 1, students.length);
                         const medals = ['🥇', '🥈', '🥉'];
                         return `
-                        <div class="list-item" onclick="window.classpet.router.navigate('student', { id: ${student.id} })">
-                            <div class="w-8 text-center text-lg">
-                                ${index < 3 ? medals[index] : `${index + 1}`}
-                            </div>
-                            <span class="text-2xl">${getPetEmoji(student.petType, student.level)}</span>
-                            <div class="flex-1 min-w-0 ml-2">
-                                <div class="font-medium">${student.name}</div>
-                                <div class="text-xs text-gray-400">Lv.${student.level || 1} · EXP ${student.exp || 0}</div>
-                            </div>
-                            <span class="text-xs px-2 py-0.5 rounded-full" style="background-color: ${rankTier.color}20; color: ${rankTier.color}">
-                                ${rankTier.tier}
-                            </span>
+                        <div class="ranking-card" onclick="window.classpet.router.navigate('student', { id: ${student.id} })">
+                            <span class="ranking-col-rank text-xl">${index < 3 ? medals[index] : (index + 1)}</span>
+                            <span class="ranking-col-emoji text-xl">${getPetEmoji(student.petType, student.level)}</span>
+                            <span class="ranking-col-number">${student.number}</span>
+                            <span class="ranking-col-name">${student.name}</span>
+                            <span class="ranking-col-level">Lv.${student.level || 1}</span>
+                            <span class="ranking-col-exp">${student.exp || 0}</span>
                         </div>
                         `;
                     }).join('')}
