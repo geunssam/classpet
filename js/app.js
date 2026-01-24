@@ -477,15 +477,22 @@ function bindQuickPraiseButton() {
         notificationBtn.addEventListener('click', showNotifications);
     }
 
-    // 로그아웃 버튼
+    // 로그아웃 버튼 (헤더 + 기존 숨김 버튼)
+    const logoutHandler = () => {
+        if (confirm('로그아웃 하시겠습니까?')) {
+            store.teacherLogout();
+            router.navigate('login');
+        }
+    };
+
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
-        logoutBtn.addEventListener('click', () => {
-            if (confirm('로그아웃 하시겠습니까?')) {
-                store.teacherLogout();
-                router.navigate('login');
-            }
-        });
+        logoutBtn.addEventListener('click', logoutHandler);
+    }
+
+    const headerLogoutBtn = document.getElementById('headerLogoutBtn');
+    if (headerLogoutBtn) {
+        headerLogoutBtn.addEventListener('click', logoutHandler);
     }
 
     // 날짜 버튼 → 감정 히스토리로 이동
