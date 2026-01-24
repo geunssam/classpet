@@ -40,49 +40,49 @@
         <div class="blob blob-1"></div>
         <div class="blob blob-2"></div>
         <div class="blob blob-3"></div>
-        <!-- 헤더 -->
-        <header class="bg-gradient-to-r from-blue-200/60 via-blue-100/60 to-blue-200/60 backdrop-blur-md border-b border-blue-200/50 shadow-sm px-4 py-3 sticky top-0 z-50">
+        <!-- 헤더 - 리퀴드 글라스 -->
+        <header class="bg-gradient-to-b from-white/20 to-white/40 backdrop-blur-xl border-b border-white/50 px-4 py-3 sticky top-0 z-50" style="box-shadow: 0 4px 30px rgba(0,0,0,0.06), inset 0 -1px 0 rgba(255,255,255,0.5);">
             <div class="flex items-stretch justify-between">
                 <!-- 좌측: 로고 + 타이틀 -->
                 <div class="flex items-center gap-3 py-2">
                     <span class="text-3xl">🐾</span>
                     <h1 class="text-2xl font-bold text-gray-800">클래스펫</h1>
                 </div>
-                <!-- 우측: 2행 구조 (글라스모피즘) -->
-                <div class="flex flex-col items-center w-fit gap-1.5">
+                <!-- 우측: 리퀴드 글라스 컨테이너 -->
+                <div class="header-dock">
                     <!-- 1행: 버튼들 -->
                     <div class="flex items-center gap-1.5">
                         <!-- 날짜 -->
-                        <button id="dateHistoryBtn" class="px-2.5 py-1.5 bg-white/50 backdrop-blur-md border border-white/60 rounded-lg text-gray-700 hover:bg-white/70 transition-colors text-xs font-medium shadow-sm">
-                            <span id="currentDate"></span>
+                        <button id="dateHistoryBtn" class="header-glass-btn px-2.5 py-1.5 text-gray-700 text-xs font-medium">
+                            <span id="currentDate" class="relative z-10"></span>
                         </button>
                         <input type="date" id="historyDatePicker" class="sr-only" />
                         <!-- 알림 -->
-                        <button id="notificationBtn" class="p-1.5 bg-white/50 backdrop-blur-md border border-white/60 rounded-lg text-gray-600 hover:bg-white/70 transition-colors relative shadow-sm">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <button id="notificationBtn" class="header-glass-btn p-1.5 text-gray-600 relative">
+                            <svg class="w-4 h-4 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
                             </svg>
-                            <span id="notificationBadge" class="absolute -top-1 -right-1 w-3.5 h-3.5 bg-danger text-white text-[10px] font-bold rounded-full flex items-center justify-center hidden">0</span>
+                            <span id="notificationBadge" class="absolute -top-1 -right-1 w-3.5 h-3.5 bg-danger text-white text-[10px] font-bold rounded-full flex items-center justify-center hidden z-20">0</span>
                             <span class="sr-only">알림</span>
                         </button>
                         <!-- 설정 -->
-                        <button id="settingsBtn" class="p-1.5 bg-white/50 backdrop-blur-md border border-white/60 rounded-lg text-gray-600 hover:bg-white/70 transition-colors shadow-sm">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <button id="settingsBtn" class="header-glass-btn p-1.5 text-gray-600">
+                            <svg class="w-4 h-4 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                             </svg>
                             <span class="sr-only">설정</span>
                         </button>
                         <!-- 로그아웃 -->
-                        <button id="headerLogoutBtn" class="p-1.5 bg-white/50 backdrop-blur-md border border-white/60 rounded-lg text-gray-600 hover:bg-white/70 transition-colors shadow-sm">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <button id="headerLogoutBtn" class="header-glass-btn p-1.5 text-gray-600">
+                            <svg class="w-4 h-4 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
                             </svg>
                             <span class="sr-only">로그아웃</span>
                         </button>
                     </div>
                     <!-- 2행: 학급 정보 -->
-                    <div id="classInfo" class="w-full px-3 py-1 bg-white/50 backdrop-blur-md border border-white/60 rounded-lg text-xs text-gray-700 font-medium text-center shadow-sm"></div>
+                    <div id="classInfo" class="w-full px-3 py-1 text-xs text-gray-700 font-semibold text-center relative z-10"></div>
                 </div>
             </div>
             <!-- 기존 로그아웃 버튼 (호환성 유지) -->
@@ -99,28 +99,28 @@
             ⭐
         </button>
 
-        <!-- 하단 네비게이션 -->
-        <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-gradient-to-r from-blue-200/60 via-blue-100/60 to-blue-200/60 backdrop-blur-md border-t border-blue-200/50 shadow-sm z-50">
-            <div class="flex justify-around items-center h-16">
+        <!-- 하단 네비게이션 - Dock 스타일 리퀴드 글라스 -->
+        <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto z-50 pb-3 px-2">
+            <div class="nav-dock">
                 <button class="nav-item active" data-route="dashboard">
                     <span class="text-xl">🏠</span>
-                    <span class="text-xs mt-1">홈</span>
+                    <span>홈</span>
                 </button>
                 <button class="nav-item" data-route="timetable">
                     <span class="text-xl">📅</span>
-                    <span class="text-xs mt-1">시간표</span>
+                    <span>시간표</span>
                 </button>
                 <button class="nav-item" data-route="petfarm">
                     <span class="text-xl">🐾</span>
-                    <span class="text-xs mt-1">펫농장</span>
+                    <span>펫농장</span>
                 </button>
                 <button class="nav-item" data-route="emotion">
                     <span class="text-xl">💝</span>
-                    <span class="text-xs mt-1">마음</span>
+                    <span>마음</span>
                 </button>
                 <button class="nav-item" data-route="stats">
                     <span class="text-xl">📊</span>
-                    <span class="text-xs mt-1">통계</span>
+                    <span>통계</span>
                 </button>
             </div>
         </nav>

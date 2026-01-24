@@ -20,79 +20,47 @@ export function render() {
         '10+': students.filter(s => s.level >= 10).length
     };
 
-    // 상위 5명
-    const topStudents = [...students]
-        .sort((a, b) => b.level - a.level || b.exp - a.exp)
-        .slice(0, 5);
+    // 전체 학생 레벨순 정렬
+    const rankedStudents = [...students]
+        .sort((a, b) => b.level - a.level || (b.exp || 0) - (a.exp || 0));
 
     return `
         <div class="space-y-4">
             <!-- 헤더 -->
-            <div class="flex items-center justify-between sticky top-[88px] z-40 bg-white py-2 -mx-4 px-4">
+            <div class="sticky top-[88px] z-40 bg-white py-2 -mx-4 px-4">
                 <h2 class="text-lg font-bold">📊 통계</h2>
-                <button onclick="window.classpet.showSettings()" class="text-gray-400 hover:text-gray-600">
-                    ⚙️
-                </button>
-            </div>
-
-            <!-- 학급 정보 -->
-            <div class="card bg-gradient-to-r from-primary/10 to-secondary/10">
-                <div class="text-center">
-                    <div class="text-2xl mb-2">🏫</div>
-                    <h3 class="font-bold text-lg">${settings.className}</h3>
-                    <div class="text-sm text-gray-500">${settings.schoolYear}년 ${settings.semester}학기</div>
-                </div>
             </div>
 
             <!-- 전체 통계 -->
-            <div class="grid grid-cols-2 gap-3">
-                <div class="stat-card">
-                    <div class="text-3xl mb-1">👥</div>
-                    <div class="text-2xl font-bold text-primary">${stats.totalStudents}</div>
-                    <div class="text-xs text-gray-500">전체 학생</div>
+            <div class="grid grid-cols-4 gap-2">
+                <div class="flex flex-col items-center py-3 bg-indigo-50 border border-indigo-200 rounded-xl">
+                    <span class="text-lg">👥</span>
+                    <span class="text-xl font-bold text-indigo-600">${stats.totalStudents}</span>
+                    <span class="text-xs text-gray-500">학생</span>
                 </div>
-                <div class="stat-card">
-                    <div class="text-3xl mb-1">⭐</div>
-                    <div class="text-2xl font-bold text-secondary">${stats.totalPraises}</div>
-                    <div class="text-xs text-gray-500">누적 칭찬</div>
+                <div class="flex flex-col items-center py-3 bg-amber-50 border border-amber-200 rounded-xl">
+                    <span class="text-lg">⭐</span>
+                    <span class="text-xl font-bold text-amber-600">${stats.totalPraises}</span>
+                    <span class="text-xs text-gray-500">누적</span>
                 </div>
-                <div class="stat-card">
-                    <div class="text-3xl mb-1">📈</div>
-                    <div class="text-2xl font-bold text-success">${stats.averageLevel}</div>
-                    <div class="text-xs text-gray-500">평균 레벨</div>
+                <div class="flex flex-col items-center py-3 bg-emerald-50 border border-emerald-200 rounded-xl">
+                    <span class="text-lg">📈</span>
+                    <span class="text-xl font-bold text-emerald-600">${isNaN(stats.averageLevel) ? 0 : stats.averageLevel}</span>
+                    <span class="text-xs text-gray-500">평균Lv</span>
                 </div>
-                <div class="stat-card">
-                    <div class="text-3xl mb-1">📅</div>
-                    <div class="text-2xl font-bold text-warning">${stats.todayPraises}</div>
-                    <div class="text-xs text-gray-500">오늘 칭찬</div>
-                </div>
-            </div>
-
-            <!-- 레벨 분포 -->
-            <div class="card">
-                <h3 class="section-title">🎮 레벨 분포</h3>
-                <div class="space-y-3">
-                    ${Object.entries(levelGroups).map(([range, count]) => {
-                        const percentage = students.length > 0 ? Math.round((count / students.length) * 100) : 0;
-                        return `
-                        <div class="flex items-center gap-3">
-                            <div class="w-16 text-sm font-medium">Lv.${range}</div>
-                            <div class="flex-1 exp-bar">
-                                <div class="exp-bar-fill" style="width: ${percentage}%"></div>
-                            </div>
-                            <div class="w-12 text-sm text-gray-500 text-right">${count}명</div>
-                        </div>
-                        `;
-                    }).join('')}
+                <div class="flex flex-col items-center py-3 bg-rose-50 border border-rose-200 rounded-xl">
+                    <span class="text-lg">📅</span>
+                    <span class="text-xl font-bold text-rose-600">${stats.todayPraises}</span>
+                    <span class="text-xs text-gray-500">오늘</span>
                 </div>
             </div>
 
             <!-- 상위 랭킹 -->
             <div class="card">
                 <h3 class="section-title">🏆 레벨 랭킹</h3>
-                ${topStudents.length > 0 ? `
-                <div class="space-y-2">
-                    ${topStudents.map((student, index) => {
+                ${rankedStudents.length > 0 ? `
+                <div class="space-y-2 max-h-[280px] overflow-y-auto">
+                    ${rankedStudents.map((student, index) => {
                         const rankTier = getRankTier(index + 1, students.length);
                         const medals = ['🥇', '🥈', '🥉'];
                         return `
@@ -103,7 +71,7 @@ export function render() {
                             <span class="text-2xl">${getPetEmoji(student.petType, student.level)}</span>
                             <div class="flex-1 min-w-0 ml-2">
                                 <div class="font-medium">${student.name}</div>
-                                <div class="text-xs text-gray-400">Lv.${student.level || 1} · EXP ${student.exp}</div>
+                                <div class="text-xs text-gray-400">Lv.${student.level || 1} · EXP ${student.exp || 0}</div>
                             </div>
                             <span class="text-xs px-2 py-0.5 rounded-full" style="background-color: ${rankTier.color}20; color: ${rankTier.color}">
                                 ${rankTier.tier}
@@ -117,48 +85,49 @@ export function render() {
                 `}
             </div>
 
-            <!-- 카테고리별 칭찬 -->
+            <!-- 칭찬 통계 -->
             <div class="card">
-                <h3 class="section-title">📊 칭찬 카테고리 분포</h3>
-                <div class="grid grid-cols-2 gap-2">
-                    ${Object.entries(PRAISE_CATEGORIES).map(([key, cat]) => {
-                        const count = stats.categoryStats[key] || 0;
-                        const total = stats.totalPraises || 1;
-                        const percentage = Math.round((count / total) * 100);
-                        return `
-                        <div class="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
-                            <span class="text-xl">${cat.icon}</span>
-                            <div class="flex-1 min-w-0">
-                                <div class="text-xs font-medium truncate">${cat.name}</div>
-                                <div class="text-xs text-gray-400">${count}회 (${percentage}%)</div>
-                            </div>
-                        </div>
-                        `;
-                    }).join('')}
+                <h3 class="section-title">📈 칭찬 통계</h3>
+                <div class="grid grid-cols-3 gap-2">
+                    <span class="flex items-center justify-between bg-cream rounded-lg px-2 py-1">
+                        <span class="flex items-center gap-1">
+                            <span class="text-sm">🎯</span><span class="text-xs font-bold text-gray-800">자기관리</span>
+                        </span>
+                        <span class="font-bold text-sm text-gray-800">${stats.categoryStats.selfManagement || 0}</span>
+                    </span>
+                    <span class="flex items-center justify-between bg-cream rounded-lg px-2 py-1">
+                        <span class="flex items-center gap-1">
+                            <span class="text-sm">📚</span><span class="text-xs font-bold text-gray-800">지식정보</span>
+                        </span>
+                        <span class="font-bold text-sm text-gray-800">${stats.categoryStats.knowledge || 0}</span>
+                    </span>
+                    <span class="flex items-center justify-between bg-cream rounded-lg px-2 py-1">
+                        <span class="flex items-center gap-1">
+                            <span class="text-sm">💡</span><span class="text-xs font-bold text-gray-800">창의적사고</span>
+                        </span>
+                        <span class="font-bold text-sm text-gray-800">${stats.categoryStats.creative || 0}</span>
+                    </span>
+                    <span class="flex items-center justify-between bg-cream rounded-lg px-2 py-1">
+                        <span class="flex items-center gap-1">
+                            <span class="text-sm">🎨</span><span class="text-xs font-bold text-gray-800">심미적감성</span>
+                        </span>
+                        <span class="font-bold text-sm text-gray-800">${stats.categoryStats.aesthetic || 0}</span>
+                    </span>
+                    <span class="flex items-center justify-between bg-cream rounded-lg px-2 py-1">
+                        <span class="flex items-center gap-1">
+                            <span class="text-sm">🤝</span><span class="text-xs font-bold text-gray-800">협력적소통</span>
+                        </span>
+                        <span class="font-bold text-sm text-gray-800">${stats.categoryStats.cooperation || 0}</span>
+                    </span>
+                    <span class="flex items-center justify-between bg-cream rounded-lg px-2 py-1">
+                        <span class="flex items-center gap-1">
+                            <span class="text-sm">🏠</span><span class="text-xs font-bold text-gray-800">공동체</span>
+                        </span>
+                        <span class="font-bold text-sm text-gray-800">${stats.categoryStats.community || 0}</span>
+                    </span>
                 </div>
             </div>
 
-            <!-- 데이터 관리 -->
-            <div class="card">
-                <h3 class="section-title">🔧 데이터 관리</h3>
-                <div class="space-y-2">
-                    <button onclick="window.classpet.exportData()" class="w-full py-3 bg-gray-50 rounded-xl text-sm font-medium hover:bg-gray-100 transition-colors">
-                        📤 데이터 내보내기 (JSON)
-                    </button>
-                    <button onclick="window.classpet.importData()" class="w-full py-3 bg-gray-50 rounded-xl text-sm font-medium hover:bg-gray-100 transition-colors">
-                        📥 데이터 가져오기
-                    </button>
-                    <button onclick="window.classpet.showResetConfirm()" class="w-full py-3 bg-danger/10 rounded-xl text-sm font-medium text-danger hover:bg-danger/20 transition-colors">
-                        🗑️ 전체 데이터 초기화
-                    </button>
-                </div>
-            </div>
-
-            <!-- 앱 정보 -->
-            <div class="text-center text-xs text-gray-400 py-4">
-                <div>클래스펫 v1.0.0</div>
-                <div>담임교사를 위한 학급 경영 도우미</div>
-            </div>
         </div>
     `;
 }

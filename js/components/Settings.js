@@ -246,50 +246,6 @@ export function render() {
                 </div>
             </section>
 
-            <!-- 데이터 관리 섹션 -->
-            <section class="mb-6">
-                <h2 class="section-title">
-                    <span>🗂️</span>
-                    <span>데이터 관리</span>
-                </h2>
-                <div class="card space-y-3">
-                    ${isGoogleTeacher ? `
-                    <!-- Firebase 마이그레이션 (Google 로그인 시) -->
-                    <button id="migrateToFirebaseBtn" class="w-full p-3 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 hover:from-blue-100 hover:to-indigo-100 transition-colors text-left flex items-center gap-3">
-                        <span class="text-xl">☁️</span>
-                        <div class="flex-1">
-                            <p class="font-medium text-blue-700">클라우드로 데이터 이전</p>
-                            <p class="text-xs text-blue-500">로컬 데이터를 Firebase로 업로드해요</p>
-                        </div>
-                        <span class="text-xs text-blue-400">→</span>
-                    </button>
-                    ` : ''}
-                    <button id="exportDataBtn" class="w-full p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors text-left flex items-center gap-3">
-                        <span class="text-xl">📤</span>
-                        <div>
-                            <p class="font-medium text-gray-800">데이터 백업</p>
-                            <p class="text-xs text-gray-500">모든 데이터를 파일로 저장해요</p>
-                        </div>
-                    </button>
-                    <button id="importDataBtn" class="w-full p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors text-left flex items-center gap-3">
-                        <span class="text-xl">📥</span>
-                        <div>
-                            <p class="font-medium text-gray-800">데이터 복원</p>
-                            <p class="text-xs text-gray-500">백업한 파일에서 불러와요</p>
-                        </div>
-                    </button>
-                    <button id="resetDataBtn" class="w-full p-3 rounded-xl bg-red-50 hover:bg-red-100 transition-colors text-left flex items-center gap-3">
-                        <span class="text-xl">🗑️</span>
-                        <div>
-                            <p class="font-medium text-red-600">데이터 초기화</p>
-                            <p class="text-xs text-red-400">모든 데이터를 삭제해요 (복구 불가)</p>
-                        </div>
-                    </button>
-                </div>
-            </section>
-
-            <!-- 숨김 파일 입력 -->
-            <input type="file" id="importFileInput" accept=".json" class="hidden">
         </div>
     `;
 }

@@ -88,8 +88,8 @@ export function render() {
             <div class="card bg-gradient-to-br from-primary/10 to-success/10 py-3">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-2">
-                        <span class="text-base">📊</span>
-                        <span class="font-semibold text-sm">오늘의 학급</span>
+                        <span class="text-lg">📊</span>
+                        <span class="font-semibold text-base">오늘의 학급</span>
                         <span class="text-xs text-gray-500">${todayDayKr}요일</span>
                     </div>
                     <div class="flex items-center gap-3 text-sm">
@@ -131,10 +131,10 @@ export function render() {
             <div class="card py-3">
                 <div class="flex items-center justify-between mb-2">
                     <div class="flex items-center gap-2">
-                        <span class="text-base">📅</span>
-                        <span class="font-semibold text-sm">오늘의 수업</span>
+                        <span class="text-lg">📅</span>
+                        <span class="font-semibold text-base">오늘의 수업</span>
                     </div>
-                    <button onclick="window.classpet.router.navigate('timetable')" class="text-xs text-primary font-medium">
+                    <button onclick="window.classpet.router.navigate('timetable')" class="text-sm text-primary font-medium">
                         전체보기 →
                     </button>
                 </div>
@@ -205,45 +205,45 @@ export function render() {
             <!-- 카테고리별 칭찬 통계 -->
             <div class="card py-3">
                 <div class="flex items-center gap-2 mb-2">
-                    <span class="text-base">📈</span>
-                    <span class="font-semibold text-sm">칭찬 통계</span>
+                    <span class="text-lg">📈</span>
+                    <span class="font-semibold text-base">칭찬 통계</span>
                 </div>
                 <div class="grid grid-cols-3 gap-2">
                     <span class="flex items-center justify-between bg-cream rounded-lg px-2 py-1">
                         <span class="flex items-center gap-1">
-                            <span class="text-sm">🎯</span><span class="text-xs text-gray-500">자기관리</span>
+                            <span class="text-sm">🎯</span><span class="text-xs font-bold text-gray-800">자기관리</span>
                         </span>
-                        <span class="font-bold text-sm text-primary">${stats.categoryStats.selfManagement || 0}</span>
+                        <span class="font-bold text-sm text-gray-800">${stats.categoryStats.selfManagement || 0}</span>
                     </span>
                     <span class="flex items-center justify-between bg-cream rounded-lg px-2 py-1">
                         <span class="flex items-center gap-1">
-                            <span class="text-sm">📚</span><span class="text-xs text-gray-500">지식정보</span>
+                            <span class="text-sm">📚</span><span class="text-xs font-bold text-gray-800">지식정보</span>
                         </span>
-                        <span class="font-bold text-sm text-primary">${stats.categoryStats.knowledge || 0}</span>
+                        <span class="font-bold text-sm text-gray-800">${stats.categoryStats.knowledge || 0}</span>
                     </span>
                     <span class="flex items-center justify-between bg-cream rounded-lg px-2 py-1">
                         <span class="flex items-center gap-1">
-                            <span class="text-sm">💡</span><span class="text-xs text-gray-500">창의적사고</span>
+                            <span class="text-sm">💡</span><span class="text-xs font-bold text-gray-800">창의적사고</span>
                         </span>
-                        <span class="font-bold text-sm text-primary">${stats.categoryStats.creative || 0}</span>
+                        <span class="font-bold text-sm text-gray-800">${stats.categoryStats.creative || 0}</span>
                     </span>
                     <span class="flex items-center justify-between bg-cream rounded-lg px-2 py-1">
                         <span class="flex items-center gap-1">
-                            <span class="text-sm">🎨</span><span class="text-xs text-gray-500">심미적감성</span>
+                            <span class="text-sm">🎨</span><span class="text-xs font-bold text-gray-800">심미적감성</span>
                         </span>
-                        <span class="font-bold text-sm text-primary">${stats.categoryStats.aesthetic || 0}</span>
+                        <span class="font-bold text-sm text-gray-800">${stats.categoryStats.aesthetic || 0}</span>
                     </span>
                     <span class="flex items-center justify-between bg-cream rounded-lg px-2 py-1">
                         <span class="flex items-center gap-1">
-                            <span class="text-sm">🤝</span><span class="text-xs text-gray-500">협력적소통</span>
+                            <span class="text-sm">🤝</span><span class="text-xs font-bold text-gray-800">협력적소통</span>
                         </span>
-                        <span class="font-bold text-sm text-primary">${stats.categoryStats.cooperation || 0}</span>
+                        <span class="font-bold text-sm text-gray-800">${stats.categoryStats.cooperation || 0}</span>
                     </span>
                     <span class="flex items-center justify-between bg-cream rounded-lg px-2 py-1">
                         <span class="flex items-center gap-1">
-                            <span class="text-sm">🏠</span><span class="text-xs text-gray-500">공동체</span>
+                            <span class="text-sm">🏠</span><span class="text-xs font-bold text-gray-800">공동체</span>
                         </span>
-                        <span class="font-bold text-sm text-primary">${stats.categoryStats.community || 0}</span>
+                        <span class="font-bold text-sm text-gray-800">${stats.categoryStats.community || 0}</span>
                     </span>
                 </div>
             </div>
