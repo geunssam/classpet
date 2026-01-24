@@ -1,10 +1,21 @@
 /* 클래스펫 커스텀 스타일 */
 
+/* Safe Area 지원 */
+:root {
+    --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+}
+
 /* 기본 폰트 설정 */
 body {
     font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    padding-bottom: var(--safe-area-inset-bottom);
+}
+
+/* Safe Area 패딩 */
+.pb-safe {
+    padding-bottom: calc(12px + var(--safe-area-inset-bottom));
 }
 
 /* 네비게이션 Dock 컨테이너 - 리퀴드 글라스 */
@@ -2084,16 +2095,29 @@ input[type="password"]:focus {
 
 /* 모바일 성능 최적화 */
 @media (max-width: 640px) {
-    /* backdrop-filter 최적화 - 모바일에서 blur 값 축소 */
+    /* backdrop-filter 완전 제거 - 단순 배경으로 대체 */
     .nav-dock,
     .header-dock,
-    .header-glass-btn,
     .week-navigator-dock,
     .timetable-grid-dock,
-    .timetable-btn-dock,
+    .timetable-btn-dock {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        background: rgba(255,255,255,0.95) !important;
+    }
+
+    .header-glass-btn,
     .timetable-cell-new {
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        background: rgba(255,255,255,0.9) !important;
+    }
+
+    /* 헤더 blur 제거 */
+    header {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        background: rgba(255,255,255,0.98) !important;
     }
 
     /* ::before 가상요소 제거로 렌더링 부하 감소 */
@@ -2103,12 +2127,19 @@ input[type="password"]:focus {
     .timetable-grid-dock::before,
     .timetable-btn-dock::before,
     .timetable-cell-new::before {
-        display: none;
+        display: none !important;
     }
 
     /* 트랜지션 최적화 */
     .nav-item,
     .timetable-cell-new {
-        transition: transform 0.15s ease, background 0.15s ease;
+        transition: transform 0.1s ease, background 0.1s ease;
+    }
+
+    /* box-shadow 간소화 */
+    .nav-dock,
+    .header-dock,
+    .timetable-grid-dock {
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
     }
 }
