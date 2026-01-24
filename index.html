@@ -34,46 +34,53 @@
     </div>
 
     <!-- 앱 컨테이너 -->
-    <div id="app" class="max-w-md mx-auto bg-white min-h-screen shadow-soft relative pb-20">
+    <div id="app" class="max-w-md mx-auto bg-white min-h-screen shadow-soft relative pb-20 overflow-hidden">
+        <!-- Blob Animation Background -->
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
         <!-- 헤더 -->
-        <header class="bg-gradient-to-r from-primary to-primary-dark text-white px-4 py-3 sticky top-0 z-50">
+        <header class="bg-[#E6F0FF]/85 backdrop-blur-md border-b border-[#D9E8F5] shadow-sm px-4 py-3 sticky top-0 z-50">
             <div class="flex items-stretch justify-between">
-                <!-- 좌측: 로고 + 타이틀 (세로 중앙, 더 크게) -->
+                <!-- 좌측: 로고 + 타이틀 -->
                 <div class="flex items-center gap-3 py-2">
                     <span class="text-3xl">🐾</span>
-                    <h1 class="text-2xl font-bold">클래스펫</h1>
+                    <h1 class="text-2xl font-bold text-gray-800">클래스펫</h1>
                 </div>
-                <!-- 우측: 2행 구조 (상단: 아이콘들, 하단: 학급 정보) -->
-                <div class="flex flex-col items-end justify-between gap-1">
-                    <!-- 우측 상단: 아이콘들 -->
-                    <div class="flex items-center justify-end gap-1">
-                        <!-- 날짜 클릭 → 감정 히스토리 이동 -->
-                        <button id="dateHistoryBtn" class="flex items-center gap-1 text-sm opacity-90 hover:opacity-100 hover:bg-white/20 px-2 py-1 rounded-lg transition-all">
-                            <span>📅</span>
+                <!-- 우측: 2행 구조 -->
+                <div class="flex flex-col items-center justify-between gap-2">
+                    <!-- 우측 상단: 버튼 카드들 -->
+                    <div class="flex items-center gap-2">
+                        <!-- 날짜 버튼 -->
+                        <button id="dateHistoryBtn" class="flex items-center justify-center gap-1 bg-blue-50 border border-blue-100 rounded-xl px-3 py-1.5 text-gray-700 hover:bg-blue-100 transition-colors text-sm font-medium">
                             <span id="currentDate"></span>
                         </button>
                         <input type="date" id="historyDatePicker" class="sr-only" />
                         <!-- 알림 버튼 -->
-                        <button id="notificationBtn" class="p-1.5 hover:bg-white/20 rounded-full transition-colors relative">
-                            🔔
-                            <span id="notificationBadge" class="absolute -top-1 -right-1 w-5 h-5 bg-danger text-white text-xs font-bold rounded-full flex items-center justify-center hidden">0</span>
+                        <button id="notificationBtn" class="flex items-center justify-center bg-blue-50 border border-blue-100 rounded-xl p-1.5 text-gray-600 hover:bg-blue-100 transition-colors relative">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                            </svg>
+                            <span id="notificationBadge" class="absolute -top-1 -right-1 w-4 h-4 bg-danger text-white text-xs font-bold rounded-full flex items-center justify-center hidden">0</span>
                         </button>
-                        <!-- 로그아웃 버튼 -->
-                        <button id="logoutBtn" class="p-1.5 hover:bg-white/20 rounded-full transition-colors" title="로그아웃">
-                            🚪
-                        </button>
-                        <button id="settingsBtn" class="p-1.5 hover:bg-white/20 rounded-full transition-colors">
-                            ⚙️
+                        <!-- 설정 버튼 -->
+                        <button id="settingsBtn" class="flex items-center justify-center bg-blue-50 border border-blue-100 rounded-xl p-1.5 text-gray-600 hover:bg-blue-100 transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
                         </button>
                     </div>
-                    <!-- 우측 하단: 학급 정보 뱃지 (상단과 동일한 너비) -->
-                    <div id="classInfo" class="w-full text-sm text-center bg-white/20 rounded-lg px-3 py-1"></div>
+                    <!-- 우측 하단: 학급 정보 뱃지 -->
+                    <div id="classInfo" class="text-sm text-gray-700 font-medium bg-blue-50 border border-blue-100 rounded-xl px-3 py-1.5"></div>
                 </div>
             </div>
+            <!-- 로그아웃 버튼 (숨김) -->
+            <button id="logoutBtn" class="hidden" title="로그아웃"></button>
         </header>
 
         <!-- 메인 콘텐츠 -->
-        <main id="content" class="p-4">
+        <main id="content" class="p-4 relative z-10">
             <!-- 라우터에 의해 동적으로 렌더링됨 -->
         </main>
 
@@ -83,7 +90,7 @@
         </button>
 
         <!-- 하단 네비게이션 -->
-        <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white border-t border-gray-100 z-50">
+        <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-[#E6F0FF]/85 backdrop-blur-md border-t border-[#D9E8F5] shadow-sm z-50">
             <div class="flex justify-around items-center h-16">
                 <button class="nav-item active" data-route="dashboard">
                     <span class="text-xl">🏠</span>

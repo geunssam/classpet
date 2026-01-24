@@ -192,10 +192,9 @@ class Router {
             if (quickPraiseBtn) quickPraiseBtn.classList.add('hidden');
             if (header) header.classList.remove('hidden');
 
-            // 헤더 스타일 변경 (학생 모드)
+            // 헤더 스타일 변경 (학생 모드) - 크림색 유지
             if (header) {
-                header.classList.remove('bg-gradient-to-r', 'from-primary', 'to-primary-dark');
-                header.classList.add('bg-gradient-to-r', 'from-success', 'to-primary');
+                header.classList.remove('bg-gradient-to-r', 'from-primary', 'to-primary-dark', 'from-success', 'to-primary');
             }
 
             // 컨텐츠 영역 패딩 조정
@@ -208,10 +207,9 @@ class Router {
             if (quickPraiseBtn) quickPraiseBtn.classList.remove('hidden');
             if (header) header.classList.remove('hidden');
 
-            // 헤더 스타일 복원
+            // 헤더 스타일 복원 - 크림색 유지
             if (header) {
-                header.classList.remove('from-success');
-                header.classList.add('bg-gradient-to-r', 'from-primary', 'to-primary-dark');
+                header.classList.remove('bg-gradient-to-r', 'from-primary', 'to-primary-dark', 'from-success', 'to-primary');
             }
 
             // 컨텐츠 영역 패딩 복원
