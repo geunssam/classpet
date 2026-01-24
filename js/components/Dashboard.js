@@ -45,7 +45,7 @@ export function render() {
         <div class="space-y-4">
             ${isGoogleTeacher ? `
             <!-- 현재 학급 정보 + QR 코드 (Google 로그인 시) -->
-            <div class="card bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 py-3 sticky top-[88px] z-40">
+            <div class="card !bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 py-3" style="background: linear-gradient(to right, #eff6ff, #eef2ff) !important;">
                 <div class="flex items-center justify-between gap-4">
                     <!-- 좌측: 학급 정보 (2행 구조) -->
                     <div class="flex flex-col gap-1 min-w-0">
@@ -168,9 +168,9 @@ export function render() {
                     ${students.slice(0, 6).map(student => `
                     <div class="flex items-center gap-2 bg-cream rounded-xl px-3 py-2 cursor-pointer hover:bg-cream-dark transition-colors"
                          onclick="window.classpet.router.navigate('student', { id: ${student.id} })">
-                        <span class="text-xl">${getPetEmoji(student.petType, student.level)}</span>
+                        <span class="text-xl">${getPetEmoji(student.petType, student.level || 1)}</span>
                         <span class="text-sm font-medium flex-1 truncate">${student.name}</span>
-                        <span class="text-xs text-gray-400">Lv.${student.level}</span>
+                        <span class="text-xs text-gray-400">Lv.${student.level || 1}</span>
                     </div>
                     `).join('')}
                 </div>
