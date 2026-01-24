@@ -165,25 +165,43 @@ export function render() {
 
             <!-- 기본 정보 섹션 -->
             <section class="mb-6">
-                <h2 class="section-title">
-                    <span>📚</span>
-                    <span>기본 정보</span>
-                </h2>
-                <div class="card">
-                    <div class="flex items-center gap-3">
-                        <div class="flex-1 min-w-0">
-                            <label class="text-sm font-medium text-gray-600 mb-1 block">학급 이름</label>
-                            <input type="text" id="settingsClassName" value="${settings?.className || '우리반'}"
-                                   class="w-full font-bold text-gray-800 py-2 px-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-primary" placeholder="예: 4학년 2반">
+                <!-- 첫 행: 제목 + 저장 버튼 -->
+                <div class="flex items-center justify-between mb-3">
+                    <h2 class="section-title mb-0">
+                        <span>📚</span>
+                        <span>기본 정보</span>
+                    </h2>
+                    <button id="saveBasicInfoBtn"
+                            class="px-4 py-1.5 text-xs font-bold rounded-full text-white hover:opacity-90 transition-all whitespace-nowrap"
+                            style="background: linear-gradient(180deg, #38bdf8 0%, #3b82f6 100%); box-shadow: 0 4px 12px -2px rgba(59, 130, 246, 0.35); border: 2px solid rgba(255,255,255,0.5);">
+                        저장하기
+                    </button>
+                </div>
+
+                <!-- 둘째 행: 2열 그리드 -->
+                <div class="grid grid-cols-2 gap-3">
+                    <!-- 학급 이름 카드 -->
+                    <div class="rounded-xl py-3 px-4 shadow-sm" style="background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);">
+                        <div class="flex items-center justify-center gap-1.5 mb-2">
+                            <span class="text-sm">🏫</span>
+                            <span class="text-sm font-bold text-gray-700">학급 이름</span>
                         </div>
-                        <div class="flex-1 min-w-0">
-                            <label class="text-sm font-medium text-gray-600 mb-1 block">선생님 이름</label>
-                            <input type="text" id="settingsTeacherName" value="${settings?.teacherName || '담임선생님'}"
-                                   class="w-full font-bold text-gray-800 py-2 px-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-primary" placeholder="예: 김선생님">
+                        <input type="text" id="settingsClassName" value="${settings?.className || '우리반'}"
+                               class="w-full font-semibold text-gray-800 text-sm bg-transparent border-none outline-none p-0 mb-2 text-center"
+                               placeholder="예: 4학년 2반">
+                        <div class="h-0.5 bg-sky-400 rounded-full w-1/3"></div>
+                    </div>
+
+                    <!-- 선생님 이름 카드 -->
+                    <div class="rounded-xl py-3 px-4 shadow-sm" style="background: linear-gradient(135deg, #fdf2f8 0%, #fbcfe8 100%);">
+                        <div class="flex items-center justify-center gap-1.5 mb-2">
+                            <span class="text-sm">👩‍🏫</span>
+                            <span class="text-sm font-bold text-gray-700">선생님 이름</span>
                         </div>
-                        <button id="saveBasicInfoBtn" class="flex-shrink-0 px-3 py-1 text-xs bg-white border border-sky-400 rounded-full text-sky-500 hover:bg-sky-50 transition-colors mt-5">
-                            저장하기
-                        </button>
+                        <input type="text" id="settingsTeacherName" value="${settings?.teacherName || '담임선생님'}"
+                               class="w-full font-semibold text-gray-800 text-sm bg-transparent border-none outline-none p-0 mb-2 text-center"
+                               placeholder="예: 김선생님">
+                        <div class="h-0.5 bg-pink-400 rounded-full w-1/3"></div>
                     </div>
                 </div>
             </section>
