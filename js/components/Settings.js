@@ -174,12 +174,12 @@ export function render() {
                         <div class="flex-1 min-w-0">
                             <label class="text-xs text-gray-400 mb-1 block">학급 이름</label>
                             <input type="text" id="settingsClassName" value="${settings?.className || '우리반'}"
-                                   class="w-full text-sm py-1.5 px-2 border border-gray-200 rounded-lg" placeholder="예: 4학년 2반">
+                                   class="w-full font-bold text-gray-800 py-2 px-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-primary" placeholder="예: 4학년 2반">
                         </div>
                         <div class="flex-1 min-w-0">
                             <label class="text-xs text-gray-400 mb-1 block">선생님 이름</label>
                             <input type="text" id="settingsTeacherName" value="${settings?.teacherName || '담임선생님'}"
-                                   class="w-full text-sm py-1.5 px-2 border border-gray-200 rounded-lg" placeholder="예: 김선생님">
+                                   class="w-full font-bold text-gray-800 py-2 px-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-primary" placeholder="예: 김선생님">
                         </div>
                         <button id="saveBasicInfoBtn" class="flex-shrink-0 px-3 py-1 text-xs bg-white border border-sky-400 rounded-full text-sky-500 hover:bg-sky-50 transition-colors mt-5">
                             저장하기
