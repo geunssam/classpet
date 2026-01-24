@@ -466,6 +466,13 @@ export async function getTeacherClasses(uid) {
             classes.push({ id: doc.id, teacherUid: uid, ...doc.data() });
         });
 
+        // 각 학급의 학생 수 가져오기
+        for (const cls of classes) {
+            const studentsRef = collection(db, 'teachers', uid, 'classes', cls.id, 'students');
+            const studentsSnapshot = await getDocs(studentsRef);
+            cls.studentCount = studentsSnapshot.size;
+        }
+
         // 클라이언트에서 정렬 (최신순)
         classes.sort((a, b) => {
             const aTime = a.createdAt?.toDate?.() || new Date(0);

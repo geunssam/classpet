@@ -71,7 +71,7 @@ export async function render() {
                             <p class="text-sm text-gray-500">${teacherSession?.email || ''}</p>
                         </div>
                     </div>
-                    <button id="classSelectLogoutBtn" class="px-3 py-1.5 text-sm text-gray-500 hover:text-gray-700 border border-gray-300 hover:border-gray-400 rounded-full flex items-center gap-1 transition-colors">
+                    <button id="classSelectLogoutBtn" class="px-4 py-2 text-sm text-white bg-gradient-to-r from-[#C9A8D3] to-[#9AA8DC] hover:from-[#BA96C6] hover:to-[#8A98CC] rounded-full flex items-center gap-1 transition-all">
                         <span>로그아웃</span>
                         <span>→</span>
                     </button>
@@ -199,17 +199,8 @@ function renderClassList() {
                         <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center text-white text-xl">
                             🏫
                         </div>
-                        <div class="flex-1 min-w-0">
-                            <p class="font-bold text-gray-800 truncate">${cls.className || '이름 없는 학급'}</p>
-                            <p class="text-sm text-gray-500">
-                                ${cls.schoolYear || ''}년 ${cls.semester || ''}학기
-                                ${cls.studentCount ? `· 학생 ${cls.studentCount}명` : ''}
-                            </p>
-                        </div>
-                        <div class="text-right">
-                            <p class="text-xs text-gray-400">학급코드</p>
-                            <p class="font-mono font-bold text-primary">${cls.classCode || '------'}</p>
-                        </div>
+                        <p class="flex-1 font-bold text-gray-800 truncate">${cls.className || '이름 없는 학급'}</p>
+                        <p class="text-sm text-gray-500">${cls.studentCount ? `${cls.studentCount}명` : ''}</p>
                     </div>
                 </button>
             `).join('')}
