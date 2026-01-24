@@ -185,7 +185,7 @@ function setupAuthStateListener() {
     });
 
     // Firebase onAuthStateChanged 지속 감시 (로그아웃 등 후속 변경 감지)
-    store.onAuthChange((user) => {
+    store.onAuthChange(async (user) => {
         // 이미 로딩이 완료된 상태에서의 인증 변경만 처리
         if (!store.isAuthLoading()) {
             console.log('🔐 Firebase 인증 상태 변경:', user?.email || 'null');
@@ -193,6 +193,15 @@ function setupAuthStateListener() {
             if (user && !user.isAnonymous) {
                 // Google 로그인 - 세션 업데이트
                 store.setCurrentTeacherUid(user.uid);
+
+                // Firebase가 비활성화 상태였다면 활성화 (타임아웃 후 뒤늦은 인증 성공 케이스)
+                if (!store.isFirebaseEnabled()) {
+                    store.enableFirebase();
+                    // Firebase에서 학급 데이터 다시 로드
+                    await store.loadClassDataFromFirebase();
+                    console.log('🔥 Firebase 뒤늦은 인증 처리 완료 - 학급 데이터 로드됨');
+                }
+
                 updateClassInfo();
             }
         }

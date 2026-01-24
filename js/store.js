@@ -1998,6 +1998,18 @@ class Store {
         return this.firebaseEnabled && firebase.isFirebaseInitialized();
     }
 
+    /**
+     * Firebase 수동 활성화 (인증 타임아웃 후 뒤늦게 인증 성공 시 사용)
+     */
+    enableFirebase() {
+        if (firebase.isFirebaseInitialized()) {
+            this.firebaseEnabled = true;
+            console.log('🔥 Firebase 연동: 활성화 (수동)');
+            return true;
+        }
+        return false;
+    }
+
     generateClassCode() {
         return firebase.generateClassCode();
     }
