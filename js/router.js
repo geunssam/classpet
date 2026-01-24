@@ -111,6 +111,11 @@ class Router {
                 } else if (typeof component.render === 'function') {
                     const content = await component.render(params);
                     this.render(content);
+
+                    // afterRender 호출 (이벤트 리스너 바인딩 등)
+                    if (typeof component.afterRender === 'function') {
+                        component.afterRender(params);
+                    }
                 }
             } catch (error) {
                 console.error('라우트 렌더링 오류:', error);
