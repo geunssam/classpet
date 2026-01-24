@@ -234,6 +234,7 @@ export function openModal(modalId = 'modalContainer') {
     const modal = document.getElementById(modalId);
     if (!modal) return;
 
+    modal.classList.remove('hidden');
     modal.classList.add('show');
     document.body.style.overflow = 'hidden';
 
@@ -252,6 +253,7 @@ export function closeModal(modalId = 'modalContainer') {
     if (!modal) return;
 
     modal.classList.remove('show');
+    modal.classList.add('hidden');
     document.body.style.overflow = '';
 }
 

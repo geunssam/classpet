@@ -21,11 +21,8 @@ export function render() {
     return `
         <div class="settings-container pb-8">
             <!-- 헤더 -->
-            <div class="flex items-center gap-3 mb-6">
-                <button id="settingsBackBtn" class="p-2 rounded-xl hover:bg-gray-100 transition-colors">
-                    <span class="text-xl">←</span>
-                </button>
-                <h1 class="text-xl font-bold text-gray-800">⚙️ 설정</h1>
+            <div class="flex items-center justify-between sticky top-[88px] z-40 bg-white py-2 -mx-4 px-4 mb-4">
+                <h2 class="text-base font-bold whitespace-nowrap">⚙️ 설정</h2>
             </div>
 
             ${isGoogleTeacher ? `
@@ -36,56 +33,71 @@ export function render() {
                     <span>계정 정보</span>
                 </h2>
                 <div class="card">
-                    <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-3">
+                        <!-- 프로필 -->
                         ${teacherSession?.photoURL
-                            ? `<img src="${teacherSession.photoURL}" class="w-14 h-14 rounded-full border-2 border-primary" alt="프로필">`
-                            : `<div class="w-14 h-14 rounded-full bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center text-white text-2xl">👩‍🏫</div>`
+                            ? `<img src="${teacherSession.photoURL}" class="w-10 h-10 rounded-full border-2 border-primary" alt="프로필">`
+                            : `<div class="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center text-white text-lg">👩‍🏫</div>`
                         }
-                        <div class="flex-1">
-                            <p class="font-bold text-gray-800">${teacherSession?.displayName || '선생님'}</p>
-                            <p class="text-sm text-gray-500">${teacherSession?.email || ''}</p>
+                        <div class="flex-1 min-w-0">
+                            <p class="font-bold text-gray-800 truncate">${teacherSession?.displayName || '선생님'}</p>
+                            <p class="text-xs text-gray-400 truncate">${teacherSession?.email || ''}</p>
                         </div>
-                    </div>
 
-                    <div class="mt-4 pt-4 border-t border-gray-100 flex gap-3">
-                        <button id="manageClassesBtn" class="flex-1 py-2.5 bg-primary/10 text-primary rounded-xl hover:bg-primary/20 transition-colors font-medium text-sm">
-                            📚 학급 관리
+                        <!-- 학급 전환 버튼 -->
+                        <button id="manageClassesBtn" class="flex-shrink-0 px-3 py-1 text-xs bg-white border border-sky-400 rounded-full text-sky-500 hover:bg-sky-50 transition-colors">
+                            학급 전환
                         </button>
-                        <button id="googleLogoutBtn" class="flex-1 py-2.5 bg-gray-100 text-gray-600 rounded-xl hover:bg-gray-200 transition-colors font-medium text-sm">
-                            🚪 로그아웃
+
+                        <!-- 로그아웃 버튼 -->
+                        <button id="googleLogoutBtn" class="flex-shrink-0 px-3 py-1 text-xs bg-red-50 border border-red-200 rounded-full text-red-400 hover:bg-red-100 transition-colors">
+                            로그아웃
                         </button>
                     </div>
                 </div>
             </section>
 
-            <!-- 현재 학급 정보 -->
+            <!-- 현재 학급 정보 + QR 코드 -->
             <section class="mb-6">
                 <h2 class="section-title">
                     <span>🏫</span>
                     <span>현재 학급</span>
                 </h2>
-                <div class="card">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="font-bold text-lg text-gray-800">${settings?.className || '학급 이름 없음'}</p>
-                            <p class="text-sm text-gray-500">${settings?.schoolYear || new Date().getFullYear()}년 ${settings?.semester || 1}학기</p>
+                <div class="card border border-gray-100 py-3" style="background: #ffffff !important;">
+                    <div class="grid grid-cols-3 items-center text-center">
+                        <!-- 학급명 -->
+                        <div class="border-r border-gray-200">
+                            <p class="text-xs text-gray-400 mb-1">학급명</p>
+                            <p class="font-bold text-gray-800">${settings?.className || '학급 이름 없음'}</p>
                         </div>
-                        <div class="text-right">
-                            <p class="text-xs text-gray-400">학급코드</p>
-                            <p class="font-mono text-xl font-bold text-primary">${settings?.classCode || classCode || '------'}</p>
-                        </div>
-                    </div>
 
-                    <div class="mt-4 pt-4 border-t border-gray-100 grid grid-cols-2 gap-2">
-                        <button id="copyClassCodeBtn2" class="py-2 bg-gray-100 text-gray-600 rounded-xl hover:bg-gray-200 transition-colors text-sm">
-                            📋 코드 복사
-                        </button>
-                        <button id="showQRCodeBtn2" class="py-2 bg-primary/10 text-primary rounded-xl hover:bg-primary/20 transition-colors text-sm">
-                            📱 QR 코드
-                        </button>
+                        <!-- 학급코드 -->
+                        <div class="border-r border-gray-200">
+                            <p class="text-xs text-gray-400 mb-1">학급코드</p>
+                            <p class="font-mono font-bold text-primary">${settings?.classCode || classCode || '------'}</p>
+                        </div>
+
+                        <!-- QR 코드 (클릭하면 전체화면) -->
+                        <div>
+                            <p class="text-xs text-gray-400 mb-1">QR코드</p>
+                            <div id="settingsQRCodeContainer" class="w-10 h-10 mx-auto bg-white rounded-lg p-0.5 shadow-sm flex items-center justify-center cursor-pointer hover:shadow-md transition-shadow" title="클릭하면 크게 보기">
+                                <!-- QR 코드가 여기에 생성됨 -->
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
+
+            <!-- QR 코드 전체화면 모달 (칠판용) -->
+            <div id="settingsQRFullscreenModal" class="hidden fixed inset-0 bg-white z-[9999] flex flex-col items-center justify-center cursor-pointer">
+                <div class="text-center">
+                    <p class="text-2xl font-bold text-gray-800 mb-2">${settings?.className || '학급'}</p>
+                    <p class="text-gray-500 mb-6">아래 QR 코드를 스캔하여 참가하세요</p>
+                    <div id="settingsQRCodeLarge" class="inline-block bg-white p-4 rounded-2xl shadow-lg mb-6"></div>
+                    <p class="text-4xl font-mono font-bold text-primary mb-4">${settings?.classCode || classCode || '------'}</p>
+                    <p class="text-gray-400 text-sm">화면을 클릭하면 닫힙니다</p>
+                </div>
+            </div>
             ` : ''}
 
             <!-- 학급 코드 섹션 (Firebase 활성화 시, Google 미로그인) -->
@@ -555,7 +567,8 @@ function showDeleteSubjectConfirm(subject, usageCount) {
  * QR 코드 표시 모달
  */
 function showQRCodeModal() {
-    const classCode = store.getClassCode();
+    const settings = store.getSettings();
+    const classCode = settings?.classCode || store.getClassCode();
     const url = `${window.location.origin}${window.location.pathname}?code=${classCode}`;
 
     const modalContent = `
@@ -565,7 +578,7 @@ function showQRCodeModal() {
                 <button onclick="window.classpet.closeModal()" class="text-gray-400 hover:text-gray-600">✕</button>
             </div>
             <div class="text-center py-4">
-                <canvas id="qrCanvas" class="mx-auto"></canvas>
+                <div id="qrContainer" class="mx-auto flex justify-center"></div>
                 <p class="text-2xl font-mono font-bold text-primary mt-4">${classCode}</p>
                 <p class="text-sm text-gray-500 mt-2">학생들이 스캔하면 바로 참가해요!</p>
                 <p class="text-xs text-gray-400 mt-2 break-all">${url}</p>
@@ -576,18 +589,22 @@ function showQRCodeModal() {
     setModalContent(modalContent);
     openModal();
 
-    // QR 코드 생성 (QRCode 라이브러리 사용)
+    // QR 코드 생성 (QRCode 라이브러리 사용 - Dashboard.js와 동일한 방식)
     setTimeout(() => {
-        const canvas = document.getElementById('qrCanvas');
-        if (canvas && typeof QRCode !== 'undefined') {
-            QRCode.toCanvas(canvas, url, {
-                width: 200,
-                margin: 2,
-                color: {
-                    dark: '#7C9EF5',
-                    light: '#FFFFFF'
-                }
-            });
+        const qrContainer = document.getElementById('qrContainer');
+        if (qrContainer && typeof QRCode !== 'undefined') {
+            try {
+                new QRCode(qrContainer, {
+                    text: url,
+                    width: 200,
+                    height: 200,
+                    colorDark: '#6366f1',
+                    colorLight: '#ffffff',
+                    correctLevel: QRCode.CorrectLevel.M
+                });
+            } catch (error) {
+                console.error('QR 코드 생성 실패:', error);
+            }
         }
     }, 100);
 }
@@ -930,14 +947,6 @@ function importData(file) {
  * 렌더 후 이벤트 바인딩
  */
 export function afterRender() {
-    // 뒤로가기 버튼
-    const backBtn = document.getElementById('settingsBackBtn');
-    if (backBtn) {
-        backBtn.addEventListener('click', () => {
-            router.navigate('dashboard');
-        });
-    }
-
     // Google 계정 관련 버튼들
     const manageClassesBtn = document.getElementById('manageClassesBtn');
     if (manageClassesBtn) {
@@ -962,26 +971,62 @@ export function afterRender() {
         });
     }
 
-    // 현재 학급 코드 복사 버튼 (Google 로그인 시)
-    const copyClassCodeBtn2 = document.getElementById('copyClassCodeBtn2');
-    if (copyClassCodeBtn2) {
-        copyClassCodeBtn2.addEventListener('click', () => {
-            const settings = store.getSettings();
-            const classCode = settings?.classCode || store.getClassCode();
-            if (classCode) {
-                navigator.clipboard.writeText(classCode).then(() => {
-                    showToast('학급 코드가 복사되었어요!', 'success');
-                }).catch(() => {
-                    showToast('복사에 실패했어요. 직접 복사해주세요.', 'warning');
+    // 현재 학급 QR 코드 (Google 로그인 시)
+    const settingsQRCodeContainer = document.getElementById('settingsQRCodeContainer');
+    if (settingsQRCodeContainer) {
+        const settings = store.getSettings();
+        const classCode = settings?.classCode || store.getClassCode();
+
+        if (classCode) {
+            const joinUrl = `${window.location.origin}${window.location.pathname}#student-login?code=${classCode}`;
+
+            if (typeof QRCode !== 'undefined') {
+                try {
+                    // 작은 QR 코드 (설정 화면용)
+                    new QRCode(settingsQRCodeContainer, {
+                        text: joinUrl,
+                        width: 36,
+                        height: 36,
+                        colorDark: '#6366f1',
+                        colorLight: '#ffffff',
+                        correctLevel: QRCode.CorrectLevel.M
+                    });
+
+                    // 큰 QR 코드 (전체화면용)
+                    const settingsQRCodeLarge = document.getElementById('settingsQRCodeLarge');
+                    if (settingsQRCodeLarge) {
+                        new QRCode(settingsQRCodeLarge, {
+                            text: joinUrl,
+                            width: 280,
+                            height: 280,
+                            colorDark: '#6366f1',
+                            colorLight: '#ffffff',
+                            correctLevel: QRCode.CorrectLevel.M
+                        });
+                    }
+                } catch (error) {
+                    console.error('QR 코드 생성 실패:', error);
+                    settingsQRCodeContainer.innerHTML = '<span class="text-xl">📱</span>';
+                }
+            } else {
+                settingsQRCodeContainer.innerHTML = '<span class="text-xl">📱</span>';
+            }
+
+            // QR 코드 클릭 → 전체화면 모달 열기
+            const settingsQRFullscreenModal = document.getElementById('settingsQRFullscreenModal');
+            settingsQRCodeContainer.addEventListener('click', () => {
+                if (settingsQRFullscreenModal) {
+                    settingsQRFullscreenModal.classList.remove('hidden');
+                }
+            });
+
+            // 전체화면 모달 클릭 → 닫기
+            if (settingsQRFullscreenModal) {
+                settingsQRFullscreenModal.addEventListener('click', () => {
+                    settingsQRFullscreenModal.classList.add('hidden');
                 });
             }
-        });
-    }
-
-    // 현재 학급 QR 코드 버튼 (Google 로그인 시)
-    const showQRCodeBtn2 = document.getElementById('showQRCodeBtn2');
-    if (showQRCodeBtn2) {
-        showQRCodeBtn2.addEventListener('click', showQRCodeModal);
+        }
     }
 
     // 학급 코드 생성 버튼
