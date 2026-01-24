@@ -220,30 +220,18 @@ export function render() {
 
                 <div class="card">
                     ${students.length > 0 ? `
-                        <div class="space-y-3" id="studentList">
+                        <div class="grid grid-cols-2 gap-2 max-h-[176px] overflow-y-auto" id="studentList">
                             ${students.map(student => {
-                                const petEmoji = PET_TYPES[student.petType]?.stages.baby || '🐾';
                                 return `
-                                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
-                                        <div class="flex items-center gap-3">
-                                            <span class="text-2xl">${petEmoji}</span>
-                                            <div>
-                                                <span class="font-medium text-gray-800">[${student.number}] ${student.name}</span>
-                                                <span class="text-xs text-gray-400 ml-2">Lv.${student.level || 1}</span>
-                                            </div>
-                                        </div>
-                                        <div class="flex items-center gap-2">
-                                            <button class="pin-reset-btn text-xs px-3 py-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
-                                                    data-student-id="${student.id}"
-                                                    data-student-name="${student.name}"
-                                                    data-student-number="${student.number}">
-                                                PIN 초기화
-                                            </button>
-                                            <button class="student-edit-btn text-xs px-3 py-1.5 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
-                                                    data-student-id="${student.id}">
-                                                수정
-                                            </button>
-                                        </div>
+                                    <div class="flex items-center justify-between px-3 py-2 bg-gray-50 rounded-lg text-sm">
+                                        <span class="text-gray-600 font-medium">${student.number}번</span>
+                                        <span class="text-gray-800 font-medium flex-1 text-center">${student.name}</span>
+                                        <button class="pin-reset-btn text-xs bg-blue-100 text-blue-600 hover:bg-blue-200 transition-colors px-2 py-0.5 rounded"
+                                                data-student-id="${student.id}"
+                                                data-student-name="${student.name}"
+                                                data-student-number="${student.number}">PIN</button>
+                                        <button class="student-edit-btn text-xs bg-gray-200 text-gray-600 hover:bg-gray-300 transition-colors px-2 py-0.5 rounded ml-1"
+                                                data-student-id="${student.id}">수정</button>
                                     </div>
                                 `;
                             }).join('')}
@@ -1148,7 +1136,7 @@ export function afterRender() {
     // 학생 수정 버튼들
     document.querySelectorAll('.student-edit-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-            const studentId = parseInt(btn.dataset.studentId);
+            const studentId = btn.dataset.studentId;
             window.classpet.showEditStudent(studentId);
         });
     });
