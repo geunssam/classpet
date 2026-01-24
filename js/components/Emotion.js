@@ -56,17 +56,7 @@ export function render() {
                 ` : ''}
             </div>
 
-            ${classCode ? `
-            <!-- 학급 코드 표시 -->
-            <div class="bg-primary/10 rounded-xl p-3 flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                    <span>🏫</span>
-                    <span class="text-sm text-gray-600">학급 코드</span>
-                </div>
-                <span class="font-mono font-bold text-primary">${classCode}</span>
-            </div>
-            ` : ''}
-
+            
             <!-- 오늘의 감정 요약 -->
             <div class="card bg-gradient-to-br from-secondary/10 to-danger/10">
                 <h3 class="section-title m-0 mb-3">오늘의 우리 반</h3>

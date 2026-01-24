@@ -1097,18 +1097,19 @@ body {
 
 /* 토스트 메시지 */
 .toast {
-    padding: 24px 40px;
+    padding: 16px 24px;
     background: white;
     color: #1F2937;
-    border-radius: 20px;
-    font-size: 20px;
-    font-weight: 700;
-    line-height: 1.6;
+    border-radius: 16px;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.5;
     text-align: center;
     white-space: pre-line;
-    box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
     animation: toastIn 0.3s ease, toastOut 0.3s ease 5.7s forwards;
     cursor: pointer;
+    max-width: 280px;
 }
 
 /* 클릭으로 닫는 토스트 (자동 사라짐 없음) */
@@ -2078,5 +2079,36 @@ input[type="password"]:focus {
 
     .timetable-cell-new.dragging {
         touch-action: none;
+    }
+}
+
+/* 모바일 성능 최적화 */
+@media (max-width: 640px) {
+    /* backdrop-filter 최적화 - 모바일에서 blur 값 축소 */
+    .nav-dock,
+    .header-dock,
+    .header-glass-btn,
+    .week-navigator-dock,
+    .timetable-grid-dock,
+    .timetable-btn-dock,
+    .timetable-cell-new {
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+    }
+
+    /* ::before 가상요소 제거로 렌더링 부하 감소 */
+    .nav-dock::before,
+    .header-dock::before,
+    .week-navigator-dock::before,
+    .timetable-grid-dock::before,
+    .timetable-btn-dock::before,
+    .timetable-cell-new::before {
+        display: none;
+    }
+
+    /* 트랜지션 최적화 */
+    .nav-item,
+    .timetable-cell-new {
+        transition: transform 0.15s ease, background 0.15s ease;
     }
 }
