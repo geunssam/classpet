@@ -36,17 +36,17 @@
     <!-- 앱 컨테이너 -->
     <div id="app" class="max-w-md mx-auto bg-white min-h-screen shadow-soft relative pb-20">
         <!-- 헤더 -->
-        <header class="bg-gradient-to-r from-primary to-primary-dark text-white p-4 sticky top-0 z-50">
-            <div class="flex items-center justify-between">
-                <!-- 좌측: 로고 + 타이틀 (세로 중앙 정렬) -->
-                <div class="flex items-center gap-2">
-                    <span class="text-2xl">🐾</span>
-                    <h1 class="text-xl font-bold">클래스펫</h1>
+        <header class="bg-gradient-to-r from-primary to-primary-dark text-white px-4 py-3 sticky top-0 z-50">
+            <div class="flex items-stretch justify-between">
+                <!-- 좌측: 로고 + 타이틀 (세로 중앙, 더 크게) -->
+                <div class="flex items-center gap-3 py-2">
+                    <span class="text-3xl">🐾</span>
+                    <h1 class="text-2xl font-bold">클래스펫</h1>
                 </div>
                 <!-- 우측: 2행 구조 (상단: 아이콘들, 하단: 학급 정보) -->
-                <div class="flex flex-col items-end gap-1">
+                <div class="flex flex-col items-end justify-between gap-1">
                     <!-- 우측 상단: 아이콘들 -->
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center justify-end gap-1">
                         <!-- 날짜 클릭 → 감정 히스토리 이동 -->
                         <button id="dateHistoryBtn" class="flex items-center gap-1 text-sm opacity-90 hover:opacity-100 hover:bg-white/20 px-2 py-1 rounded-lg transition-all">
                             <span>📅</span>
@@ -54,20 +54,20 @@
                         </button>
                         <input type="date" id="historyDatePicker" class="sr-only" />
                         <!-- 알림 버튼 -->
-                        <button id="notificationBtn" class="p-2 hover:bg-white/20 rounded-full transition-colors relative">
+                        <button id="notificationBtn" class="p-1.5 hover:bg-white/20 rounded-full transition-colors relative">
                             🔔
                             <span id="notificationBadge" class="absolute -top-1 -right-1 w-5 h-5 bg-danger text-white text-xs font-bold rounded-full flex items-center justify-center hidden">0</span>
                         </button>
                         <!-- 로그아웃 버튼 -->
-                        <button id="logoutBtn" class="p-2 hover:bg-white/20 rounded-full transition-colors" title="로그아웃">
+                        <button id="logoutBtn" class="p-1.5 hover:bg-white/20 rounded-full transition-colors" title="로그아웃">
                             🚪
                         </button>
-                        <button id="settingsBtn" class="p-2 hover:bg-white/20 rounded-full transition-colors">
+                        <button id="settingsBtn" class="p-1.5 hover:bg-white/20 rounded-full transition-colors">
                             ⚙️
                         </button>
                     </div>
-                    <!-- 우측 하단: 학급 정보 뱃지 -->
-                    <div id="classInfo" class="text-sm bg-white/20 rounded-lg px-3 py-1"></div>
+                    <!-- 우측 하단: 학급 정보 뱃지 (상단과 동일한 너비) -->
+                    <div id="classInfo" class="w-full text-sm text-right bg-white/20 rounded-lg px-3 py-1"></div>
                 </div>
             </div>
         </header>
