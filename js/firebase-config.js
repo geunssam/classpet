@@ -673,7 +673,7 @@ export async function getAllStudents(teacherUid, classId) {
         snapshot.forEach(doc => {
             const numericId = parseInt(doc.id);
             const id = isNaN(numericId) ? doc.id : numericId;
-            students.push({ id, ...doc.data() });
+            students.push({ ...doc.data(), id });
         });
 
         students.sort((a, b) => a.number - b.number);
@@ -722,7 +722,7 @@ export function subscribeToStudents(teacherUid, classId, callback) {
             snapshot.forEach(doc => {
                 const numericId = parseInt(doc.id);
                 const id = isNaN(numericId) ? doc.id : numericId;
-                students.push({ id, ...doc.data() });
+                students.push({ ...doc.data(), id });
             });
             students.sort((a, b) => a.number - b.number);
             callback(students);
