@@ -1079,6 +1079,59 @@ export async function getTimetable(teacherUid, classId) {
     }
 }
 
+/**
+ * 시간표 오버라이드 저장 (계층 구조: /teachers/{uid}/classes/{classId}/timetable/overrides)
+ * @param {object} overrides - { "2025-W04": { "mon-1": {subject: "체육"} }, ... }
+ */
+export async function saveTimetableOverrides(teacherUid, classId, overrides) {
+    if (!db) return null;
+
+    const uid = teacherUid || getCurrentTeacherUid();
+    const cId = classId || getCurrentClassId();
+
+    if (!uid || !cId) return null;
+
+    try {
+        const overridesRef = doc(db, 'teachers', uid, 'classes', cId, 'timetable', 'overrides');
+        await setDoc(overridesRef, {
+            data: overrides,
+            updatedAt: serverTimestamp()
+        });
+
+        console.log('시간표 오버라이드 저장 완료');
+        return overrides;
+    } catch (error) {
+        console.error('시간표 오버라이드 저장 실패:', error);
+        return null;
+    }
+}
+
+/**
+ * 시간표 오버라이드 가져오기 (계층 구조)
+ * @returns {object} - { "2025-W04": { "mon-1": {subject: "체육"} }, ... }
+ */
+export async function getTimetableOverrides(teacherUid, classId) {
+    if (!db) return null;
+
+    const uid = teacherUid || getCurrentTeacherUid();
+    const cId = classId || getCurrentClassId();
+
+    if (!uid || !cId) return null;
+
+    try {
+        const overridesRef = doc(db, 'teachers', uid, 'classes', cId, 'timetable', 'overrides');
+        const overridesDoc = await getDoc(overridesRef);
+
+        if (overridesDoc.exists()) {
+            return overridesDoc.data().data || {};
+        }
+        return {};
+    } catch (error) {
+        console.error('시간표 오버라이드 가져오기 실패:', error);
+        return {};
+    }
+}
+
 // ==================== 메모/노트 (계층 구조) ====================
 
 /**

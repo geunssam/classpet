@@ -12,6 +12,7 @@ const STORAGE_KEYS = {
     SETTINGS: 'classpet_settings',
     STUDENTS: 'classpet_students',
     TIMETABLE: 'classpet_timetable',
+    TIMETABLE_OVERRIDES: 'classpet_timetable_overrides',  // 주간 오버라이드
     PRAISE_LOG: 'classpet_praise_log',
     EMOTION_LOG: 'classpet_emotion_log',
     NOTES: 'classpet_notes',
@@ -1000,11 +1001,17 @@ class Store {
 
     // ==================== 시간표 관련 ====================
 
+    /**
+     * 기본 시간표 가져오기
+     */
     getTimetable() {
         const data = localStorage.getItem(STORAGE_KEYS.TIMETABLE);
         return data ? JSON.parse(data) : null;
     }
 
+    /**
+     * 기본 시간표 저장
+     */
     saveTimetable(timetable) {
         localStorage.setItem(STORAGE_KEYS.TIMETABLE, JSON.stringify(timetable));
         this.notify('timetable', timetable);
@@ -1013,25 +1020,194 @@ class Store {
         this.syncTimetableToFirebase(timetable);
     }
 
+    /**
+     * 기본 시간표 셀 업데이트
+     */
     updateTimetableCell(key, value) {
         const timetable = this.getTimetable() || {};
         timetable[key] = value;
         this.saveTimetable(timetable);
     }
 
+    // ==================== 주간 오버라이드 관련 ====================
+
+    /**
+     * ISO 주차 키 생성 (예: "2025-W04")
+     */
+    getWeekKey(date = new Date()) {
+        const d = new Date(date);
+        d.setHours(0, 0, 0, 0);
+        d.setDate(d.getDate() + 4 - (d.getDay() || 7));
+        const yearStart = new Date(d.getFullYear(), 0, 1);
+        const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+        return `${d.getFullYear()}-W${String(weekNo).padStart(2, '0')}`;
+    }
+
+    /**
+     * 월요일 날짜로 주차 키 생성
+     */
+    getWeekKeyFromMonday(monday) {
+        return this.getWeekKey(monday);
+    }
+
+    /**
+     * 모든 주간 오버라이드 가져오기
+     */
+    getWeeklyOverrides() {
+        const data = localStorage.getItem(STORAGE_KEYS.TIMETABLE_OVERRIDES);
+        return data ? JSON.parse(data) : {};
+    }
+
+    /**
+     * 모든 주간 오버라이드 저장
+     */
+    saveWeeklyOverrides(overrides) {
+        localStorage.setItem(STORAGE_KEYS.TIMETABLE_OVERRIDES, JSON.stringify(overrides));
+        this.notify('timetableOverrides', overrides);
+
+        // Firebase 동기화
+        this.syncWeeklyOverridesToFirebase(overrides);
+    }
+
+    /**
+     * 특정 주의 오버라이드 가져오기
+     */
+    getWeekOverride(weekKey) {
+        const overrides = this.getWeeklyOverrides();
+        return overrides[weekKey] || null;
+    }
+
+    /**
+     * 특정 주의 특정 셀 오버라이드 설정
+     */
+    setWeekOverride(weekKey, cellKey, data) {
+        const overrides = this.getWeeklyOverrides();
+
+        if (!overrides[weekKey]) {
+            overrides[weekKey] = {
+                cells: {},
+                updatedAt: new Date().toISOString()
+            };
+        }
+
+        if (data === null) {
+            // null이면 해당 셀의 오버라이드 삭제 (기본으로 복원)
+            delete overrides[weekKey].cells[cellKey];
+            // 셀이 없으면 주차 자체 삭제
+            if (Object.keys(overrides[weekKey].cells).length === 0) {
+                delete overrides[weekKey];
+            }
+        } else {
+            overrides[weekKey].cells[cellKey] = data;
+            overrides[weekKey].updatedAt = new Date().toISOString();
+        }
+
+        this.saveWeeklyOverrides(overrides);
+        return overrides;
+    }
+
+    /**
+     * 특정 주의 시간표 가져오기 (기본 + 오버라이드 병합)
+     */
+    getTimetableForWeek(weekKey) {
+        const baseTimetable = this.getTimetable() || {};
+        const weekOverride = this.getWeekOverride(weekKey);
+
+        if (!weekOverride || !weekOverride.cells) {
+            return { timetable: baseTimetable, overriddenCells: [] };
+        }
+
+        // 기본 시간표 복사 후 오버라이드 적용
+        const merged = { ...baseTimetable };
+        const overriddenCells = [];
+
+        Object.entries(weekOverride.cells).forEach(([cellKey, cellData]) => {
+            merged[cellKey] = cellData;
+            overriddenCells.push(cellKey);
+        });
+
+        return { timetable: merged, overriddenCells };
+    }
+
+    /**
+     * 특정 주의 오버라이드 전체 삭제 (기본으로 복원)
+     */
+    clearWeekOverride(weekKey) {
+        const overrides = this.getWeeklyOverrides();
+        delete overrides[weekKey];
+        this.saveWeeklyOverrides(overrides);
+    }
+
+    /**
+     * 오버라이드 히스토리 가져오기 (최근 N개 주)
+     */
+    getOverrideHistory(limit = 10) {
+        const overrides = this.getWeeklyOverrides();
+        return Object.entries(overrides)
+            .map(([weekKey, data]) => ({
+                weekKey,
+                ...data,
+                cellCount: Object.keys(data.cells || {}).length
+            }))
+            .sort((a, b) => b.weekKey.localeCompare(a.weekKey))
+            .slice(0, limit);
+    }
+
     async syncTimetableToFirebase(timetable) {
         const teacherUid = this.getCurrentTeacherUid();
         const classId = this.getCurrentClassId();
-        if (!teacherUid || !classId || !this.firebaseEnabled) return;
+        console.log('🔥 시간표 동기화 시도:', { teacherUid, classId, firebaseEnabled: this.firebaseEnabled });
+
+        if (!teacherUid || !classId || !this.firebaseEnabled) {
+            console.warn('❌ 시간표 동기화 조건 미충족:', {
+                hasTeacherUid: !!teacherUid,
+                hasClassId: !!classId,
+                firebaseEnabled: this.firebaseEnabled
+            });
+            return;
+        }
+        console.log('✅ 시간표 동기화 조건 충족, Firebase에 저장 시작...');
 
         if (this.isOnline) {
             try {
                 await firebase.saveTimetable(teacherUid, classId, timetable);
+                console.log('✅ 시간표 Firebase 저장 성공!', { teacherUid, classId });
             } catch (error) {
+                console.error('❌ 시간표 Firebase 저장 실패:', error);
                 this.addToOfflineQueue({ type: 'saveTimetable', teacherUid, classId, data: timetable });
             }
         } else {
+            console.log('📴 오프라인 상태 - 시간표를 오프라인 큐에 추가');
             this.addToOfflineQueue({ type: 'saveTimetable', teacherUid, classId, data: timetable });
+        }
+    }
+
+    async syncWeeklyOverridesToFirebase(overrides) {
+        const teacherUid = this.getCurrentTeacherUid();
+        const classId = this.getCurrentClassId();
+        console.log('🔥 주간 오버라이드 동기화 시도:', { teacherUid, classId, firebaseEnabled: this.firebaseEnabled });
+
+        if (!teacherUid || !classId || !this.firebaseEnabled) {
+            console.warn('❌ 주간 오버라이드 동기화 조건 미충족:', {
+                hasTeacherUid: !!teacherUid,
+                hasClassId: !!classId,
+                firebaseEnabled: this.firebaseEnabled
+            });
+            return;
+        }
+        console.log('✅ 주간 오버라이드 동기화 조건 충족, Firebase에 저장 시작...');
+
+        if (this.isOnline) {
+            try {
+                await firebase.saveTimetableOverrides(teacherUid, classId, overrides);
+                console.log('✅ 주간 오버라이드 Firebase 저장 성공!', { teacherUid, classId });
+            } catch (error) {
+                console.error('❌ 주간 오버라이드 Firebase 동기화 실패:', error);
+                this.addToOfflineQueue({ type: 'saveTimetableOverrides', teacherUid, classId, data: overrides });
+            }
+        } else {
+            console.log('📴 오프라인 상태 - 주간 오버라이드를 오프라인 큐에 추가');
+            this.addToOfflineQueue({ type: 'saveTimetableOverrides', teacherUid, classId, data: overrides });
         }
     }
 
@@ -1049,6 +1225,24 @@ class Store {
             return null;
         } catch (error) {
             console.error('Firebase 시간표 로드 실패:', error);
+            return null;
+        }
+    }
+
+    async loadWeeklyOverridesFromFirebase() {
+        const teacherUid = this.getCurrentTeacherUid();
+        const classId = this.getCurrentClassId();
+        if (!teacherUid || !classId || !this.firebaseEnabled) return null;
+
+        try {
+            const overrides = await firebase.getTimetableOverrides(teacherUid, classId);
+            if (overrides) {
+                localStorage.setItem(STORAGE_KEYS.TIMETABLE_OVERRIDES, JSON.stringify(overrides));
+                return overrides;
+            }
+            return null;
+        } catch (error) {
+            console.error('Firebase 주간 오버라이드 로드 실패:', error);
             return null;
         }
     }

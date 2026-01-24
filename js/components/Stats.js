@@ -28,7 +28,7 @@ export function render() {
     return `
         <div class="space-y-4">
             <!-- 헤더 -->
-            <div class="flex items-center justify-between">
+            <div class="flex items-center justify-between sticky top-[88px] z-40 bg-white py-2 -mx-4 px-4">
                 <h2 class="text-lg font-bold">📊 통계</h2>
                 <button onclick="window.classpet.showSettings()" class="text-gray-400 hover:text-gray-600">
                     ⚙️

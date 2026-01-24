@@ -45,7 +45,7 @@ export function render() {
         <div class="space-y-4">
             ${isGoogleTeacher ? `
             <!-- 현재 학급 정보 + QR 코드 (Google 로그인 시) -->
-            <div class="card bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 py-3">
+            <div class="card bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 py-3 sticky top-[88px] z-40">
                 <div class="flex items-center justify-between gap-4">
                     <!-- 좌측: 학급 정보 (2행 구조) -->
                     <div class="flex flex-col gap-1 min-w-0">
@@ -209,23 +209,41 @@ export function render() {
                     <span class="font-semibold text-sm">칭찬 통계</span>
                 </div>
                 <div class="grid grid-cols-3 gap-2">
-                    <span class="flex items-center gap-1 bg-cream rounded-lg px-2 py-1">
-                        <span class="text-sm">🎯</span><span class="text-xs text-gray-500">자기관리</span><span class="font-bold text-sm text-primary">${stats.categoryStats.selfManagement || 0}</span>
+                    <span class="flex items-center justify-between bg-cream rounded-lg px-2 py-1">
+                        <span class="flex items-center gap-1">
+                            <span class="text-sm">🎯</span><span class="text-xs text-gray-500">자기관리</span>
+                        </span>
+                        <span class="font-bold text-sm text-primary">${stats.categoryStats.selfManagement || 0}</span>
                     </span>
-                    <span class="flex items-center gap-1 bg-cream rounded-lg px-2 py-1">
-                        <span class="text-sm">📚</span><span class="text-xs text-gray-500">지식</span><span class="font-bold text-sm text-primary">${stats.categoryStats.knowledge || 0}</span>
+                    <span class="flex items-center justify-between bg-cream rounded-lg px-2 py-1">
+                        <span class="flex items-center gap-1">
+                            <span class="text-sm">📚</span><span class="text-xs text-gray-500">지식정보</span>
+                        </span>
+                        <span class="font-bold text-sm text-primary">${stats.categoryStats.knowledge || 0}</span>
                     </span>
-                    <span class="flex items-center gap-1 bg-cream rounded-lg px-2 py-1">
-                        <span class="text-sm">💡</span><span class="text-xs text-gray-500">창의</span><span class="font-bold text-sm text-primary">${stats.categoryStats.creative || 0}</span>
+                    <span class="flex items-center justify-between bg-cream rounded-lg px-2 py-1">
+                        <span class="flex items-center gap-1">
+                            <span class="text-sm">💡</span><span class="text-xs text-gray-500">창의적사고</span>
+                        </span>
+                        <span class="font-bold text-sm text-primary">${stats.categoryStats.creative || 0}</span>
                     </span>
-                    <span class="flex items-center gap-1 bg-cream rounded-lg px-2 py-1">
-                        <span class="text-sm">🎨</span><span class="text-xs text-gray-500">심미</span><span class="font-bold text-sm text-primary">${stats.categoryStats.aesthetic || 0}</span>
+                    <span class="flex items-center justify-between bg-cream rounded-lg px-2 py-1">
+                        <span class="flex items-center gap-1">
+                            <span class="text-sm">🎨</span><span class="text-xs text-gray-500">심미적감성</span>
+                        </span>
+                        <span class="font-bold text-sm text-primary">${stats.categoryStats.aesthetic || 0}</span>
                     </span>
-                    <span class="flex items-center gap-1 bg-cream rounded-lg px-2 py-1">
-                        <span class="text-sm">🤝</span><span class="text-xs text-gray-500">협력</span><span class="font-bold text-sm text-primary">${stats.categoryStats.cooperation || 0}</span>
+                    <span class="flex items-center justify-between bg-cream rounded-lg px-2 py-1">
+                        <span class="flex items-center gap-1">
+                            <span class="text-sm">🤝</span><span class="text-xs text-gray-500">협력적소통</span>
+                        </span>
+                        <span class="font-bold text-sm text-primary">${stats.categoryStats.cooperation || 0}</span>
                     </span>
-                    <span class="flex items-center gap-1 bg-cream rounded-lg px-2 py-1">
-                        <span class="text-sm">🏠</span><span class="text-xs text-gray-500">공동체</span><span class="font-bold text-sm text-primary">${stats.categoryStats.community || 0}</span>
+                    <span class="flex items-center justify-between bg-cream rounded-lg px-2 py-1">
+                        <span class="flex items-center gap-1">
+                            <span class="text-sm">🏠</span><span class="text-xs text-gray-500">공동체</span>
+                        </span>
+                        <span class="font-bold text-sm text-primary">${stats.categoryStats.community || 0}</span>
                     </span>
                 </div>
             </div>

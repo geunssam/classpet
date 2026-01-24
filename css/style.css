@@ -198,7 +198,7 @@ body {
     border-color: #7C9EF5;
 }
 
-/* 시간표 셀 */
+/* 시간표 셀 (기존 - 호환성 유지) */
 .timetable-cell {
     min-height: 48px;
     padding: 8px;
@@ -222,6 +222,47 @@ body {
 .timetable-cell.completed {
     background: linear-gradient(135deg, rgba(124, 224, 163, 0.15) 0%, rgba(124, 224, 163, 0.05) 100%);
     color: #059669;
+}
+
+/* 시간표 셀 (새 디자인 - 파스텔 배경) */
+.timetable-cell-new {
+    min-height: 64px;
+    padding: 14px 10px;
+    background: #F9FAFB;
+    border: 1.5px solid #E5E7EB;
+    border-radius: 14px;
+    font-size: 16px;
+    text-align: center;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Noto Sans KR', sans-serif;
+}
+
+.timetable-cell-new:hover {
+    transform: scale(1.03);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
+}
+
+.timetable-cell-new.today-empty {
+    background: linear-gradient(135deg, rgba(124, 158, 245, 0.15) 0%, rgba(124, 158, 245, 0.08) 100%);
+    border: 2px dashed #7C9EF5;
+}
+
+/* 오버라이드된 셀 (임시 변경) */
+.timetable-cell-new.overridden {
+    position: relative;
+    border: 2px solid #F59E0B;
+}
+
+.timetable-cell-new .override-badge {
+    position: absolute;
+    top: 2px;
+    right: 4px;
+    font-size: 10px;
+    color: #F59E0B;
 }
 
 /* 감정 아이콘 */
@@ -430,6 +471,15 @@ select:focus {
 .btn-danger {
     background: linear-gradient(135deg, #F57C7C 0%, #DC2626 100%);
     color: white;
+}
+
+.btn-warning {
+    background: linear-gradient(135deg, #FCD34D 0%, #F59E0B 100%);
+    color: #78350F;
+}
+
+.btn-warning:hover {
+    background: linear-gradient(135deg, #FBBF24 0%, #D97706 100%);
 }
 
 /* 섹션 제목 */

@@ -46,7 +46,7 @@ export function render() {
     return `
         <div class="space-y-4">
             <!-- 헤더 -->
-            <div class="flex items-center justify-between">
+            <div class="flex items-center justify-between sticky top-[88px] z-40 bg-white py-2 -mx-4 px-4">
                 <h2 class="text-lg font-bold">💝 마음 관리</h2>
                 ${isFirebaseMode ? `
                     <div class="flex items-center gap-2 text-xs">
