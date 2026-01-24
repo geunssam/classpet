@@ -3,27 +3,19 @@
  * 주간 시간표 관리
  */
 
-import { store } from '../store.js';
+import { store, COLOR_PRESETS, DEFAULT_SUBJECT_COLORS } from '../store.js';
 import { showToast, setModalContent, openModal, closeModal } from '../utils/animations.js';
 
 const DAYS = ['월', '화', '수', '목', '금'];
 const DAY_KEYS = ['mon', 'tue', 'wed', 'thu', 'fri'];
 const PERIODS = [1, 2, 3, 4, 5, 6];
 
-// 과목별 파스텔 색상 매핑 (배경색, 텍스트색)
-const SUBJECT_COLORS = {
-    '국어': { bg: '#DBEAFE', text: '#1E40AF' },      // 연한 파랑
-    '수학': { bg: '#FEE2E2', text: '#B91C1C' },      // 연한 빨강
-    '사회': { bg: '#FFEDD5', text: '#C2410C' },      // 연한 주황
-    '과학': { bg: '#D1FAE5', text: '#047857' },      // 연한 초록
-    '영어': { bg: '#EDE9FE', text: '#6D28D9' },      // 연한 보라
-    '체육': { bg: '#FEF9C3', text: '#A16207' },      // 연한 노랑
-    '음악': { bg: '#FCE7F3', text: '#BE185D' },      // 연한 핑크
-    '미술': { bg: '#CCFBF1', text: '#0F766E' },      // 연한 청록
-    '도덕': { bg: '#F3F4F6', text: '#4B5563' },      // 연한 회색
-    '실과': { bg: '#E5E7EB', text: '#374151' },      // 회색
-    '창체': { bg: '#D1D5DB', text: '#1F2937' }       // 진한 회색
-};
+/**
+ * 과목 색상 가져오기 (store에서 동적으로 로드)
+ */
+function getSubjectColors() {
+    return store.getSubjectColors();
+}
 
 let editMode = false;
 let selectedCell = null;
@@ -118,7 +110,8 @@ export function render() {
                                     const cell = timetable[cellKey];
                                     const isToday = todayIndex === dayIndex;
                                     const isOverridden = overriddenCells.includes(cellKey);
-                                    const colors = cell?.subject ? SUBJECT_COLORS[cell.subject] || { bg: '#F3F4F6', text: '#4B5563' } : null;
+                                    const subjectColors = getSubjectColors();
+                                    const colors = cell?.subject ? subjectColors[cell.subject] || { bg: '#F3F4F6', text: '#4B5563' } : null;
 
                                     return `
                                         <td class="p-1">
@@ -221,6 +214,7 @@ function showEditModal(cellKey) {
     const dayName = DAYS[DAY_KEYS.indexOf(day)];
 
     const subjects = ['국어', '수학', '사회', '과학', '영어', '체육', '음악', '미술', '도덕', '실과', '창체'];
+    const subjectColors = getSubjectColors();
 
     const modalContent = `
         <div class="space-y-4">
@@ -240,7 +234,7 @@ function showEditModal(cellKey) {
                 <label class="block text-sm font-medium text-gray-700 mb-2">과목 선택</label>
                 <div class="grid grid-cols-4 gap-2">
                     ${subjects.map(subject => {
-                        const colors = SUBJECT_COLORS[subject] || { bg: '#F3F4F6', text: '#4B5563' };
+                        const colors = subjectColors[subject] || { bg: '#F3F4F6', text: '#4B5563' };
                         const isSelected = currentCell.subject === subject;
                         return `
                         <button class="subject-option p-3 rounded-xl text-sm font-semibold transition-all ${isSelected ? 'ring-2 ring-primary ring-offset-2' : ''}"
@@ -250,6 +244,46 @@ function showEditModal(cellKey) {
                         </button>
                         `;
                     }).join('')}
+                </div>
+            </div>
+
+            <!-- 색상 선택 섹션 (과목 선택 시 표시) -->
+            <div id="colorSection" class="hidden p-3 bg-gray-50 rounded-xl border border-gray-200">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center gap-2">
+                        <span class="text-base">🎨</span>
+                        <span class="text-sm font-medium text-gray-700">
+                            <span id="selectedSubjectName">과목</span> 색상 변경
+                        </span>
+                    </div>
+                    <button id="resetColorBtn" class="text-xs text-gray-500 hover:text-gray-700 underline">
+                        기본값
+                    </button>
+                </div>
+
+                <!-- 프리셋 색상 -->
+                <div class="flex gap-2 flex-wrap mb-3">
+                    ${COLOR_PRESETS.map((preset, index) => `
+                        <button class="color-preset w-8 h-8 rounded-full border-2 border-white shadow-sm hover:scale-110 transition-transform"
+                                data-index="${index}"
+                                data-bg="${preset.bg}"
+                                data-text="${preset.text}"
+                                title="${preset.name}"
+                                style="background-color: ${preset.bg};">
+                        </button>
+                    `).join('')}
+                </div>
+
+                <!-- 직접 선택 버튼 -->
+                <div class="flex items-center gap-2">
+                    <button id="customColorBtn" class="text-sm text-primary hover:text-primary-dark flex items-center gap-1">
+                        <span>🎨</span> 직접 선택
+                    </button>
+                    <input type="color" id="bgColorPicker" class="sr-only" value="#DBEAFE">
+                    <div id="customColorPreview" class="hidden flex items-center gap-2 ml-2">
+                        <div id="previewSwatch" class="w-6 h-6 rounded-full border border-gray-300"></div>
+                        <span class="text-xs text-gray-500">미리보기</span>
+                    </div>
                 </div>
             </div>
 
@@ -297,7 +331,36 @@ function showEditModal(cellKey) {
 
     // 이벤트 바인딩
     let selectedSubject = currentCell.subject || null;
+    let pendingColor = null; // 저장 대기 중인 색상
 
+    // 색상 섹션 표시/숨김 및 업데이트 함수
+    const updateColorSection = (subject) => {
+        const colorSection = document.getElementById('colorSection');
+        const subjectNameEl = document.getElementById('selectedSubjectName');
+
+        if (subject) {
+            colorSection.classList.remove('hidden');
+            subjectNameEl.textContent = subject;
+
+            // 현재 선택된 색상에 체크 표시
+            const currentColor = subjectColors[subject];
+            document.querySelectorAll('.color-preset').forEach(btn => {
+                btn.classList.remove('ring-2', 'ring-primary', 'ring-offset-1');
+                if (currentColor && btn.dataset.bg === currentColor.bg) {
+                    btn.classList.add('ring-2', 'ring-primary', 'ring-offset-1');
+                }
+            });
+        } else {
+            colorSection.classList.add('hidden');
+        }
+    };
+
+    // 초기 상태 설정
+    if (selectedSubject) {
+        updateColorSection(selectedSubject);
+    }
+
+    // 과목 선택 이벤트
     document.querySelectorAll('.subject-option').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.subject-option').forEach(b => {
@@ -305,7 +368,99 @@ function showEditModal(cellKey) {
             });
             btn.classList.add('ring-2', 'ring-primary', 'ring-offset-2', 'scale-105');
             selectedSubject = btn.dataset.subject;
+            pendingColor = null; // 과목 변경 시 대기 색상 초기화
+            updateColorSection(selectedSubject);
         });
+    });
+
+    // 프리셋 색상 선택 이벤트
+    document.querySelectorAll('.color-preset').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (!selectedSubject) return;
+
+            const newColor = { bg: btn.dataset.bg, text: btn.dataset.text };
+            pendingColor = newColor;
+
+            // UI 업데이트
+            document.querySelectorAll('.color-preset').forEach(b => {
+                b.classList.remove('ring-2', 'ring-primary', 'ring-offset-1');
+            });
+            btn.classList.add('ring-2', 'ring-primary', 'ring-offset-1');
+
+            // 과목 버튼 미리보기 업데이트
+            const subjectBtn = document.querySelector(`.subject-option[data-subject="${selectedSubject}"]`);
+            if (subjectBtn) {
+                subjectBtn.style.backgroundColor = newColor.bg;
+                subjectBtn.style.color = newColor.text;
+            }
+
+            showToast(`${selectedSubject} 색상 미리보기 적용`, 'info');
+        });
+    });
+
+    // 직접 색상 선택 (컬러피커)
+    const customColorBtn = document.getElementById('customColorBtn');
+    const bgColorPicker = document.getElementById('bgColorPicker');
+    const customColorPreview = document.getElementById('customColorPreview');
+    const previewSwatch = document.getElementById('previewSwatch');
+
+    customColorBtn.addEventListener('click', () => {
+        bgColorPicker.click();
+    });
+
+    bgColorPicker.addEventListener('input', (e) => {
+        if (!selectedSubject) return;
+
+        const bgColor = e.target.value;
+        // 배경색에 맞는 텍스트색 자동 계산 (밝기 기반)
+        const textColor = getContrastTextColor(bgColor);
+
+        pendingColor = { bg: bgColor, text: textColor };
+
+        // 미리보기 표시
+        customColorPreview.classList.remove('hidden');
+        previewSwatch.style.backgroundColor = bgColor;
+
+        // 과목 버튼 미리보기 업데이트
+        const subjectBtn = document.querySelector(`.subject-option[data-subject="${selectedSubject}"]`);
+        if (subjectBtn) {
+            subjectBtn.style.backgroundColor = bgColor;
+            subjectBtn.style.color = textColor;
+        }
+
+        // 프리셋 선택 해제
+        document.querySelectorAll('.color-preset').forEach(b => {
+            b.classList.remove('ring-2', 'ring-primary', 'ring-offset-1');
+        });
+    });
+
+    // 기본값 복원 버튼
+    const resetColorBtn = document.getElementById('resetColorBtn');
+    resetColorBtn.addEventListener('click', () => {
+        if (!selectedSubject) return;
+
+        const defaultColor = DEFAULT_SUBJECT_COLORS[selectedSubject] || { bg: '#F3F4F6', text: '#4B5563' };
+        pendingColor = defaultColor;
+
+        // 과목 버튼 업데이트
+        const subjectBtn = document.querySelector(`.subject-option[data-subject="${selectedSubject}"]`);
+        if (subjectBtn) {
+            subjectBtn.style.backgroundColor = defaultColor.bg;
+            subjectBtn.style.color = defaultColor.text;
+        }
+
+        // 프리셋에서 해당 색상 선택
+        document.querySelectorAll('.color-preset').forEach(btn => {
+            btn.classList.remove('ring-2', 'ring-primary', 'ring-offset-1');
+            if (btn.dataset.bg === defaultColor.bg) {
+                btn.classList.add('ring-2', 'ring-primary', 'ring-offset-1');
+            }
+        });
+
+        // 커스텀 미리보기 숨김
+        customColorPreview.classList.add('hidden');
+
+        showToast(`${selectedSubject} 색상이 기본값으로 설정됩니다`, 'info');
     });
 
     // 저장 버튼
@@ -316,6 +471,11 @@ function showEditModal(cellKey) {
         }
 
         const saveType = document.querySelector('input[name="saveType"]:checked').value;
+
+        // 색상 변경이 있으면 먼저 저장
+        if (pendingColor) {
+            store.setSubjectColor(selectedSubject, pendingColor);
+        }
 
         if (saveType === 'week') {
             // 이번 주만 적용 (오버라이드)
@@ -363,6 +523,32 @@ function showEditModal(cellKey) {
             closeModal();
             refreshView();
         });
+    }
+}
+
+/**
+ * 배경색에 맞는 대비 텍스트 색상 계산
+ */
+function getContrastTextColor(bgColor) {
+    // HEX to RGB
+    const hex = bgColor.replace('#', '');
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+
+    // 밝기 계산 (YIQ 공식)
+    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+
+    // 밝은 배경이면 어두운 텍스트, 어두운 배경이면 밝은 텍스트
+    if (brightness > 180) {
+        // 배경색을 더 어둡게 만든 색상 반환
+        const darkenFactor = 0.4;
+        const darkR = Math.round(r * darkenFactor);
+        const darkG = Math.round(g * darkenFactor);
+        const darkB = Math.round(b * darkenFactor);
+        return `#${darkR.toString(16).padStart(2, '0')}${darkG.toString(16).padStart(2, '0')}${darkB.toString(16).padStart(2, '0')}`;
+    } else {
+        return '#FFFFFF';
     }
 }
 

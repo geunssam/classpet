@@ -13,6 +13,7 @@ const STORAGE_KEYS = {
     STUDENTS: 'classpet_students',
     TIMETABLE: 'classpet_timetable',
     TIMETABLE_OVERRIDES: 'classpet_timetable_overrides',  // 주간 오버라이드
+    SUBJECT_COLORS: 'classpet_subject_colors',  // 과목별 커스텀 색상
     PRAISE_LOG: 'classpet_praise_log',
     EMOTION_LOG: 'classpet_emotion_log',
     NOTES: 'classpet_notes',
@@ -21,6 +22,33 @@ const STORAGE_KEYS = {
     CURRENT_CLASS_ID: 'classpet_current_class_id',
     CURRENT_TEACHER_UID: 'classpet_current_teacher_uid'
 };
+
+// 기본 과목 색상 (Timetable.js의 SUBJECT_COLORS와 동일)
+const DEFAULT_SUBJECT_COLORS = {
+    '국어': { bg: '#DBEAFE', text: '#1E40AF' },      // 연한 파랑
+    '수학': { bg: '#FEE2E2', text: '#B91C1C' },      // 연한 빨강
+    '사회': { bg: '#FFEDD5', text: '#C2410C' },      // 연한 주황
+    '과학': { bg: '#D1FAE5', text: '#047857' },      // 연한 초록
+    '영어': { bg: '#EDE9FE', text: '#6D28D9' },      // 연한 보라
+    '체육': { bg: '#FEF9C3', text: '#A16207' },      // 연한 노랑
+    '음악': { bg: '#FCE7F3', text: '#BE185D' },      // 연한 핑크
+    '미술': { bg: '#CCFBF1', text: '#0F766E' },      // 연한 청록
+    '도덕': { bg: '#F3F4F6', text: '#4B5563' },      // 연한 회색
+    '실과': { bg: '#E5E7EB', text: '#374151' },      // 회색
+    '창체': { bg: '#D1D5DB', text: '#1F2937' }       // 진한 회색
+};
+
+// 색상 프리셋 (8개)
+const COLOR_PRESETS = [
+    { name: '파랑', bg: '#DBEAFE', text: '#1E40AF' },
+    { name: '빨강', bg: '#FEE2E2', text: '#B91C1C' },
+    { name: '주황', bg: '#FFEDD5', text: '#C2410C' },
+    { name: '초록', bg: '#D1FAE5', text: '#047857' },
+    { name: '보라', bg: '#EDE9FE', text: '#6D28D9' },
+    { name: '노랑', bg: '#FEF9C3', text: '#A16207' },
+    { name: '핑크', bg: '#FCE7F3', text: '#BE185D' },
+    { name: '청록', bg: '#CCFBF1', text: '#0F766E' }
+];
 
 // 세션 키 (sessionStorage 사용)
 const SESSION_KEYS = {
@@ -999,6 +1027,97 @@ class Store {
         return String(student.number).padStart(4, '0');
     }
 
+    // ==================== 과목 색상 관련 ====================
+
+    /**
+     * 과목별 색상 가져오기 (저장된 커스텀 + 기본값 병합)
+     */
+    getSubjectColors() {
+        const data = localStorage.getItem(STORAGE_KEYS.SUBJECT_COLORS);
+        const customColors = data ? JSON.parse(data) : {};
+        // 기본값과 커스텀 색상 병합 (커스텀이 우선)
+        return { ...DEFAULT_SUBJECT_COLORS, ...customColors };
+    }
+
+    /**
+     * 특정 과목 색상 가져오기
+     */
+    getSubjectColor(subject) {
+        const colors = this.getSubjectColors();
+        return colors[subject] || { bg: '#F3F4F6', text: '#4B5563' };
+    }
+
+    /**
+     * 특정 과목 색상 저장
+     */
+    setSubjectColor(subject, colors) {
+        const data = localStorage.getItem(STORAGE_KEYS.SUBJECT_COLORS);
+        const customColors = data ? JSON.parse(data) : {};
+        customColors[subject] = colors;
+        localStorage.setItem(STORAGE_KEYS.SUBJECT_COLORS, JSON.stringify(customColors));
+        this.notify('subjectColors', this.getSubjectColors());
+
+        // Firebase 동기화
+        this.syncSubjectColorsToFirebase(customColors);
+    }
+
+    /**
+     * 모든 과목 색상 기본값으로 초기화
+     */
+    resetSubjectColors() {
+        localStorage.removeItem(STORAGE_KEYS.SUBJECT_COLORS);
+        this.notify('subjectColors', DEFAULT_SUBJECT_COLORS);
+    }
+
+    /**
+     * 특정 과목 색상만 기본값으로 초기화
+     */
+    resetSubjectColor(subject) {
+        const data = localStorage.getItem(STORAGE_KEYS.SUBJECT_COLORS);
+        const customColors = data ? JSON.parse(data) : {};
+        delete customColors[subject];
+        localStorage.setItem(STORAGE_KEYS.SUBJECT_COLORS, JSON.stringify(customColors));
+        this.notify('subjectColors', this.getSubjectColors());
+    }
+
+    /**
+     * Firebase에 과목 색상 동기화
+     */
+    async syncSubjectColorsToFirebase(colors) {
+        const teacherUid = this.getCurrentTeacherUid();
+        const classId = this.getCurrentClassId();
+        if (!teacherUid || !classId || !this.firebaseEnabled) return;
+
+        if (this.isOnline) {
+            try {
+                await firebase.saveSubjectColors(teacherUid, classId, colors);
+            } catch (error) {
+                console.warn('과목 색상 Firebase 동기화 실패:', error);
+            }
+        }
+    }
+
+    /**
+     * Firebase에서 과목 색상 로드
+     */
+    async loadSubjectColorsFromFirebase() {
+        const teacherUid = this.getCurrentTeacherUid();
+        const classId = this.getCurrentClassId();
+        if (!teacherUid || !classId || !this.firebaseEnabled) return null;
+
+        try {
+            const colors = await firebase.getSubjectColors(teacherUid, classId);
+            if (colors) {
+                localStorage.setItem(STORAGE_KEYS.SUBJECT_COLORS, JSON.stringify(colors));
+                return colors;
+            }
+            return null;
+        } catch (error) {
+            console.error('Firebase 과목 색상 로드 실패:', error);
+            return null;
+        }
+    }
+
     // ==================== 시간표 관련 ====================
 
     /**
@@ -1948,5 +2067,7 @@ export {
     PET_SPEECH_STYLES,
     DEFAULT_SETTINGS,
     DEFAULT_TIMETABLE,
+    DEFAULT_SUBJECT_COLORS,
+    COLOR_PRESETS,
     convertToPetSpeech
 };

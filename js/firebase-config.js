@@ -1132,6 +1132,57 @@ export async function getTimetableOverrides(teacherUid, classId) {
     }
 }
 
+// ==================== 과목 색상 (계층 구조) ====================
+
+/**
+ * 과목 색상 저장 (계층 구조: /teachers/{uid}/classes/{classId}/timetable/subjectColors)
+ */
+export async function saveSubjectColors(teacherUid, classId, colors) {
+    if (!db) return null;
+
+    const uid = teacherUid || getCurrentTeacherUid();
+    const cId = classId || getCurrentClassId();
+
+    if (!uid || !cId) return null;
+
+    try {
+        const colorsRef = doc(db, 'teachers', uid, 'classes', cId, 'timetable', 'subjectColors');
+        await setDoc(colorsRef, {
+            data: colors,
+            updatedAt: serverTimestamp()
+        });
+        return colors;
+    } catch (error) {
+        console.error('과목 색상 저장 실패:', error);
+        return null;
+    }
+}
+
+/**
+ * 과목 색상 가져오기 (계층 구조: /teachers/{uid}/classes/{classId}/timetable/subjectColors)
+ */
+export async function getSubjectColors(teacherUid, classId) {
+    if (!db) return null;
+
+    const uid = teacherUid || getCurrentTeacherUid();
+    const cId = classId || getCurrentClassId();
+
+    if (!uid || !cId) return null;
+
+    try {
+        const colorsRef = doc(db, 'teachers', uid, 'classes', cId, 'timetable', 'subjectColors');
+        const colorsDoc = await getDoc(colorsRef);
+
+        if (colorsDoc.exists()) {
+            return colorsDoc.data().data || {};
+        }
+        return null;
+    } catch (error) {
+        console.error('과목 색상 가져오기 실패:', error);
+        return null;
+    }
+}
+
 // ==================== 메모/노트 (계층 구조) ====================
 
 /**
