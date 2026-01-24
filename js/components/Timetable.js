@@ -73,16 +73,28 @@ export function render() {
     return `
         <div class="space-y-4">
             <!-- 헤더 -->
-            <div class="flex items-center justify-between sticky top-[88px] z-40 bg-white py-2 -mx-4 px-4">
+            <div class="flex items-center justify-between py-2">
                 <h2 class="text-base font-bold whitespace-nowrap">📅 주간시간표</h2>
 
-                <!-- 버튼 그룹 -->
-                <div class="flex items-center gap-2">
-                    <button id="editModeBtn" class="flex items-center justify-center gap-1 ${editMode ? 'bg-primary text-white' : 'bg-sky-100 border border-sky-200 text-sky-700 hover:bg-sky-200'} rounded-xl px-3 py-1.5 transition-colors text-sm font-medium">
-                        ${editMode ? '✓ 완료' : '✏️ 편집'}
+                <!-- 버튼 그룹 (리퀴드 글라스) -->
+                <div class="timetable-btn-dock">
+                    <button id="editModeBtn" class="timetable-header-btn ${editMode ? 'active' : ''}">
+                        <span>${editMode ? '완료' : '편집'}</span>
+                        ${editMode ? `
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        ` : `
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                        </svg>
+                        `}
                     </button>
-                    <button id="subjectSettingsBtn" class="flex items-center justify-center gap-1 bg-sky-100 border border-sky-200 rounded-xl px-3 py-1.5 text-sky-700 hover:bg-sky-200 transition-colors text-sm font-medium">
-                        📖 과목설정
+                    <button id="subjectSettingsBtn" class="timetable-header-btn">
+                        <span>과목설정</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                        </svg>
                     </button>
                 </div>
             </div>

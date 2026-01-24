@@ -248,6 +248,102 @@ body {
     transform: scale(0.98);
 }
 
+/* 컴팩트 펫 카드 (그리드 뷰) */
+.pet-card-compact {
+    background: linear-gradient(135deg, #FFF9F0 0%, #FFFFFF 100%);
+    border-radius: 12px;
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.pet-card-compact:hover {
+    border-color: #7C9EF5;
+    transform: scale(1.02);
+}
+
+.pet-card-compact:active {
+    transform: scale(0.98);
+}
+
+/* 원형 프로그레스 펫 카드 */
+.pet-circle-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    border-radius: 16px;
+    padding: 12px 8px 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    position: relative;
+}
+
+.pet-circle-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.pet-circle-card:active {
+    transform: scale(0.98);
+}
+
+/* 원형 프로그레스 컨테이너 */
+.circle-progress-container {
+    position: relative;
+    width: 76px;
+    height: 76px;
+}
+
+.circle-progress {
+    transform: rotate(0deg);
+}
+
+.circle-progress-bar {
+    transition: stroke-dashoffset 0.6s ease;
+}
+
+/* 중앙 콘텐츠 */
+.circle-center-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 레벨 배지 (원형 카드용) */
+/* 레벨 배지 (원 안에서 이모지 아래) */
+.level-badge-inside {
+    background: linear-gradient(135deg, #F59E0B 0%, #F97316 100%);
+    color: white;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 8px;
+    margin-top: -2px;
+    box-shadow: 0 1px 3px rgba(245, 158, 11, 0.3);
+}
+
+/* 펫 카드 그리드 */
+.pet-circle-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+@media (min-width: 400px) {
+    .pet-circle-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
 /* 펫 이모지 크기 (레벨별) */
 .pet-emoji {
     display: inline-block;
@@ -376,6 +472,69 @@ body {
 .category-btn.selected {
     background: linear-gradient(135deg, rgba(124, 158, 245, 0.1) 0%, rgba(124, 224, 163, 0.1) 100%);
     border-color: #7C9EF5;
+}
+
+/* 시간표 버튼 Dock (리퀴드 글라스) */
+.timetable-btn-dock {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px;
+    background: linear-gradient(145deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.2) 100%);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.6);
+    border-radius: 18px;
+    box-shadow:
+        0 4px 12px rgba(0,0,0,0.06),
+        inset 0 1px 2px rgba(255,255,255,0.7),
+        inset 0 -1px 1px rgba(0,0,0,0.03);
+    position: relative;
+    overflow: hidden;
+}
+
+.timetable-btn-dock::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.35) 0%, transparent 100%);
+    border-radius: 18px 18px 0 0;
+    pointer-events: none;
+}
+
+/* 시간표 헤더 버튼 */
+.timetable-header-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    background: linear-gradient(145deg, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.6) 100%);
+    border: 1px solid rgba(255,255,255,0.7);
+    border-radius: 20px;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #4B5563;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    position: relative;
+    z-index: 1;
+}
+
+.timetable-header-btn:hover {
+    background: linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.7) 100%);
+    transform: scale(1.03);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.timetable-header-btn.active {
+    background: linear-gradient(135deg, #7C9EF5 0%, #5B7ED9 100%);
+    border-color: rgba(124, 158, 245, 0.5);
+    color: white;
+    box-shadow: 0 2px 8px rgba(124, 158, 245, 0.3);
 }
 
 /* 시간표 셀 (기존 - 호환성 유지) */

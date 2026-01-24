@@ -22,74 +22,25 @@ import {
     closeModal
 } from '../utils/animations.js';
 
-let viewMode = 'grid'; // 'grid' or 'list'
-let sortBy = 'number'; // 'number', 'level', 'name'
-
 export function render() {
     const students = store.getStudents() || [];
     const stats = store.getStats();
 
-    // 정렬
-    const sortedStudents = [...students].sort((a, b) => {
-        switch (sortBy) {
-            case 'level': return b.level - a.level || b.exp - a.exp;
-            case 'name': return a.name.localeCompare(b.name);
-            default: return a.number - b.number;
-        }
-    });
+    // 번호순 정렬
+    const sortedStudents = [...students].sort((a, b) => a.number - b.number);
 
     return `
         <div class="space-y-4">
             <!-- 헤더 -->
-            <div class="flex items-center justify-between sticky top-[88px] z-40 bg-white py-2 -mx-4 px-4">
+            <div class="flex items-center gap-3 py-2">
                 <h2 class="text-lg font-bold">🐾 펫 농장</h2>
-                <div class="flex items-center gap-2">
-                    <!-- 정렬 -->
-                    <select id="sortSelect" class="text-sm border rounded-lg px-2 py-1 bg-white">
-                        <option value="number" ${sortBy === 'number' ? 'selected' : ''}>번호순</option>
-                        <option value="level" ${sortBy === 'level' ? 'selected' : ''}>레벨순</option>
-                        <option value="name" ${sortBy === 'name' ? 'selected' : ''}>이름순</option>
-                    </select>
-
-                    <!-- 뷰 모드 -->
-                    <div class="flex bg-gray-100 rounded-lg p-0.5">
-                        <button class="view-mode-btn p-1.5 rounded ${viewMode === 'grid' ? 'bg-white shadow' : ''}" data-mode="grid">
-                            <span class="text-sm">▦</span>
-                        </button>
-                        <button class="view-mode-btn p-1.5 rounded ${viewMode === 'list' ? 'bg-white shadow' : ''}" data-mode="list">
-                            <span class="text-sm">☰</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 요약 정보 -->
-            <div class="card bg-gradient-to-r from-primary/10 to-success/10">
-                <div class="flex items-center justify-around text-center">
-                    <div>
-                        <div class="text-2xl font-bold text-primary">${stats.totalStudents}</div>
-                        <div class="text-xs text-gray-500">전체 펫</div>
-                    </div>
-                    <div class="w-px h-8 bg-gray-200"></div>
-                    <div>
-                        <div class="text-2xl font-bold text-secondary">${stats.averageLevel}</div>
-                        <div class="text-xs text-gray-500">평균 레벨</div>
-                    </div>
-                    <div class="w-px h-8 bg-gray-200"></div>
-                    <div>
-                        <div class="text-2xl font-bold text-success">${stats.totalPraises}</div>
-                        <div class="text-xs text-gray-500">누적 칭찬</div>
-                    </div>
-                </div>
+                <span class="text-sm text-gray-500">전체 <span class="font-bold text-primary">${stats.totalStudents}</span></span>
             </div>
 
             <!-- 펫 목록 -->
             ${students.length > 0 ? `
-            <div id="petContainer" class="${viewMode === 'grid' ? 'pet-grid' : 'space-y-2'}">
-                ${sortedStudents.map(student => viewMode === 'grid'
-                    ? renderPetCard(student, stats)
-                    : renderPetListItem(student)
-                ).join('')}
+            <div id="petContainer" class="pet-circle-grid">
+                ${sortedStudents.map(student => renderPetHybridCard(student, stats)).join('')}
             </div>
             ` : `
             <div class="empty-state">
@@ -102,115 +53,90 @@ export function render() {
             </div>
             `}
 
-            <!-- 학생 추가 버튼 -->
-            ${students.length > 0 ? `
-            <button onclick="window.classpet.showAddStudent()" class="card w-full text-center py-4 border-2 border-dashed border-gray-200 hover:border-primary hover:bg-primary/5 transition-colors">
-                <span class="text-2xl">➕</span>
-                <div class="text-sm text-gray-500 mt-1">학생 추가</div>
-            </button>
-            ` : ''}
         </div>
     `;
 }
 
 /**
- * 펫 카드 렌더링 (그리드 뷰)
+ * 원형 프로그레스 바 카드 렌더링
+ * 중앙: 원형 프로그레스 + 펫 이모지 + 레벨 배지
+ * 하단: 학생 이름 + 경험치 정보
  */
-function renderPetCard(student, stats) {
-    const expProgress = getExpProgress(student.exp, student.level);
-    const stage = getGrowthStage(student.level);
+function renderPetHybridCard(student, stats) {
+    const exp = student.exp || 0;
+    const level = student.level || 1;
+    const expProgress = getExpProgress(exp, level);
+    const stage = getGrowthStage(level);
     const isMvp = stats.mvp && stats.mvp.id === student.id;
+    const expNeeded = level * 100;
+
+    // SVG 원형 프로그레스 계산
+    const radius = 32;
+    const circumference = 2 * Math.PI * radius;
+    const strokeDashoffset = circumference - (expProgress / 100) * circumference;
 
     return `
-        <div class="pet-card relative" data-student-id="${student.id}">
+        <div class="pet-circle-card" data-student-id="${student.id}">
             ${isMvp ? '<span class="mvp-badge">👑</span>' : ''}
-            <div class="pet-emoji-container relative">
-                <span class="pet-emoji level-${stage}">${getPetEmoji(student.petType, student.level)}</span>
-            </div>
-            <div class="text-sm font-medium mt-2 truncate">${student.name}</div>
-            <div class="text-xs text-gray-400">${student.number}번</div>
-            <div class="flex items-center justify-center gap-1 mt-1">
-                <span class="level-badge">Lv.${student.level || 1}</span>
-            </div>
-            <div class="exp-bar mt-2">
-                <div class="exp-bar-fill" style="width: ${expProgress}%"></div>
-            </div>
-        </div>
-    `;
-}
 
-/**
- * 펫 리스트 아이템 렌더링 (리스트 뷰)
- */
-function renderPetListItem(student) {
-    const expProgress = getExpProgress(student.exp, student.level);
-    const stage = getGrowthStage(student.level);
+            <!-- 원형 프로그레스 바 -->
+            <div class="circle-progress-container">
+                <svg class="circle-progress" width="76" height="76" viewBox="0 0 76 76">
+                    <!-- 배경 원 (Track) -->
+                    <circle
+                        class="circle-track"
+                        cx="38"
+                        cy="38"
+                        r="${radius}"
+                        fill="none"
+                        stroke="#E5E7EB"
+                        stroke-width="6"
+                    />
+                    <!-- 진행 원 (Progress) -->
+                    <circle
+                        class="circle-progress-bar"
+                        cx="38"
+                        cy="38"
+                        r="${radius}"
+                        fill="none"
+                        stroke="url(#gradient-${student.id})"
+                        stroke-width="6"
+                        stroke-linecap="round"
+                        stroke-dasharray="${circumference}"
+                        stroke-dashoffset="${strokeDashoffset}"
+                        transform="rotate(-90 38 38)"
+                    />
+                    <!-- 그라데이션 정의 -->
+                    <defs>
+                        <linearGradient id="gradient-${student.id}" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stop-color="#F59E0B" />
+                            <stop offset="100%" stop-color="#F97316" />
+                        </linearGradient>
+                    </defs>
+                </svg>
 
-    return `
-        <div class="list-item" data-student-id="${student.id}">
-            <div class="flex items-center gap-3 flex-1">
-                <span class="text-3xl pet-emoji level-${stage}">${getPetEmoji(student.petType, student.level)}</span>
-                <div class="flex-1 min-w-0">
-                    <div class="flex items-center gap-2">
-                        <span class="font-medium">${student.name}</span>
-                        <span class="text-xs text-gray-400">${student.number}번</span>
-                    </div>
-                    <div class="flex items-center gap-2 mt-1">
-                        <span class="level-badge">Lv.${student.level || 1}</span>
-                        <div class="flex-1 exp-bar">
-                            <div class="exp-bar-fill" style="width: ${expProgress}%"></div>
-                        </div>
-                        <span class="text-xs text-gray-400">${expProgress}%</span>
-                    </div>
+                <!-- 중앙 콘텐츠: 펫 이모지 + 레벨 -->
+                <div class="circle-center-content">
+                    <span class="text-2xl pet-emoji level-${stage}">${getPetEmoji(student.petType, level)}</span>
+                    <span class="level-badge-inside">Lv.${level}</span>
                 </div>
             </div>
-            <button class="quick-praise-btn p-2 rounded-full hover:bg-primary/10 transition-colors"
-                    data-student-id="${student.id}">
-                ⭐
-            </button>
+
+            <!-- 하단 텍스트 -->
+            <div class="text-center mt-1">
+                <p class="text-sm font-bold text-gray-800">${student.number}번 ${student.name}</p>
+                <p class="text-xs text-gray-500">${exp}/${expNeeded} (${expProgress}%)</p>
+            </div>
         </div>
     `;
 }
 
 export function afterRender() {
-    // 정렬 변경
-    const sortSelect = document.getElementById('sortSelect');
-    if (sortSelect) {
-        sortSelect.addEventListener('change', (e) => {
-            sortBy = e.target.value;
-            const content = document.getElementById('content');
-            content.innerHTML = render();
-            afterRender();
-        });
-    }
-
-    // 뷰 모드 변경
-    document.querySelectorAll('.view-mode-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            viewMode = btn.dataset.mode;
-            const content = document.getElementById('content');
-            content.innerHTML = render();
-            afterRender();
-        });
-    });
-
-    // 펫 카드/리스트 아이템 클릭
-    document.querySelectorAll('.pet-card, .list-item').forEach(el => {
-        el.addEventListener('click', (e) => {
-            // 빠른 칭찬 버튼 클릭이 아닌 경우에만
-            if (!e.target.closest('.quick-praise-btn')) {
-                const studentId = parseInt(el.dataset.studentId);
-                router.navigate('student', { id: studentId });
-            }
-        });
-    });
-
-    // 빠른 칭찬 버튼 (리스트 뷰)
-    document.querySelectorAll('.quick-praise-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const studentId = parseInt(btn.dataset.studentId);
-            showQuickPraiseForStudent(studentId);
+    // 펫 카드 클릭
+    document.querySelectorAll('.pet-circle-card').forEach(el => {
+        el.addEventListener('click', () => {
+            const studentId = parseInt(el.dataset.studentId);
+            router.navigate('student', { id: studentId });
         });
     });
 }
