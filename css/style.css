@@ -226,12 +226,12 @@ body {
 
 /* 시간표 셀 (새 디자인 - 파스텔 배경) */
 .timetable-cell-new {
-    min-height: 64px;
-    padding: 14px 10px;
+    min-height: 56px;
+    padding: 10px 6px;
     background: #F9FAFB;
     border: 1.5px solid #E5E7EB;
-    border-radius: 14px;
-    font-size: 16px;
+    border-radius: 12px;
+    font-size: 14px;
     text-align: center;
     transition: all 0.2s ease;
     cursor: pointer;
@@ -239,6 +239,7 @@ body {
     align-items: center;
     justify-content: center;
     font-family: 'Noto Sans KR', sans-serif;
+    white-space: nowrap;
 }
 
 .timetable-cell-new:hover {

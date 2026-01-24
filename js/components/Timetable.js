@@ -128,9 +128,9 @@ export function render() {
                                                  style="${colors ? `background-color: ${colors.bg}; color: ${colors.text};` : ''}">
                                                 ${isOverridden ? '<span class="override-badge">✦</span>' : ''}
                                                 ${cell?.subject ? `
-                                                    <div class="font-bold text-base">${cell.subject}</div>
+                                                    <div class="font-bold text-sm">${cell.subject}</div>
                                                 ` : `
-                                                    <div class="text-gray-300 text-base">${editMode ? '+' : '-'}</div>
+                                                    <div class="text-gray-300 text-sm">${editMode ? '+' : '-'}</div>
                                                 `}
                                             </div>
                                         </td>
