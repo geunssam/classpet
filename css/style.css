@@ -89,29 +89,32 @@ body {
    하단 네비게이션
    ====================================== */
 .app-nav {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 50;
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 9999 !important;
     padding: 8px;
     padding-bottom: calc(8px + var(--safe-area-inset-bottom));
-    display: flex;
-    justify-content: center;
+    background: transparent;
+    /* 모바일에서 transform 사용 안함 */
 }
 
-/* 태블릿/PC에서 네비 위치 */
+.app-nav .nav-dock {
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+/* 태블릿/PC에서 네비 너비 제한 */
 @media (min-width: 640px) {
-    .app-nav {
-        max-width: 576px;
-        left: 50%;
-        transform: translateX(-50%);
+    .app-nav .nav-dock {
+        max-width: 560px;
     }
 }
 
 @media (min-width: 1024px) {
-    .app-nav {
-        max-width: 672px;
+    .app-nav .nav-dock {
+        max-width: 656px;
     }
 }
 
@@ -2217,10 +2220,18 @@ input[type="password"]:focus {
    모바일 성능 최적화 (핵심!)
    ====================================== */
 @media (max-width: 640px) {
-    /* GPU 가속 비활성화 - CPU 렌더링이 더 빠름 */
+    /* 모든 GPU 가속/will-change 제거 */
     * {
-        -webkit-transform: translateZ(0);
-        transform: translateZ(0);
+        will-change: auto !important;
+        transform: none !important;
+        -webkit-transform: none !important;
+    }
+
+    /* position: fixed 요소는 transform 유지 안함 */
+    .app-nav,
+    .app-header,
+    #modalContainer {
+        transform: none !important;
     }
 
     /* 모든 blur/backdrop-filter 완전 제거 */
@@ -2230,29 +2241,37 @@ input[type="password"]:focus {
         backdrop-filter: none !important;
         -webkit-backdrop-filter: none !important;
         filter: none !important;
+        -webkit-filter: none !important;
     }
 
-    /* 단순 배경색으로 대체 */
-    .nav-dock,
+    /* 단순 불투명 배경색으로 대체 */
+    .nav-dock {
+        background: #ffffff !important;
+        border: 1px solid #e5e7eb !important;
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.1) !important;
+    }
+
     .header-dock,
     .week-navigator-dock,
     .timetable-grid-dock,
     .timetable-btn-dock,
     .settings-btn-dock {
-        background: rgba(255,255,255,0.97) !important;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
+        background: #f9fafb !important;
+        border: 1px solid #e5e7eb !important;
+        box-shadow: none !important;
     }
 
     .header-glass-btn,
     .timetable-cell-new,
     .liquid-btn-small {
-        background: rgba(255,255,255,0.95) !important;
+        background: #ffffff !important;
+        border: 1px solid #e5e7eb !important;
     }
 
     .app-header,
     header {
         background: #ffffff !important;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+        box-shadow: 0 1px 0 #e5e7eb !important;
     }
 
     /* 모든 ::before/::after 가상요소 숨김 */
@@ -2263,43 +2282,53 @@ input[type="password"]:focus {
     .timetable-btn-dock::before,
     .timetable-cell-new::before,
     .settings-btn-dock::before,
-    .liquid-btn-small::before {
+    .liquid-btn-small::before,
+    .nav-item::before {
         display: none !important;
+        content: none !important;
     }
 
-    /* 트랜지션 최소화 */
-    .nav-item,
-    .timetable-cell-new,
-    .card,
-    button {
+    /* 모든 트랜지션/애니메이션 제거 */
+    *,
+    *::before,
+    *::after {
         transition: none !important;
+        -webkit-transition: none !important;
+        animation: none !important;
+        -webkit-animation: none !important;
     }
 
-    /* 호버 효과 비활성화 (터치 기기) */
-    .nav-item:hover,
-    .timetable-cell-new:hover,
-    .card:hover {
+    /* 로딩 애니메이션만 허용 */
+    #authLoadingScreen .loading-icon {
+        animation: bounce 1s infinite !important;
+    }
+
+    /* 호버 효과 완전 비활성화 */
+    *:hover {
         transform: none !important;
+        box-shadow: inherit !important;
     }
 
-    /* box-shadow 단순화 */
-    .card,
-    .modal-content > div {
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+    /* box-shadow 최소화 */
+    .card {
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+        border: 1px solid #f3f4f6 !important;
     }
 
-    /* blob 애니메이션 완전 제거 */
+    /* blob 완전 제거 */
     .blob,
     .blob-1,
     .blob-2,
     .blob-3 {
         display: none !important;
+        visibility: hidden !important;
     }
 
-    /* 애니메이션 축소 */
-    @media (prefers-reduced-motion: no-preference) {
-        .animate-bounce {
-            animation-duration: 1.5s !important;
-        }
+    /* 스크롤 성능 */
+    .app-content,
+    #content,
+    main {
+        -webkit-overflow-scrolling: touch;
+        overflow-y: auto;
     }
 }
