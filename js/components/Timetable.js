@@ -90,7 +90,7 @@ export function render() {
                     </button>
                 </div>
 
-                <button id="editModeBtn" class="btn ${editMode ? 'btn-primary' : 'btn-secondary'} text-sm py-2 px-3">
+                <button id="editModeBtn" class="flex items-center justify-center gap-1 bg-blue-50 border border-blue-100 rounded-xl px-3 py-1.5 text-gray-700 hover:bg-blue-100 transition-colors text-sm font-medium">
                     ${editMode ? '✓ 완료' : '✏️ 편집'}
                 </button>
             </div>
