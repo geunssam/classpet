@@ -45,7 +45,7 @@ export function render() {
         <div class="space-y-4">
             ${isGoogleTeacher ? `
             <!-- 현재 학급 정보 + QR 코드 (Google 로그인 시) -->
-            <div class="card !bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 py-3" style="background: linear-gradient(to right, #eff6ff, #eef2ff) !important;">
+            <div class="card border border-gray-100 py-3" style="background: #ffffff !important;">
                 <div class="flex items-center justify-between gap-4">
                     <!-- 좌측: 학급 정보 (2행 구조) -->
                     <div class="flex flex-col gap-1 min-w-0">
