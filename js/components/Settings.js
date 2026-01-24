@@ -189,7 +189,7 @@ export function render() {
                         <input type="text" id="settingsClassName" value="${settings?.className || '우리반'}"
                                class="w-full font-semibold text-gray-800 text-sm bg-transparent border-none outline-none p-0 mb-2 text-center"
                                placeholder="예: 4학년 2반">
-                        <div class="h-0.5 bg-sky-400 rounded-full w-1/3"></div>
+                        <div class="h-0.5 rounded-full w-full" style="background: linear-gradient(90deg, #bae6fd 0%, #38bdf8 50%, #bae6fd 100%);"></div>
                     </div>
 
                     <!-- 선생님 이름 카드 -->
@@ -201,7 +201,7 @@ export function render() {
                         <input type="text" id="settingsTeacherName" value="${settings?.teacherName || '담임선생님'}"
                                class="w-full font-semibold text-gray-800 text-sm bg-transparent border-none outline-none p-0 mb-2 text-center"
                                placeholder="예: 김선생님">
-                        <div class="h-0.5 bg-pink-400 rounded-full w-1/3"></div>
+                        <div class="h-0.5 rounded-full w-full" style="background: linear-gradient(90deg, #fbcfe8 0%, #f472b6 50%, #fbcfe8 100%);"></div>
                     </div>
                 </div>
             </section>
