@@ -22,7 +22,7 @@ export function render() {
         <div class="settings-container pb-8">
             <!-- 헤더 -->
             <div class="flex items-center justify-between sticky top-[88px] z-40 bg-white py-2 -mx-4 px-4 mb-4">
-                <h2 class="text-base font-bold whitespace-nowrap">⚙️ 설정</h2>
+                <h2 class="text-xl font-bold whitespace-nowrap">⚙️ 설정</h2>
             </div>
 
             ${isGoogleTeacher ? `

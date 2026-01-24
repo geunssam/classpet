@@ -96,31 +96,51 @@ export function createPraiseParticles(container, emoji = '⭐') {
 /**
  * 토스트 메시지 표시
  */
-export function showToast(message, type = 'default', duration = 3000) {
+export function showToast(message, type = 'default', options = {}) {
     const container = document.getElementById('toastContainer');
     if (!container) return;
+
+    // 기존 토스트 제거
+    container.innerHTML = '';
 
     const toast = document.createElement('div');
     toast.className = 'toast';
 
-    // 타입별 스타일
-    const typeStyles = {
-        success: 'background: linear-gradient(135deg, #7CE0A3, #059669)',
-        error: 'background: linear-gradient(135deg, #F57C7C, #DC2626)',
-        warning: 'background: linear-gradient(135deg, #F5E07C, #D97706)',
-        info: 'background: linear-gradient(135deg, #7C9EF5, #5B7ED9)',
-        default: 'background: #1F2937'
-    };
+    // clickToClose 옵션: 클릭 시 사라짐 (자동 사라짐 없음)
+    if (options.clickToClose) {
+        toast.classList.add('toast-persistent');
+    }
 
-    toast.style.cssText = typeStyles[type] || typeStyles.default;
+    // 리퀴드 글라스 스타일 (공통)
+    toast.style.cssText = `
+        background: linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(250,250,250,0.9) 100%);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255,255,255,0.8);
+        color: #1F2937;
+    `;
     toast.textContent = message;
 
     container.appendChild(toast);
 
-    // 지정된 시간 후 제거
-    setTimeout(() => {
-        toast.remove();
-    }, duration);
+    if (options.clickToClose) {
+        // 아무 곳이나 클릭하면 토스트 제거
+        const removeToast = () => {
+            toast.style.animation = 'toastOut 0.3s ease forwards';
+            setTimeout(() => toast.remove(), 300);
+            document.removeEventListener('click', removeToast);
+        };
+        // 약간의 딜레이 후 클릭 이벤트 등록 (즉시 사라지는 것 방지)
+        setTimeout(() => {
+            document.addEventListener('click', removeToast);
+        }, 100);
+    } else {
+        // 기존 방식: 지정된 시간 후 제거
+        const duration = typeof options === 'number' ? options : (options.duration || 6000);
+        setTimeout(() => {
+            toast.remove();
+        }, duration);
+    }
 }
 
 /**

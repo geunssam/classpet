@@ -27,8 +27,8 @@ export function render() {
     return `
         <div class="space-y-4">
             <!-- 헤더 -->
-            <div class="py-2">
-                <h2 class="text-lg font-bold">📊 통계</h2>
+            <div class="pb-2">
+                <h2 class="text-xl font-bold">📊 통계</h2>
             </div>
 
             <!-- 전체 통계 -->

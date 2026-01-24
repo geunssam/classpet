@@ -14,7 +14,8 @@ import * as StudentDetail from './components/StudentDetail.js';
 import * as Emotion from './components/Emotion.js';
 import * as Stats from './components/Stats.js';
 import * as Settings from './components/Settings.js';
-import { showQuickPraise } from './components/QuickPraise.js';
+// showQuickPraise는 Dashboard에서 직접 import하여 사용
+import { showQuickPraise } from './components/QuickPraise.js'; // 전역 함수 등록용
 
 // 로그인 컴포넌트 임포트
 import * as LoginSelect from './components/LoginSelect.js';
@@ -55,7 +56,7 @@ async function initApp() {
         setTimeout(() => {
             initRouter();
             bindNavigation();
-            bindQuickPraiseButton();
+            bindHeaderButtons();
             registerGlobalFunctions();
             router.navigate('student-login');
         }, 0);
@@ -92,8 +93,8 @@ async function initApp() {
     // 네비게이션 이벤트 바인딩
     bindNavigation();
 
-    // 빠른 칭찬 버튼 바인딩
-    bindQuickPraiseButton();
+    // 헤더 버튼 바인딩
+    bindHeaderButtons();
 
     // 전역 객체에 함수 등록
     registerGlobalFunctions();
@@ -455,14 +456,9 @@ function bindNavigation() {
 }
 
 /**
- * 빠른 칭찬 버튼 바인딩
+ * 헤더 버튼 바인딩
  */
-function bindQuickPraiseButton() {
-    const quickPraiseBtn = document.getElementById('quickPraiseBtn');
-    if (quickPraiseBtn) {
-        quickPraiseBtn.addEventListener('click', showQuickPraise);
-    }
-
+function bindHeaderButtons() {
     // 설정 버튼
     const settingsBtn = document.getElementById('settingsBtn');
     if (settingsBtn) {

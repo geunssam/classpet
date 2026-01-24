@@ -32,8 +32,8 @@ export function render() {
     return `
         <div class="space-y-4">
             <!-- 헤더 -->
-            <div class="flex items-center gap-3 py-2">
-                <h2 class="text-lg font-bold">🐾 펫 농장</h2>
+            <div class="flex items-center gap-3 pb-2">
+                <h2 class="text-xl font-bold">🐾 펫 농장</h2>
                 <span class="text-sm text-gray-500">전체 <span class="font-bold text-primary">${stats.totalStudents}</span></span>
             </div>
 

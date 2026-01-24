@@ -35,7 +35,7 @@
     </div>
 
     <!-- 앱 컨테이너 -->
-    <div id="app" class="max-w-md mx-auto bg-white min-h-screen shadow-soft relative pb-20">
+    <div id="app" class="max-w-md sm:max-w-xl lg:max-w-2xl mx-auto bg-white min-h-screen shadow-soft relative pb-20">
         <!-- Blob Animation Background -->
         <div class="blob blob-1"></div>
         <div class="blob blob-2"></div>
@@ -94,32 +94,26 @@
             <!-- 라우터에 의해 동적으로 렌더링됨 -->
         </main>
 
-        <!-- 빠른 칭찬 플로팅 버튼 -->
-        <button id="quickPraiseBtn" class="floating-praise-btn">
-            <span class="floating-praise-icon">👏</span>
-            <span class="floating-praise-text">칭찬</span>
-        </button>
-
         <!-- 하단 네비게이션 - Dock 스타일 리퀴드 글라스 -->
-        <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto z-50 pb-3 px-2">
+        <nav class="fixed bottom-0 left-0 right-0 max-w-md sm:max-w-xl lg:max-w-2xl mx-auto z-50 pb-3 px-2">
             <div class="nav-dock">
-                <button class="nav-item active" data-route="dashboard">
+                <button class="nav-item nav-blue active" data-route="dashboard">
                     <span class="text-xl">🏠</span>
                     <span>홈</span>
                 </button>
-                <button class="nav-item" data-route="timetable">
+                <button class="nav-item nav-mint" data-route="timetable">
                     <span class="text-xl">📅</span>
                     <span>시간표</span>
                 </button>
-                <button class="nav-item" data-route="petfarm">
+                <button class="nav-item nav-yellow" data-route="petfarm">
                     <span class="text-xl">🐾</span>
                     <span>펫농장</span>
                 </button>
-                <button class="nav-item" data-route="emotion">
+                <button class="nav-item nav-pink" data-route="emotion">
                     <span class="text-xl">💝</span>
                     <span>마음</span>
                 </button>
-                <button class="nav-item" data-route="stats">
+                <button class="nav-item nav-purple" data-route="stats">
                     <span class="text-xl">📊</span>
                     <span>통계</span>
                 </button>
@@ -136,7 +130,7 @@
     </div>
 
     <!-- 토스트 메시지 -->
-    <div id="toastContainer" class="fixed top-20 left-1/2 transform -translate-x-1/2 z-[200]"></div>
+    <div id="toastContainer" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[200]"></div>
 
     <!-- JavaScript 모듈 -->
     <script type="module" src="js/app.js"></script>

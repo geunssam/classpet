@@ -17,6 +17,18 @@ function getSubjectColors() {
     return store.getSubjectColors();
 }
 
+/**
+ * HEX 색상을 RGBA로 변환 (투명도 적용)
+ */
+function hexToRgba(hex, alpha = 1) {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    if (!result) return hex;
+    const r = parseInt(result[1], 16);
+    const g = parseInt(result[2], 16);
+    const b = parseInt(result[3], 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 let editMode = false;
 let selectedCell = null;
 let weekOffset = 0; // 0: 이번 주, -1: 지난 주, 1: 다음 주
@@ -73,8 +85,8 @@ export function render() {
     return `
         <div class="space-y-4">
             <!-- 헤더 -->
-            <div class="flex items-center justify-between py-2">
-                <h2 class="text-base font-bold whitespace-nowrap">📅 주간시간표</h2>
+            <div class="flex items-center justify-between pb-2">
+                <h2 class="text-xl font-bold whitespace-nowrap">📅 주간시간표</h2>
 
                 <!-- 버튼 그룹 (리퀴드 글라스) -->
                 <div class="timetable-btn-dock">
@@ -100,67 +112,73 @@ export function render() {
             </div>
 
             <!-- 시간표 그리드 -->
-            <div class="card p-4">
-                <!-- 주간 네비게이터 (카드 내부 상단) -->
-                <div class="flex items-center justify-center gap-2 mb-4 pb-3 border-b border-gray-100">
-                    <button id="prevWeekBtn" class="p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
-                        <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            <div class="card p-2">
+                <!-- 주간 네비게이터 (리퀴드 글라스 dock) -->
+                <div class="week-navigator-dock mb-3">
+                    <button id="prevWeekBtn" class="week-nav-btn">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/>
                         </svg>
                     </button>
-                    <div class="text-sm font-medium text-gray-700 min-w-[140px] text-center">
+                    <div class="text-base font-bold text-gray-800 min-w-[160px] text-center">
                         ${weekRange.rangeText}
                     </div>
-                    <button id="nextWeekBtn" class="p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
-                        <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    <button id="nextWeekBtn" class="week-nav-btn">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/>
                         </svg>
                     </button>
                 </div>
-                <table class="w-full border-separate" style="border-spacing: 6px;">
-                    <thead>
-                        <tr>
-                            <th class="p-2 text-base font-bold text-gray-500">교시</th>
-                            ${DAYS.map((day, i) => `
-                                <th class="p-2 text-lg font-bold ${todayIndex === i ? 'text-primary' : 'text-gray-700'}">
-                                    ${day}
-                                    ${todayIndex === i ? '<div class="w-2 h-2 bg-primary rounded-full mx-auto mt-1"></div>' : ''}
-                                </th>
-                            `).join('')}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${PERIODS.map(period => `
+                <!-- 시간표 테이블 (리퀴드 글라스 dock) -->
+                <div class="timetable-grid-dock">
+                    <table class="w-full border-separate" style="border-spacing: 4px;">
+                        <thead>
                             <tr>
-                                <td class="p-2 text-center text-2xl font-bold text-gray-600">${period}</td>
-                                ${DAY_KEYS.map((dayKey, dayIndex) => {
-                                    const cellKey = `${dayKey}-${period}`;
-                                    const cell = timetable[cellKey];
-                                    const isToday = todayIndex === dayIndex;
-                                    const isOverridden = overriddenCells.includes(cellKey);
-                                    const subjectColors = getSubjectColors();
-                                    const colors = cell?.subject ? subjectColors[cell.subject] || { bg: '#F3F4F6', text: '#4B5563' } : null;
-
-                                    return `
-                                        <td class="p-1">
-                                            <div class="timetable-cell-new ${isToday && !cell?.subject ? 'today-empty' : ''} ${isOverridden ? 'overridden' : ''}"
-                                                 data-cell="${cellKey}"
-                                                 data-overridden="${isOverridden}"
-                                                 style="${colors ? `background-color: ${colors.bg}; color: ${colors.text};` : ''}">
-                                                ${isOverridden ? '<span class="override-badge">✦</span>' : ''}
-                                                ${cell?.subject ? `
-                                                    <div class="font-bold text-sm">${cell.subject}</div>
-                                                ` : `
-                                                    <div class="text-gray-300 text-sm">${editMode ? '+' : '-'}</div>
-                                                `}
-                                            </div>
-                                        </td>
-                                    `;
-                                }).join('')}
+                                <th class="p-1 text-sm font-bold text-gray-500">교시</th>
+                                ${DAYS.map((day, i) => `
+                                    <th class="p-1 text-base font-bold ${todayIndex === i ? 'text-primary' : 'text-gray-700'}">
+                                        ${day}
+                                        ${todayIndex === i ? '<div class="w-1.5 h-1.5 bg-primary rounded-full mx-auto mt-0.5"></div>' : ''}
+                                    </th>
+                                `).join('')}
                             </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            ${PERIODS.map(period => `
+                                <tr>
+                                    <td class="p-1 text-center text-lg font-bold text-gray-600">${period}</td>
+                                    ${DAY_KEYS.map((dayKey, dayIndex) => {
+                                        const cellKey = `${dayKey}-${period}`;
+                                        const cell = timetable[cellKey];
+                                        const isToday = todayIndex === dayIndex;
+                                        const isOverridden = overriddenCells.includes(cellKey);
+                                        const subjectColors = getSubjectColors();
+                                        const colors = cell?.subject ? subjectColors[cell.subject] || { bg: '#F3F4F6', text: '#4B5563' } : null;
+
+                                        // 60% 투명도의 파스텔 배경색 적용
+                                        const bgStyle = colors ? `background: linear-gradient(145deg, ${hexToRgba(colors.bg, 0.6)} 0%, ${hexToRgba(colors.bg, 0.6)} 100%); color: ${colors.text};` : '';
+
+                                        return `
+                                            <td class="p-1">
+                                                <div class="timetable-cell-new ${isToday && !cell?.subject ? 'today-empty' : ''} ${isOverridden ? 'overridden' : ''}"
+                                                     data-cell="${cellKey}"
+                                                     data-overridden="${isOverridden}"
+                                                     style="${bgStyle}">
+                                                    ${isOverridden ? '<span class="override-badge">✦</span>' : ''}
+                                                    ${cell?.subject ? `
+                                                        <div class="font-bold text-sm">${cell.subject}</div>
+                                                    ` : `
+                                                        <div class="text-gray-300 text-sm">${editMode ? '+' : '-'}</div>
+                                                    `}
+                                                </div>
+                                            </td>
+                                        `;
+                                    }).join('')}
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
         </div>
@@ -179,7 +197,7 @@ export function afterRender() {
 
             // 편집 모드 진입 시 토스트 알림
             if (editMode) {
-                showToast('💡 셀 클릭: 과목 입력 | 길게 누르고 드래그: 교환', 'info', 4000);
+                showToast('💡 셀 클릭: 과목 입력\n📌 길게 누르고 드래그: 교환\n\n👆 아무 곳이나 클릭하면 편집 시작', 'info', { clickToClose: true });
             }
         });
     }

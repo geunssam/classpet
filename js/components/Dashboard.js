@@ -7,6 +7,7 @@ import { store, PET_TYPES, EMOTION_TYPES } from '../store.js';
 import { router } from '../router.js';
 import { getPetEmoji, getExpProgress, getGrowthStage } from '../utils/petLogic.js';
 import { fadeInCards } from '../utils/animations.js';
+import { showQuickPraise } from './QuickPraise.js';
 
 export function render() {
     const students = store.getStudents() || [];
@@ -54,7 +55,7 @@ export function render() {
                             <span class="text-lg">🏫</span>
                             <p class="font-bold text-gray-800 text-lg truncate">${settings?.className || '학급 이름 없음'}</p>
                             <span class="text-gray-300 text-lg">|</span>
-                            <button id="switchClassBtn" class="flex-shrink-0 px-3 py-1 text-xs bg-white border border-sky-400 rounded-full text-sky-500 hover:bg-sky-50 transition-colors">
+                            <button id="switchClassBtn" class="liquid-btn-small">
                                 전환
                             </button>
                         </div>
@@ -134,8 +135,8 @@ export function render() {
                         <span class="text-lg">📅</span>
                         <span class="font-semibold text-base">오늘의 수업</span>
                     </div>
-                    <button onclick="window.classpet.router.navigate('timetable')" class="text-sm text-primary font-medium">
-                        전체보기 →
+                    <button onclick="window.classpet.router.navigate('timetable')" class="liquid-btn-small">
+                        전체보기
                     </button>
                 </div>
 
@@ -159,8 +160,8 @@ export function render() {
             <div class="card">
                 <div class="flex items-center justify-between mb-3">
                     <h3 class="section-title m-0">🐾 우리 반 펫들</h3>
-                    <button onclick="window.classpet.router.navigate('petfarm')" class="text-sm text-primary font-medium">
-                        전체보기 →
+                    <button onclick="window.classpet.router.navigate('petfarm')" class="liquid-btn-small">
+                        전체보기
                     </button>
                 </div>
 
@@ -204,9 +205,14 @@ export function render() {
 
             <!-- 카테고리별 칭찬 통계 -->
             <div class="card py-3">
-                <div class="flex items-center gap-2 mb-2">
-                    <span class="text-lg">📈</span>
-                    <span class="font-semibold text-base">칭찬 통계</span>
+                <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-2">
+                        <span class="text-lg">📈</span>
+                        <span class="font-semibold text-base">칭찬 통계</span>
+                    </div>
+                    <button id="dashboardPraiseBtn" class="liquid-btn-small">
+                        칭찬하기
+                    </button>
                 </div>
                 <div class="grid grid-cols-3 gap-2">
                     <span class="flex items-center justify-between bg-cream rounded-lg px-2 py-1">
@@ -255,6 +261,12 @@ export function afterRender() {
     // 카드 페이드인 애니메이션
     const content = document.getElementById('content');
     fadeInCards(content, '.card');
+
+    // 빠른 칭찬 버튼
+    const dashboardPraiseBtn = document.getElementById('dashboardPraiseBtn');
+    if (dashboardPraiseBtn) {
+        dashboardPraiseBtn.addEventListener('click', showQuickPraise);
+    }
 
     // 학급 전환 버튼 (Google 로그인 시)
     const switchClassBtn = document.getElementById('switchClassBtn');

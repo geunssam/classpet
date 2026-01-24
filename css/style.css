@@ -104,6 +104,56 @@ body {
     transform: scale(1.1);
 }
 
+/* 파스텔 블루 */
+.nav-item.nav-blue {
+    background: linear-gradient(145deg, rgba(147,197,253,0.05) 0%, rgba(96,165,250,0.05) 100%);
+}
+.nav-item.nav-blue:hover,
+.nav-item.nav-blue.active {
+    background: linear-gradient(145deg, rgba(147,197,253,0.1) 0%, rgba(96,165,250,0.1) 100%);
+    border-color: rgba(96,165,250,0.3);
+}
+
+/* 파스텔 민트 */
+.nav-item.nav-mint {
+    background: linear-gradient(145deg, rgba(110,231,183,0.05) 0%, rgba(52,211,153,0.05) 100%);
+}
+.nav-item.nav-mint:hover,
+.nav-item.nav-mint.active {
+    background: linear-gradient(145deg, rgba(110,231,183,0.1) 0%, rgba(52,211,153,0.1) 100%);
+    border-color: rgba(52,211,153,0.3);
+}
+
+/* 파스텔 옐로우 */
+.nav-item.nav-yellow {
+    background: linear-gradient(145deg, rgba(252,211,77,0.05) 0%, rgba(251,191,36,0.05) 100%);
+}
+.nav-item.nav-yellow:hover,
+.nav-item.nav-yellow.active {
+    background: linear-gradient(145deg, rgba(252,211,77,0.1) 0%, rgba(251,191,36,0.1) 100%);
+    border-color: rgba(251,191,36,0.3);
+}
+
+/* 파스텔 핑크 */
+.nav-item.nav-pink {
+    background: linear-gradient(145deg, rgba(249,168,212,0.05) 0%, rgba(244,114,182,0.05) 100%);
+}
+.nav-item.nav-pink:hover,
+.nav-item.nav-pink.active {
+    background: linear-gradient(145deg, rgba(249,168,212,0.1) 0%, rgba(244,114,182,0.1) 100%);
+    border-color: rgba(244,114,182,0.3);
+}
+
+/* 파스텔 퍼플 */
+.nav-item.nav-purple {
+    background: linear-gradient(145deg, rgba(192,132,252,0.05) 0%, rgba(168,85,247,0.05) 100%);
+}
+.nav-item.nav-purple:hover,
+.nav-item.nav-purple.active {
+    background: linear-gradient(145deg, rgba(192,132,252,0.1) 0%, rgba(168,85,247,0.1) 100%);
+    border-color: rgba(168,85,247,0.3);
+}
+
 .nav-item span:first-child {
     font-size: 24px;
 }
@@ -113,6 +163,27 @@ body {
     margin-top: 3px;
     font-weight: 600;
     color: inherit;
+}
+
+/* 태블릿 이상에서 네비 아이템 크기 확대 */
+@media (min-width: 640px) {
+    .nav-dock {
+        padding: 12px 20px;
+        gap: 8px;
+    }
+
+    .nav-item {
+        width: 80px;
+        height: 72px;
+    }
+
+    .nav-item span:first-child {
+        font-size: 28px;
+    }
+
+    .nav-item span:last-child {
+        font-size: 12px;
+    }
 }
 
 /* 헤더 버튼 - 리퀴드 글라스 */
@@ -355,6 +426,18 @@ body {
     }
 }
 
+@media (min-width: 640px) {
+    .pet-circle-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (min-width: 1024px) {
+    .pet-circle-grid {
+        grid-template-columns: repeat(5, 1fr);
+    }
+}
+
 /* 펫 이모지 크기 (레벨별) */
 .pet-emoji {
     display: inline-block;
@@ -483,6 +566,91 @@ body {
 .category-btn.selected {
     background: linear-gradient(135deg, rgba(124, 158, 245, 0.1) 0%, rgba(124, 224, 163, 0.1) 100%);
     border-color: #7C9EF5;
+}
+
+/* 주간 네비게이터 Dock (리퀴드 글라스) */
+.week-navigator-dock {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: linear-gradient(145deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.2) 100%);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.6);
+    border-radius: 20px;
+    box-shadow:
+        0 4px 16px rgba(0,0,0,0.06),
+        inset 0 1px 2px rgba(255,255,255,0.7),
+        inset 0 -1px 1px rgba(0,0,0,0.03);
+    position: relative;
+    overflow: hidden;
+}
+
+.week-navigator-dock::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, transparent 100%);
+    border-radius: 20px 20px 0 0;
+    pointer-events: none;
+}
+
+.week-nav-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 10px;
+    background: linear-gradient(145deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.3) 100%);
+    border: 1px solid rgba(255,255,255,0.7);
+    color: #4B5563;
+    transition: all 0.2s ease;
+    position: relative;
+    z-index: 1;
+}
+
+.week-nav-btn:hover {
+    background: linear-gradient(145deg, rgba(219,234,254,0.8) 0%, rgba(191,219,254,0.6) 100%);
+    color: #3B82F6;
+    transform: scale(1.05);
+}
+
+.week-nav-btn:active {
+    transform: scale(0.95);
+}
+
+/* 시간표 그리드 Dock (리퀴드 글라스) */
+.timetable-grid-dock {
+    padding: 6px;
+    background: linear-gradient(145deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.15) 100%);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.5);
+    border-radius: 24px;
+    box-shadow:
+        0 6px 24px rgba(0,0,0,0.08),
+        inset 0 1px 2px rgba(255,255,255,0.6),
+        inset 0 -1px 2px rgba(0,0,0,0.04);
+    position: relative;
+    overflow: hidden;
+}
+
+.timetable-grid-dock::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.35) 0%, transparent 100%);
+    border-radius: 24px 24px 0 0;
+    pointer-events: none;
 }
 
 /* 시간표 버튼 Dock (리퀴드 글라스) */
@@ -637,30 +805,30 @@ body {
     gap: 3px;
 }
 
-/* 빠른 칭찬 플로팅 버튼 (리퀴드 글라스) */
-.floating-praise-btn {
-    position: fixed;
-    bottom: 6rem;
-    right: 1rem;
+/* 빠른 액션 버튼 (리퀴드 글라스) */
+.quick-action-btn {
     display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 12px 16px;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 20px;
     background: linear-gradient(145deg, rgba(255,237,213,0.85) 0%, rgba(254,215,170,0.7) 100%);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border: 1px solid rgba(255,255,255,0.6);
-    border-radius: 50px;
+    border-radius: 16px;
     box-shadow:
-        0 4px 20px rgba(251,146,60,0.25),
+        0 4px 16px rgba(251,146,60,0.2),
         inset 0 1px 2px rgba(255,255,255,0.7),
         inset 0 -1px 1px rgba(0,0,0,0.03);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 40;
+    position: relative;
     overflow: hidden;
+    color: #C2410C;
+    cursor: pointer;
 }
 
-.floating-praise-btn::before {
+.quick-action-btn::before {
     content: '';
     position: absolute;
     top: 0;
@@ -668,31 +836,123 @@ body {
     right: 0;
     height: 50%;
     background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, transparent 100%);
-    border-radius: 50px 50px 0 0;
+    border-radius: 16px 16px 0 0;
     pointer-events: none;
 }
 
-.floating-praise-btn:hover {
-    transform: scale(1.05);
+.quick-action-btn:hover {
+    transform: translateY(-2px);
     box-shadow:
-        0 6px 24px rgba(251,146,60,0.35),
+        0 6px 20px rgba(251,146,60,0.3),
         inset 0 1px 2px rgba(255,255,255,0.8),
         inset 0 -1px 1px rgba(0,0,0,0.03);
     background: linear-gradient(145deg, rgba(254,215,170,0.95) 0%, rgba(253,186,116,0.8) 100%);
 }
 
-.floating-praise-icon {
-    font-size: 1.25rem;
-    position: relative;
-    z-index: 1;
+.quick-action-btn:active {
+    transform: translateY(0) scale(0.98);
 }
 
-.floating-praise-text {
-    font-size: 0.875rem;
-    font-weight: 700;
-    color: #C2410C;
+/* 작은 빠른 액션 버튼 (헤더용 - 리퀴드 글라스) */
+.quick-action-btn-small {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 14px;
+    background: linear-gradient(145deg, rgba(255,247,237,0.9) 0%, rgba(254,232,200,0.8) 100%);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.7);
+    border-radius: 50px;
+    box-shadow:
+        0 4px 16px rgba(251,146,60,0.12),
+        0 2px 4px rgba(0,0,0,0.04),
+        inset 0 1px 2px rgba(255,255,255,0.8),
+        inset 0 -1px 1px rgba(0,0,0,0.02);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
-    z-index: 1;
+    overflow: hidden;
+    color: #EA580C;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.quick-action-btn-small::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.5) 0%, transparent 100%);
+    border-radius: 50px 50px 0 0;
+    pointer-events: none;
+}
+
+.quick-action-btn-small:hover {
+    transform: translateY(-1px) scale(1.02);
+    box-shadow:
+        0 6px 20px rgba(251,146,60,0.2),
+        0 2px 6px rgba(0,0,0,0.06),
+        inset 0 1px 2px rgba(255,255,255,0.9),
+        inset 0 -1px 1px rgba(0,0,0,0.02);
+    background: linear-gradient(145deg, rgba(254,232,200,0.95) 0%, rgba(253,216,168,0.9) 100%);
+}
+
+.quick-action-btn-small:active {
+    transform: translateY(0) scale(0.98);
+}
+
+/* 기본 리퀴드 글라스 버튼 (블루 계열) */
+.liquid-btn-small {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 14px;
+    background: linear-gradient(145deg, rgba(239,246,255,0.9) 0%, rgba(219,234,254,0.8) 100%);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.7);
+    border-radius: 50px;
+    box-shadow:
+        0 4px 16px rgba(99,102,241,0.1),
+        0 2px 4px rgba(0,0,0,0.04),
+        inset 0 1px 2px rgba(255,255,255,0.8),
+        inset 0 -1px 1px rgba(0,0,0,0.02);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    color: #4F46E5;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.liquid-btn-small::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.5) 0%, transparent 100%);
+    border-radius: 50px 50px 0 0;
+    pointer-events: none;
+}
+
+.liquid-btn-small:hover {
+    transform: translateY(-1px) scale(1.02);
+    box-shadow:
+        0 6px 20px rgba(99,102,241,0.15),
+        0 2px 6px rgba(0,0,0,0.06),
+        inset 0 1px 2px rgba(255,255,255,0.9),
+        inset 0 -1px 1px rgba(0,0,0,0.02);
+    background: linear-gradient(145deg, rgba(219,234,254,0.95) 0%, rgba(199,210,254,0.9) 100%);
+}
+
+.liquid-btn-small:active {
+    transform: translateY(0) scale(0.98);
 }
 
 /* 시간표 셀 (기존 - 호환성 유지) */
@@ -721,13 +981,15 @@ body {
     color: #059669;
 }
 
-/* 시간표 셀 (새 디자인 - 파스텔 배경) */
+/* 시간표 셀 (리퀴드 글라스 스타일) */
 .timetable-cell-new {
-    min-height: 56px;
-    padding: 10px 6px;
-    background: #F9FAFB;
-    border: 1.5px solid #E5E7EB;
-    border-radius: 12px;
+    min-height: 50px;
+    padding: 8px 5px;
+    background: linear-gradient(145deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.2) 100%);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.6);
+    border-radius: 14px;
     font-size: 14px;
     text-align: center;
     transition: all 0.2s ease;
@@ -737,11 +999,32 @@ body {
     justify-content: center;
     font-family: 'Noto Sans KR', sans-serif;
     white-space: nowrap;
+    box-shadow:
+        0 2px 8px rgba(0,0,0,0.06),
+        inset 0 1px 2px rgba(255,255,255,0.7),
+        inset 0 -1px 1px rgba(0,0,0,0.03);
+    position: relative;
+    overflow: hidden;
+}
+
+.timetable-cell-new::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, transparent 100%);
+    border-radius: 14px 14px 0 0;
+    pointer-events: none;
 }
 
 .timetable-cell-new:hover {
     transform: scale(1.03);
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
+    box-shadow:
+        0 4px 12px rgba(0,0,0,0.1),
+        inset 0 1px 2px rgba(255,255,255,0.8),
+        inset 0 -1px 1px rgba(0,0,0,0.03);
 }
 
 .timetable-cell-new.today-empty {
@@ -814,13 +1097,23 @@ body {
 
 /* 토스트 메시지 */
 .toast {
-    padding: 12px 24px;
-    background: #1F2937;
-    color: white;
-    border-radius: 12px;
-    font-size: 14px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    animation: toastIn 0.3s ease, toastOut 0.3s ease 2.7s forwards;
+    padding: 24px 40px;
+    background: white;
+    color: #1F2937;
+    border-radius: 20px;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.6;
+    text-align: center;
+    white-space: pre-line;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+    animation: toastIn 0.3s ease, toastOut 0.3s ease 5.7s forwards;
+    cursor: pointer;
+}
+
+/* 클릭으로 닫는 토스트 (자동 사라짐 없음) */
+.toast.toast-persistent {
+    animation: toastIn 0.3s ease forwards;
 }
 
 @keyframes toastIn {
@@ -1079,8 +1372,8 @@ select:focus {
 
 /* 섹션 제목 */
 .section-title {
-    font-size: 16px;
-    font-weight: 600;
+    font-size: 18px;
+    font-weight: 700;
     color: #1F2937;
     margin-bottom: 12px;
     display: flex;
