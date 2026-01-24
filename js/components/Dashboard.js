@@ -46,27 +46,24 @@ export function render() {
             ${isGoogleTeacher ? `
             <!-- 현재 학급 정보 + QR 코드 (Google 로그인 시) -->
             <div class="card bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 py-3">
-                <div class="flex items-center gap-3">
-                    <!-- 학급 아이콘 -->
-                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center text-white text-lg flex-shrink-0">
-                        🏫
-                    </div>
-                    <!-- 학급 정보 -->
-                    <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between gap-3">
+                    <!-- 좌측: 학급명 + 전환 버튼 -->
+                    <div class="flex items-center gap-2 min-w-0">
+                        <span class="text-lg">🏫</span>
                         <p class="font-bold text-gray-800 truncate">${settings?.className || '학급 이름 없음'}</p>
-                        <p class="text-xs text-gray-500">
-                            학급코드: <span class="font-mono font-bold text-primary">${settings?.classCode || '------'}</span>
-                        </p>
+                        <span class="text-gray-300">|</span>
+                        <button id="switchClassBtn" class="flex-shrink-0 px-2 py-1 text-xs bg-white border border-gray-200 rounded-md text-gray-600 hover:bg-gray-50 hover:border-primary hover:text-primary transition-colors">
+                            전환
+                        </button>
                     </div>
-                    <!-- QR 코드 (클릭하면 전체화면) -->
+                    <!-- 우측: QR 코드 (클릭하면 전체화면) -->
                     <div id="qrCodeContainer" class="w-14 h-14 bg-white rounded-lg p-0.5 shadow-sm flex items-center justify-center cursor-pointer hover:shadow-md transition-shadow flex-shrink-0" title="클릭하면 크게 보기">
                         <!-- QR 코드가 여기에 생성됨 -->
                     </div>
-                    <!-- 학급 전환 버튼 -->
-                    <button id="switchClassBtn" class="flex-shrink-0 px-3 py-1.5 text-sm bg-white border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 hover:border-primary hover:text-primary transition-colors">
-                        전환
-                    </button>
                 </div>
+                <p class="text-xs text-gray-500 mt-2">
+                    학급코드: <span class="font-mono font-bold text-primary">${settings?.classCode || '------'}</span>
+                </p>
             </div>
 
             <!-- QR 코드 전체화면 모달 (칠판용) -->
