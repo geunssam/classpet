@@ -44,15 +44,21 @@ export function render() {
                             <p class="text-xs text-gray-400 truncate">${teacherSession?.email || ''}</p>
                         </div>
 
-                        <!-- 학급 전환 버튼 -->
-                        <button id="manageClassesBtn" class="flex-shrink-0 px-3 py-1 text-xs bg-white border border-sky-400 rounded-full text-sky-500 hover:bg-sky-50 transition-colors">
-                            학급 전환
-                        </button>
-
-                        <!-- 로그아웃 버튼 -->
-                        <button id="googleLogoutBtn" class="flex-shrink-0 px-3 py-1 text-xs bg-red-50 border border-red-200 rounded-full text-red-400 hover:bg-red-100 transition-colors">
-                            로그아웃
-                        </button>
+                        <!-- 버튼 그룹 (리퀴드 글라스) -->
+                        <div class="settings-btn-dock small">
+                            <button id="manageClassesBtn" class="settings-header-btn small">
+                                <span>학급 전환</span>
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                                </svg>
+                            </button>
+                            <button id="googleLogoutBtn" class="settings-header-btn small logout">
+                                <span>로그아웃</span>
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -171,11 +177,14 @@ export function render() {
                         <span>📚</span>
                         <span>기본 정보</span>
                     </h2>
-                    <button id="saveBasicInfoBtn"
-                            class="px-4 py-1.5 text-xs font-bold rounded-full text-white hover:opacity-90 transition-all whitespace-nowrap"
-                            style="background: linear-gradient(180deg, #38bdf8 0%, #3b82f6 100%); box-shadow: 0 4px 12px -2px rgba(59, 130, 246, 0.35); border: 2px solid rgba(255,255,255,0.5);">
-                        저장하기
-                    </button>
+                    <div class="settings-btn-dock">
+                        <button id="saveBasicInfoBtn" class="settings-header-btn save">
+                            <span>저장하기</span>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- 둘째 행: 2열 그리드 -->

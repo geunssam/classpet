@@ -163,19 +163,6 @@ export function render() {
                 </table>
             </div>
 
-            <!-- 빠른 입력 도움말 -->
-            ${editMode ? `
-            <div class="card bg-primary/10">
-                <div class="flex items-center gap-2 text-sm text-primary">
-                    <span>💡</span>
-                    <span>셀을 클릭하면 과목을 입력할 수 있어요</span>
-                </div>
-                <div class="drag-hint mt-2">
-                    <span class="drag-hint-icon">↔️</span>
-                    <span class="drag-hint-text">셀을 길게 누른 후 드래그하면 과목을 교환할 수 있어요</span>
-                </div>
-            </div>
-            ` : ''}
         </div>
     `;
 }
@@ -189,6 +176,11 @@ export function afterRender() {
             const content = document.getElementById('content');
             content.innerHTML = render();
             afterRender();
+
+            // 편집 모드 진입 시 토스트 알림
+            if (editMode) {
+                showToast('💡 셀 클릭: 과목 입력 | 길게 누르고 드래그: 교환', 'info', 4000);
+            }
         });
     }
 
@@ -627,6 +619,17 @@ function initDragAndDrop(cell) {
     cell.addEventListener('pointerup', handlePointerUp);
     cell.addEventListener('pointercancel', handlePointerUp);
     cell.addEventListener('pointerleave', handlePointerLeave);
+
+    // 클릭 이벤트 백업 (포인터 이벤트 실패 시 대비)
+    cell.addEventListener('click', (e) => {
+        // 드래그 중이 아니고 편집 모드일 때만 모달 열기
+        if (editMode && !dragState.isDragging && !dragState.hasMoved) {
+            const cellKey = cell.dataset.cell;
+            if (cellKey) {
+                showEditModal(cellKey);
+            }
+        }
+    });
 
     // 터치 시 기본 동작 방지
     cell.style.touchAction = 'none';

@@ -95,8 +95,9 @@
         </main>
 
         <!-- 빠른 칭찬 플로팅 버튼 -->
-        <button id="quickPraiseBtn" class="fixed bottom-24 right-4 w-14 h-14 bg-secondary hover:bg-secondary-dark text-white rounded-full shadow-medium flex items-center justify-center text-2xl transition-all hover:scale-110 z-40">
-            ⭐
+        <button id="quickPraiseBtn" class="floating-praise-btn">
+            <span class="floating-praise-icon">👏</span>
+            <span class="floating-praise-text">칭찬</span>
         </button>
 
         <!-- 하단 네비게이션 - Dock 스타일 리퀴드 글라스 -->
@@ -129,7 +130,7 @@
     <!-- 모달 컨테이너 -->
     <div id="modalContainer" class="fixed inset-0 z-[100] hidden">
         <div class="modal-backdrop absolute inset-0 bg-black/50"></div>
-        <div class="modal-content absolute bottom-0 left-0 right-0 max-w-md mx-auto bg-white rounded-t-3xl p-6 transform translate-y-full transition-transform duration-300">
+        <div class="modal-content">
             <!-- 모달 내용이 여기에 동적으로 렌더링됨 -->
         </div>
     </div>
