@@ -3,7 +3,7 @@
  * 학급 정보, 학생 관리, 데이터 백업/복원
  */
 
-import { store, PET_TYPES } from '../store.js';
+import { store, PET_TYPES, COLOR_PRESETS } from '../store.js';
 import { router } from '../router.js';
 import { showToast, setModalContent, openModal, closeModal } from '../utils/animations.js';
 
@@ -272,6 +272,283 @@ export function render() {
             <input type="file" id="importFileInput" accept=".json" class="hidden">
         </div>
     `;
+}
+
+/**
+ * 과목 목록 렌더링
+ */
+function renderSubjectList() {
+    const subjects = store.getSubjectList();
+    const subjectColors = store.getSubjectColors();
+
+    if (subjects.length === 0) {
+        return `
+            <div class="text-center py-8 text-gray-500">
+                <div class="text-4xl mb-3">📚</div>
+                <p>등록된 과목이 없어요</p>
+                <p class="text-sm mt-2">과목을 추가해주세요!</p>
+            </div>
+        `;
+    }
+
+    return `
+        <div class="space-y-2" id="subjectList">
+            ${subjects.map(subject => {
+                const colors = subjectColors[subject] || { bg: '#F3F4F6', text: '#4B5563' };
+                const usageCount = store.countSubjectUsage(subject);
+                return `
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold"
+                                 style="background-color: ${colors.bg}; color: ${colors.text};">
+                                ${subject.charAt(0)}
+                            </div>
+                            <div>
+                                <span class="font-medium text-gray-800">${subject}</span>
+                                ${usageCount > 0 ? `<span class="text-xs text-gray-400 ml-2">시간표 ${usageCount}회</span>` : ''}
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button class="subject-color-btn text-xs px-3 py-1.5 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+                                    data-subject="${subject}">
+                                🎨 색상
+                            </button>
+                            <button class="subject-delete-btn text-xs px-3 py-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
+                                    data-subject="${subject}"
+                                    data-usage="${usageCount}">
+                                삭제
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('')}
+        </div>
+    `;
+}
+
+/**
+ * 과목 추가 모달
+ */
+function showAddSubjectModal() {
+    const modalContent = `
+        <div class="space-y-4">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-bold">➕ 새 과목 추가</h3>
+                <button onclick="window.classpet.closeModal()" class="text-gray-400 hover:text-gray-600">✕</button>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">과목명</label>
+                <input type="text" id="newSubjectNameInput"
+                       class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary"
+                       placeholder="예: 안전교육, 보건, 방과후..."
+                       maxlength="10">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">색상 선택</label>
+                <div class="flex gap-2 flex-wrap" id="addSubjectColors">
+                    ${COLOR_PRESETS.map((preset, index) => `
+                        <button class="add-subject-color w-10 h-10 rounded-full border-2 border-white shadow-sm hover:scale-110 transition-transform ${index === 0 ? 'ring-2 ring-primary ring-offset-1' : ''}"
+                                data-index="${index}"
+                                data-bg="${preset.bg}"
+                                data-text="${preset.text}"
+                                title="${preset.name}"
+                                style="background-color: ${preset.bg};">
+                        </button>
+                    `).join('')}
+                </div>
+            </div>
+
+            <div class="flex gap-2">
+                <button onclick="window.classpet.closeModal()" class="btn btn-secondary flex-1">취소</button>
+                <button id="confirmAddSubjectBtn" class="btn btn-primary flex-1">추가</button>
+            </div>
+        </div>
+    `;
+
+    setModalContent(modalContent);
+    openModal();
+
+    // 입력창 포커스
+    setTimeout(() => {
+        document.getElementById('newSubjectNameInput').focus();
+    }, 100);
+
+    let selectedColorIndex = 0;
+
+    // 색상 선택 이벤트
+    document.querySelectorAll('.add-subject-color').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.add-subject-color').forEach(b => {
+                b.classList.remove('ring-2', 'ring-primary', 'ring-offset-1');
+            });
+            btn.classList.add('ring-2', 'ring-primary', 'ring-offset-1');
+            selectedColorIndex = parseInt(btn.dataset.index);
+        });
+    });
+
+    // 엔터키 지원
+    document.getElementById('newSubjectNameInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            document.getElementById('confirmAddSubjectBtn').click();
+        }
+    });
+
+    // 추가 버튼
+    document.getElementById('confirmAddSubjectBtn').addEventListener('click', () => {
+        const subjectName = document.getElementById('newSubjectNameInput').value.trim();
+
+        if (!subjectName) {
+            showToast('과목명을 입력해주세요', 'warning');
+            document.getElementById('newSubjectNameInput').focus();
+            return;
+        }
+
+        if (subjectName.length > 10) {
+            showToast('과목명은 10자 이하로 입력해주세요', 'warning');
+            return;
+        }
+
+        const selectedColor = COLOR_PRESETS[selectedColorIndex];
+        const success = store.addSubject(subjectName, selectedColor);
+
+        if (success) {
+            showToast(`"${subjectName}" 과목이 추가되었습니다`, 'success');
+            closeModal();
+            router.handleRoute(); // 화면 새로고침
+        } else {
+            showToast('이미 존재하는 과목입니다', 'warning');
+            document.getElementById('newSubjectNameInput').focus();
+        }
+    });
+}
+
+/**
+ * 과목 색상 변경 모달
+ */
+function showSubjectColorModal(subject) {
+    const currentColor = store.getSubjectColor(subject);
+
+    const modalContent = `
+        <div class="space-y-4">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-bold">🎨 ${subject} 색상 변경</h3>
+                <button onclick="window.classpet.closeModal()" class="text-gray-400 hover:text-gray-600">✕</button>
+            </div>
+
+            <div class="text-center py-4">
+                <div id="colorPreviewBox" class="inline-block px-6 py-3 rounded-xl text-lg font-bold"
+                     style="background-color: ${currentColor.bg}; color: ${currentColor.text};">
+                    ${subject}
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">색상 선택</label>
+                <div class="flex gap-2 flex-wrap justify-center">
+                    ${COLOR_PRESETS.map((preset, index) => `
+                        <button class="color-change-btn w-10 h-10 rounded-full border-2 border-white shadow-sm hover:scale-110 transition-transform ${preset.bg === currentColor.bg ? 'ring-2 ring-primary ring-offset-1' : ''}"
+                                data-index="${index}"
+                                data-bg="${preset.bg}"
+                                data-text="${preset.text}"
+                                title="${preset.name}"
+                                style="background-color: ${preset.bg};">
+                        </button>
+                    `).join('')}
+                </div>
+            </div>
+
+            <div class="flex gap-2">
+                <button onclick="window.classpet.closeModal()" class="btn btn-secondary flex-1">취소</button>
+                <button id="confirmColorChangeBtn" class="btn btn-primary flex-1">저장</button>
+            </div>
+        </div>
+    `;
+
+    setModalContent(modalContent);
+    openModal();
+
+    let selectedColor = currentColor;
+
+    // 색상 선택 이벤트
+    document.querySelectorAll('.color-change-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.color-change-btn').forEach(b => {
+                b.classList.remove('ring-2', 'ring-primary', 'ring-offset-1');
+            });
+            btn.classList.add('ring-2', 'ring-primary', 'ring-offset-1');
+
+            selectedColor = { bg: btn.dataset.bg, text: btn.dataset.text };
+
+            // 미리보기 업데이트
+            const previewBox = document.getElementById('colorPreviewBox');
+            previewBox.style.backgroundColor = selectedColor.bg;
+            previewBox.style.color = selectedColor.text;
+        });
+    });
+
+    // 저장 버튼
+    document.getElementById('confirmColorChangeBtn').addEventListener('click', () => {
+        store.setSubjectColor(subject, selectedColor);
+        showToast(`${subject} 색상이 변경되었습니다`, 'success');
+        closeModal();
+        router.handleRoute();
+    });
+}
+
+/**
+ * 과목 삭제 확인 모달
+ */
+function showDeleteSubjectConfirm(subject, usageCount) {
+    const modalContent = `
+        <div class="space-y-4">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-bold text-red-600">⚠️ 과목 삭제</h3>
+                <button onclick="window.classpet.closeModal()" class="text-gray-400 hover:text-gray-600">✕</button>
+            </div>
+
+            <div class="text-center py-4">
+                <div class="text-5xl mb-4">🗑️</div>
+                <p class="text-gray-700 mb-2">
+                    <strong>"${subject}"</strong> 과목을 삭제할까요?
+                </p>
+                ${usageCount > 0 ? `
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mt-3">
+                    <p class="text-sm text-yellow-700">
+                        ⚠️ 시간표에서 <strong>${usageCount}회</strong> 사용 중입니다.<br>
+                        삭제 시 해당 시간이 비워집니다.
+                    </p>
+                </div>
+                ` : ''}
+            </div>
+
+            <div class="flex gap-2">
+                <button onclick="window.classpet.closeModal()" class="btn btn-secondary flex-1">취소</button>
+                <button id="confirmDeleteSubjectBtn" class="btn btn-danger flex-1">삭제</button>
+            </div>
+        </div>
+    `;
+
+    setModalContent(modalContent);
+    openModal();
+
+    // 삭제 버튼
+    document.getElementById('confirmDeleteSubjectBtn').addEventListener('click', () => {
+        const result = store.removeSubject(subject);
+
+        if (result.success) {
+            if (result.usageCount > 0) {
+                showToast(`"${subject}" 과목이 삭제되었습니다 (시간표 ${result.usageCount}개 비움)`, 'info');
+            } else {
+                showToast(`"${subject}" 과목이 삭제되었습니다`, 'success');
+            }
+            closeModal();
+            router.handleRoute();
+        } else {
+            showToast('과목 삭제에 실패했습니다', 'error');
+        }
+    });
 }
 
 /**

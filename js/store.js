@@ -14,6 +14,7 @@ const STORAGE_KEYS = {
     TIMETABLE: 'classpet_timetable',
     TIMETABLE_OVERRIDES: 'classpet_timetable_overrides',  // 주간 오버라이드
     SUBJECT_COLORS: 'classpet_subject_colors',  // 과목별 커스텀 색상
+    SUBJECT_LIST: 'classpet_subject_list',  // 과목 목록
     PRAISE_LOG: 'classpet_praise_log',
     EMOTION_LOG: 'classpet_emotion_log',
     NOTES: 'classpet_notes',
@@ -22,6 +23,9 @@ const STORAGE_KEYS = {
     CURRENT_CLASS_ID: 'classpet_current_class_id',
     CURRENT_TEACHER_UID: 'classpet_current_teacher_uid'
 };
+
+// 기본 과목 목록
+const DEFAULT_SUBJECT_LIST = ['국어', '수학', '사회', '과학', '영어', '체육', '음악', '미술', '도덕', '실과', '창체'];
 
 // 기본 과목 색상 (Timetable.js의 SUBJECT_COLORS와 동일)
 const DEFAULT_SUBJECT_COLORS = {
@@ -1025,6 +1029,138 @@ class Store {
         const student = this.getStudent(studentId);
         if (!student) return null;
         return String(student.number).padStart(4, '0');
+    }
+
+    // ==================== 과목 목록 관련 ====================
+
+    /**
+     * 과목 목록 가져오기
+     */
+    getSubjectList() {
+        const data = localStorage.getItem(STORAGE_KEYS.SUBJECT_LIST);
+        return data ? JSON.parse(data) : [...DEFAULT_SUBJECT_LIST];
+    }
+
+    /**
+     * 과목 목록 저장
+     */
+    saveSubjectList(list) {
+        localStorage.setItem(STORAGE_KEYS.SUBJECT_LIST, JSON.stringify(list));
+        this.notify('subjectList', list);
+    }
+
+    /**
+     * 과목 추가
+     * @param {string} subject - 추가할 과목명
+     * @param {Object} color - 색상 (선택사항) { bg, text }
+     * @returns {boolean} 성공 여부
+     */
+    addSubject(subject, color = null) {
+        const trimmed = subject.trim();
+        if (!trimmed) return false;
+
+        const list = this.getSubjectList();
+
+        // 중복 체크
+        if (list.includes(trimmed)) {
+            return false;
+        }
+
+        // 과목 추가
+        list.push(trimmed);
+        this.saveSubjectList(list);
+
+        // 색상 설정 (기본 색상 할당)
+        if (color) {
+            this.setSubjectColor(trimmed, color);
+        } else {
+            // 기본 색상 중 하나 자동 할당
+            const defaultColors = [
+                { bg: '#E0E7FF', text: '#3730A3' },  // 인디고
+                { bg: '#FEF3C7', text: '#92400E' },  // 앰버
+                { bg: '#D1FAE5', text: '#065F46' },  // 에메랄드
+                { bg: '#FCE7F3', text: '#9D174D' },  // 핑크
+                { bg: '#E0F2FE', text: '#0369A1' },  // 스카이
+            ];
+            const colorIndex = (list.length - 1) % defaultColors.length;
+            this.setSubjectColor(trimmed, defaultColors[colorIndex]);
+        }
+
+        return true;
+    }
+
+    /**
+     * 과목 삭제
+     * @param {string} subject - 삭제할 과목명
+     * @returns {Object} { success, usageCount } - 성공 여부 및 시간표에서 사용 중인 횟수
+     */
+    removeSubject(subject) {
+        const list = this.getSubjectList();
+        const index = list.indexOf(subject);
+
+        if (index === -1) {
+            return { success: false, usageCount: 0 };
+        }
+
+        // 시간표에서 사용 중인지 확인
+        const usageCount = this.countSubjectUsage(subject);
+
+        // 과목 삭제
+        list.splice(index, 1);
+        this.saveSubjectList(list);
+
+        // 시간표에서 해당 과목 제거
+        if (usageCount > 0) {
+            this.removeSubjectFromTimetable(subject);
+        }
+
+        // 색상 데이터도 삭제
+        this.resetSubjectColor(subject);
+
+        return { success: true, usageCount };
+    }
+
+    /**
+     * 시간표에서 과목 사용 횟수 카운트
+     */
+    countSubjectUsage(subject) {
+        const timetable = this.getTimetable() || {};
+        let count = 0;
+
+        Object.values(timetable).forEach(cell => {
+            if (cell?.subject === subject) {
+                count++;
+            }
+        });
+
+        return count;
+    }
+
+    /**
+     * 시간표에서 특정 과목 제거
+     */
+    removeSubjectFromTimetable(subject) {
+        const timetable = this.getTimetable() || {};
+        let modified = false;
+
+        Object.keys(timetable).forEach(key => {
+            if (timetable[key]?.subject === subject) {
+                delete timetable[key];
+                modified = true;
+            }
+        });
+
+        if (modified) {
+            this.saveTimetable(timetable);
+        }
+    }
+
+    /**
+     * 과목 목록 초기화 (기본값으로)
+     */
+    resetSubjectList() {
+        localStorage.removeItem(STORAGE_KEYS.SUBJECT_LIST);
+        this.notify('subjectList', DEFAULT_SUBJECT_LIST);
     }
 
     // ==================== 과목 색상 관련 ====================
@@ -2067,6 +2203,7 @@ export {
     PET_SPEECH_STYLES,
     DEFAULT_SETTINGS,
     DEFAULT_TIMETABLE,
+    DEFAULT_SUBJECT_LIST,
     DEFAULT_SUBJECT_COLORS,
     COLOR_PRESETS,
     convertToPetSpeech
