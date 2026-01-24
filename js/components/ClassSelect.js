@@ -71,7 +71,7 @@ export async function render() {
                             <p class="text-sm text-gray-500">${teacherSession?.email || ''}</p>
                         </div>
                     </div>
-                    <button id="logoutBtn" class="text-gray-400 hover:text-gray-600 text-sm flex items-center gap-1">
+                    <button id="classSelectLogoutBtn" class="px-3 py-1.5 text-sm text-gray-500 hover:text-gray-700 border border-gray-300 hover:border-gray-400 rounded-full flex items-center gap-1 transition-colors">
                         <span>로그아웃</span>
                         <span>→</span>
                     </button>
@@ -293,19 +293,19 @@ async function selectClass(classId) {
  * 렌더 후 이벤트 바인딩
  */
 export function afterRender() {
-    // Google 로그인 확인
+    // 로그아웃 버튼 (항상 바인딩)
+    const logoutBtn = document.getElementById('classSelectLogoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', handleLogout);
+    }
+
+    // Google 로그인 확인 (학급 목록 로드용)
     if (!store.isGoogleTeacher()) {
         return;
     }
 
     // 학급 목록 로드
     refreshClassList();
-
-    // 로그아웃 버튼
-    const logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', handleLogout);
-    }
 
     // 새 학급 만들기 버튼
     const createClassBtn = document.getElementById('createClassBtn');

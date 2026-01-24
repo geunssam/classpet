@@ -648,9 +648,18 @@ class Store {
      * 교사의 모든 학급 가져오기
      */
     async getTeacherClasses() {
+        // Firebase 초기화 대기 (최대 3초)
+        if (!firebase.isFirebaseInitialized()) {
+            for (let i = 0; i < 30; i++) {
+                await new Promise(resolve => setTimeout(resolve, 100));
+                if (firebase.isFirebaseInitialized()) break;
+            }
+        }
+
         // Firebase 상태 재확인 (타임아웃으로 인한 상태 불일치 방지)
         if (!this.firebaseEnabled && firebase.isFirebaseInitialized()) {
             this.firebaseEnabled = true;
+            console.log('🔥 Firebase 연동: 활성화 (getTeacherClasses)');
         }
 
         // uid 가져오기: Firebase 우선, 없으면 세션에서
