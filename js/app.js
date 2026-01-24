@@ -126,9 +126,17 @@ async function waitForAuthReady() {
 
     // 2. onAuthStateChanged로 기존 세션 복원 대기
     return new Promise((resolve) => {
+        let timeoutId = null;
+
         const unsubscribe = store.onAuthChange((user) => {
             console.log('🔐 Firebase 인증 상태 확정:', user?.email || 'null');
             store.setAuthLoading(false);
+
+            // 타임아웃 취소
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+                timeoutId = null;
+            }
 
             if (user && !user.isAnonymous) {
                 // Google 로그인 사용자 - 세션 복원
@@ -150,7 +158,7 @@ async function waitForAuthReady() {
         });
 
         // 타임아웃 (5초) - Firebase 응답이 없으면 진행
-        setTimeout(() => {
+        timeoutId = setTimeout(() => {
             console.log('⏰ Firebase 인증 타임아웃 - 진행');
             store.setAuthLoading(false);
             unsubscribe();
