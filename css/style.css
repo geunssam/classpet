@@ -1,21 +1,134 @@
 /* 클래스펫 커스텀 스타일 */
+/* 성능 최적화 버전 - 모바일 우선 */
 
-/* Safe Area 지원 */
+/* ======================================
+   CSS 변수 및 Safe Area
+   ====================================== */
 :root {
+    --safe-area-inset-top: env(safe-area-inset-top, 0px);
     --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-area-inset-left: env(safe-area-inset-left, 0px);
+    --safe-area-inset-right: env(safe-area-inset-right, 0px);
 }
 
-/* 기본 폰트 설정 */
+/* ======================================
+   기본 레이아웃 (모바일 우선)
+   ====================================== */
+html, body {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+
 body {
-    font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    padding-bottom: var(--safe-area-inset-bottom);
+    background: #FFF9F0;
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
 }
 
-/* Safe Area 패딩 */
-.pb-safe {
-    padding-bottom: calc(12px + var(--safe-area-inset-bottom));
+/* ======================================
+   앱 컨테이너 레이아웃 (완전 중앙 정렬)
+   ====================================== */
+.app-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 100%;
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+    margin: 0 auto;
+    background: #ffffff;
+    position: relative;
+    padding-bottom: calc(80px + var(--safe-area-inset-bottom));
+    padding-left: var(--safe-area-inset-left);
+    padding-right: var(--safe-area-inset-right);
+}
+
+/* 태블릿/PC에서 최대 너비 제한 */
+@media (min-width: 640px) {
+    .app-container {
+        max-width: 576px;
+        box-shadow: 0 0 40px rgba(0,0,0,0.1);
+    }
+}
+
+@media (min-width: 1024px) {
+    .app-container {
+        max-width: 672px;
+    }
+}
+
+/* ======================================
+   헤더 스타일
+   ====================================== */
+.app-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: #ffffff;
+    border-bottom: 1px solid #f3f4f6;
+    padding: 12px 16px;
+    padding-top: calc(12px + var(--safe-area-inset-top));
+}
+
+/* ======================================
+   메인 콘텐츠
+   ====================================== */
+.app-content {
+    flex: 1;
+    padding: 16px;
+    position: relative;
+    z-index: 10;
+}
+
+/* ======================================
+   하단 네비게이션
+   ====================================== */
+.app-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    padding: 8px;
+    padding-bottom: calc(8px + var(--safe-area-inset-bottom));
+    display: flex;
+    justify-content: center;
+}
+
+/* 태블릿/PC에서 네비 위치 */
+@media (min-width: 640px) {
+    .app-nav {
+        max-width: 576px;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+}
+
+@media (min-width: 1024px) {
+    .app-nav {
+        max-width: 672px;
+    }
+}
+
+/* ======================================
+   토스트 컨테이너
+   ====================================== */
+.toast-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 200;
+    pointer-events: none;
+}
+
+.toast-container > * {
+    pointer-events: auto;
 }
 
 /* 네비게이션 Dock 컨테이너 - 리퀴드 글라스 */
@@ -1974,6 +2087,13 @@ input[type="password"]:focus {
     }
 }
 
+/* 모바일에서 blob 완전 숨김 (성능) */
+@media (max-width: 640px) {
+    .blob {
+        display: none !important;
+    }
+}
+
 /* ======================================
    시간표 드래그 앤 드롭 스타일
    ====================================== */
@@ -2093,53 +2213,93 @@ input[type="password"]:focus {
     }
 }
 
-/* 모바일 성능 최적화 */
+/* ======================================
+   모바일 성능 최적화 (핵심!)
+   ====================================== */
 @media (max-width: 640px) {
-    /* backdrop-filter 완전 제거 - 단순 배경으로 대체 */
+    /* GPU 가속 비활성화 - CPU 렌더링이 더 빠름 */
+    * {
+        -webkit-transform: translateZ(0);
+        transform: translateZ(0);
+    }
+
+    /* 모든 blur/backdrop-filter 완전 제거 */
+    *,
+    *::before,
+    *::after {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        filter: none !important;
+    }
+
+    /* 단순 배경색으로 대체 */
     .nav-dock,
     .header-dock,
     .week-navigator-dock,
     .timetable-grid-dock,
-    .timetable-btn-dock {
-        backdrop-filter: none !important;
-        -webkit-backdrop-filter: none !important;
-        background: rgba(255,255,255,0.95) !important;
+    .timetable-btn-dock,
+    .settings-btn-dock {
+        background: rgba(255,255,255,0.97) !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
     }
 
     .header-glass-btn,
-    .timetable-cell-new {
-        backdrop-filter: none !important;
-        -webkit-backdrop-filter: none !important;
-        background: rgba(255,255,255,0.9) !important;
+    .timetable-cell-new,
+    .liquid-btn-small {
+        background: rgba(255,255,255,0.95) !important;
     }
 
-    /* 헤더 blur 제거 */
+    .app-header,
     header {
-        backdrop-filter: none !important;
-        -webkit-backdrop-filter: none !important;
-        background: rgba(255,255,255,0.98) !important;
+        background: #ffffff !important;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
     }
 
-    /* ::before 가상요소 제거로 렌더링 부하 감소 */
+    /* 모든 ::before/::after 가상요소 숨김 */
     .nav-dock::before,
     .header-dock::before,
     .week-navigator-dock::before,
     .timetable-grid-dock::before,
     .timetable-btn-dock::before,
-    .timetable-cell-new::before {
+    .timetable-cell-new::before,
+    .settings-btn-dock::before,
+    .liquid-btn-small::before {
         display: none !important;
     }
 
-    /* 트랜지션 최적화 */
+    /* 트랜지션 최소화 */
     .nav-item,
-    .timetable-cell-new {
-        transition: transform 0.1s ease, background 0.1s ease;
+    .timetable-cell-new,
+    .card,
+    button {
+        transition: none !important;
     }
 
-    /* box-shadow 간소화 */
-    .nav-dock,
-    .header-dock,
-    .timetable-grid-dock {
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+    /* 호버 효과 비활성화 (터치 기기) */
+    .nav-item:hover,
+    .timetable-cell-new:hover,
+    .card:hover {
+        transform: none !important;
+    }
+
+    /* box-shadow 단순화 */
+    .card,
+    .modal-content > div {
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+    }
+
+    /* blob 애니메이션 완전 제거 */
+    .blob,
+    .blob-1,
+    .blob-2,
+    .blob-3 {
+        display: none !important;
+    }
+
+    /* 애니메이션 축소 */
+    @media (prefers-reduced-motion: no-preference) {
+        .animate-bounce {
+            animation-duration: 1.5s !important;
+        }
     }
 }
