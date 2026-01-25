@@ -423,6 +423,10 @@ function initRouter() {
         // 학생/로그인 라우트에서 헤더/툴바 숨김 처리
         updateUIVisibility(route);
     };
+
+    // 초기 라우트에 대해서도 UI 가시성 적용
+    const initialRoute = window.location.hash.slice(1).split('?')[0] || 'login';
+    updateUIVisibility(initialRoute);
 }
 
 /**
@@ -1199,24 +1203,31 @@ function refreshCurrentView() {
 function updateUIVisibility(route) {
     const header = document.querySelector('.top-navbar');
     const rightToolbar = document.getElementById('rightToolbar');
+    const mobileDrawer = document.getElementById('mobileDrawer');
+    const mobileDrawerOverlay = document.getElementById('mobileDrawerOverlay');
     const isLoginRoute = ['login', 'teacher-login', 'student-login', 'class-select'].includes(route);
     const isStudentRoute = ['student-main', 'student-chat', 'pet-selection', 'pet-collection'].includes(route);
 
     if (isLoginRoute) {
-        // 로그인 화면: 헤더와 툴바 숨김
+        // 로그인 화면: 헤더, 툴바, 모바일 드로어 모두 숨김
         if (header) header.classList.add('hidden');
         if (rightToolbar) rightToolbar.classList.add('hidden');
+        if (mobileDrawer) mobileDrawer.classList.add('hidden');
+        if (mobileDrawerOverlay) mobileDrawerOverlay.classList.add('hidden');
     } else if (isStudentRoute) {
         // 학생 모드: 헤더 표시하되 탭 숨김, 툴바 숨김
         if (header) {
             header.classList.remove('hidden');
-            // 학생 모드용 헤더 스타일 적용 (필요시)
         }
         if (rightToolbar) rightToolbar.classList.add('hidden');
+        if (mobileDrawer) mobileDrawer.classList.remove('hidden');
+        if (mobileDrawerOverlay) mobileDrawerOverlay.classList.remove('hidden');
     } else {
         // 교사 모드: 모두 표시
         if (header) header.classList.remove('hidden');
         if (rightToolbar) rightToolbar.classList.remove('hidden');
+        if (mobileDrawer) mobileDrawer.classList.remove('hidden');
+        if (mobileDrawerOverlay) mobileDrawerOverlay.classList.remove('hidden');
     }
 }
 

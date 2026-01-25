@@ -135,8 +135,8 @@ export function showToast(message, type = 'default', options = {}) {
             document.addEventListener('click', removeToast);
         }, 100);
     } else {
-        // 기존 방식: 지정된 시간 후 제거
-        const duration = typeof options === 'number' ? options : (options.duration || 6000);
+        // 기존 방식: 지정된 시간 후 제거 (기본 2.5초)
+        const duration = typeof options === 'number' ? options : (options.duration || 2500);
         setTimeout(() => {
             toast.remove();
         }, duration);
