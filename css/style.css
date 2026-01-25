@@ -2994,11 +2994,11 @@ input[type="password"]:focus {
         display: none !important;
     }
 
-    .hamburger-btn {
+    .hamburger-btn:not(.hidden) {
         display: flex !important;
     }
 
-    .right-toolbar {
+    .right-toolbar:not(.hidden) {
         display: none !important;
     }
 
@@ -3007,9 +3007,16 @@ input[type="password"]:focus {
         margin-right: 0 !important;
     }
 
-    .top-navbar {
+    .top-navbar:not(.hidden) {
         padding: 0 16px;
         flex-wrap: nowrap !important;
+    }
+
+    /* hidden 클래스는 항상 우선 */
+    .top-navbar.hidden,
+    .hamburger-btn.hidden,
+    .mobile-drawer.hidden {
+        display: none !important;
     }
 
     .navbar-left {

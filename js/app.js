@@ -44,6 +44,14 @@ import {
  * 앱 초기화
  */
 async function initApp() {
+    // 초기 상태: 헤더와 툴바 강제 숨김 (로그인 전까지)
+    const header = document.querySelector('.top-navbar');
+    const rightToolbar = document.getElementById('rightToolbar');
+    const mobileDrawer = document.getElementById('mobileDrawer');
+    if (header) header.style.display = 'none';
+    if (rightToolbar) rightToolbar.style.display = 'none';
+    if (mobileDrawer) mobileDrawer.style.display = 'none';
+
     // URL 파라미터로 학급 코드 자동 설정 (QR 스캔 시)
     const urlParams = new URLSearchParams(window.location.search);
     const codeParam = urlParams.get('code');
@@ -1205,29 +1213,57 @@ function updateUIVisibility(route) {
     const rightToolbar = document.getElementById('rightToolbar');
     const mobileDrawer = document.getElementById('mobileDrawer');
     const mobileDrawerOverlay = document.getElementById('mobileDrawerOverlay');
+    const classInfoEl = document.getElementById('classInfo');
     const isLoginRoute = ['login', 'teacher-login', 'student-login', 'class-select'].includes(route);
     const isStudentRoute = ['student-main', 'student-chat', 'pet-selection', 'pet-collection'].includes(route);
 
     if (isLoginRoute) {
         // 로그인 화면: 헤더, 툴바, 모바일 드로어 모두 숨김
-        if (header) header.classList.add('hidden');
-        if (rightToolbar) rightToolbar.classList.add('hidden');
-        if (mobileDrawer) mobileDrawer.classList.add('hidden');
+        if (header) {
+            header.style.display = 'none';
+            header.classList.add('hidden');
+        }
+        if (rightToolbar) {
+            rightToolbar.style.display = 'none';
+            rightToolbar.classList.add('hidden');
+        }
+        if (mobileDrawer) {
+            mobileDrawer.style.display = 'none';
+            mobileDrawer.classList.add('hidden');
+        }
         if (mobileDrawerOverlay) mobileDrawerOverlay.classList.add('hidden');
+        if (classInfoEl) classInfoEl.textContent = '';
     } else if (isStudentRoute) {
         // 학생 모드: 헤더 표시하되 탭 숨김, 툴바 숨김
         if (header) {
+            header.style.display = '';
             header.classList.remove('hidden');
         }
-        if (rightToolbar) rightToolbar.classList.add('hidden');
-        if (mobileDrawer) mobileDrawer.classList.remove('hidden');
+        if (rightToolbar) {
+            rightToolbar.style.display = 'none';
+            rightToolbar.classList.add('hidden');
+        }
+        if (mobileDrawer) {
+            mobileDrawer.style.display = '';
+            mobileDrawer.classList.remove('hidden');
+        }
         if (mobileDrawerOverlay) mobileDrawerOverlay.classList.remove('hidden');
     } else {
         // 교사 모드: 모두 표시
-        if (header) header.classList.remove('hidden');
-        if (rightToolbar) rightToolbar.classList.remove('hidden');
-        if (mobileDrawer) mobileDrawer.classList.remove('hidden');
+        if (header) {
+            header.style.display = '';
+            header.classList.remove('hidden');
+        }
+        if (rightToolbar) {
+            rightToolbar.style.display = '';
+            rightToolbar.classList.remove('hidden');
+        }
+        if (mobileDrawer) {
+            mobileDrawer.style.display = '';
+            mobileDrawer.classList.remove('hidden');
+        }
         if (mobileDrawerOverlay) mobileDrawerOverlay.classList.remove('hidden');
+        updateClassInfo();
     }
 }
 
