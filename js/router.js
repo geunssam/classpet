@@ -176,7 +176,7 @@ class Router {
     updateStudentModeUI(route) {
         const isStudentMode = STUDENT_MODE_ROUTES.includes(route);
         const isLoginScreen = LOGIN_ROUTES.includes(route);
-        const bottomNav = document.querySelector('nav.fixed');
+        const bottomNav = document.querySelector('nav.app-nav');
         const quickPraiseBtn = document.getElementById('quickPraiseBtn');
         const header = document.querySelector('header');
         const content = document.getElementById('content');
