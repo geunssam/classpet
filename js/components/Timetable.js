@@ -317,8 +317,8 @@ function showEditModal(cellKey) {
                     </button>
                 </div>
 
-                <!-- 프리셋 색상 -->
-                <div class="flex gap-1.5 flex-wrap mb-3">
+                <!-- 프리셋 색상 + 직접 선택 -->
+                <div class="flex gap-1.5 flex-wrap items-center">
                     ${COLOR_PRESETS.map((preset, index) => `
                         <button type="button" class="color-preset w-6 h-6 rounded-full border border-white shadow-sm hover:scale-110 transition-transform"
                                 data-index="${index}"
@@ -328,18 +328,17 @@ function showEditModal(cellKey) {
                                 style="background-color: ${preset.bg};">
                         </button>
                     `).join('')}
-                </div>
-
-                <!-- 직접 선택 버튼 -->
-                <div class="flex items-center gap-2">
-                    <button type="button" id="customColorBtn" class="text-sm text-primary hover:text-primary-dark flex items-center gap-1">
-                        <span>🎨</span> 직접 선택
+                    <!-- 직접 선택 (팔레트) 버튼 -->
+                    <button type="button" id="customColorBtn" class="w-6 h-6 rounded-full shadow-sm hover:scale-110 transition-transform flex items-center justify-center relative"
+                            title="직접 선택"
+                            style="background: conic-gradient(from 0deg, #ff0000, #ff8000, #ffff00, #80ff00, #00ff00, #00ff80, #00ffff, #0080ff, #0000ff, #8000ff, #ff00ff, #ff0080, #ff0000);">
+                        <span class="absolute inset-0.5 bg-white rounded-full flex items-center justify-center">
+                            <svg class="w-3 h-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                            </svg>
+                        </span>
                     </button>
                     <input type="color" id="bgColorPicker" class="sr-only" value="#DBEAFE">
-                    <div id="customColorPreview" class="hidden flex items-center gap-2 ml-2">
-                        <div id="previewSwatch" class="w-6 h-6 rounded-full border border-gray-300"></div>
-                        <span class="text-xs text-gray-500">미리보기</span>
-                    </div>
                 </div>
             </div>
 
