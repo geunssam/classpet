@@ -290,15 +290,15 @@ function showEditModal(cellKey) {
                         const colors = subjectColors[subject] || { bg: '#F3F4F6', text: '#4B5563' };
                         const isSelected = currentCell.subject === subject;
                         return `
-                        <button type="button" class="subject-option p-3 rounded-xl text-sm font-semibold transition-all ${isSelected ? 'ring-2 ring-primary ring-offset-2' : ''}"
+                        <button type="button" class="subject-option py-3 px-2 rounded-xl text-sm font-semibold transition-all flex items-center justify-center ${isSelected ? 'ring-2 ring-primary ring-offset-2' : ''}"
                                 data-subject="${subject}"
-                                style="background-color: ${colors.bg}; color: ${colors.text};">
+                                style="background-color: ${colors.bg}; color: ${colors.text}; min-height: 44px;">
                             ${subject}
                         </button>
                         `;
                     }).join('')}
-                    <button type="button" id="quickAddSubjectBtn" class="p-3 rounded-xl text-sm font-semibold transition-all bg-gray-100 text-gray-500 hover:bg-gray-200 border-2 border-dashed border-gray-300">
-                        ➕ 추가
+                    <button type="button" id="quickAddSubjectBtn" class="py-3 px-2 rounded-xl text-sm font-semibold transition-all bg-gray-100 text-gray-500 hover:bg-gray-200 border-2 border-dashed border-gray-300 flex items-center justify-center gap-1" style="min-height: 44px;">
+                        <span>+</span><span>추가</span>
                     </button>
                 </div>
             </div>
@@ -318,9 +318,9 @@ function showEditModal(cellKey) {
                 </div>
 
                 <!-- 프리셋 색상 -->
-                <div class="flex gap-2 flex-wrap mb-3">
+                <div class="flex gap-1.5 flex-wrap mb-3">
                     ${COLOR_PRESETS.map((preset, index) => `
-                        <button type="button" class="color-preset w-8 h-8 rounded-full border-2 border-white shadow-sm hover:scale-110 transition-transform"
+                        <button type="button" class="color-preset w-6 h-6 rounded-full border border-white shadow-sm hover:scale-110 transition-transform"
                                 data-index="${index}"
                                 data-bg="${preset.bg}"
                                 data-text="${preset.text}"
