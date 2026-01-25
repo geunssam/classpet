@@ -16,7 +16,7 @@ import { showToast } from '../utils/animations.js';
  */
 export function render() {
     return `
-        <div class="login-select-container flex flex-col items-center justify-center px-4 overflow-hidden" style="min-height: 100dvh;">
+        <div class="login-select-container flex flex-col items-center justify-center px-4 pb-20 overflow-hidden" style="min-height: 100dvh;">
             <!-- 로고 영역 -->
             <div class="text-center mb-10">
                 <div class="text-6xl mb-4 animate-bounce-slow">🐾</div>
