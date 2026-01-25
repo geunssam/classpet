@@ -198,6 +198,12 @@ class Router {
             if (appContainer) {
                 appContainer.style.paddingBottom = '0';
             }
+
+            // body 스크롤 완전 차단 (iOS bounce 방지)
+            document.body.style.overflow = 'hidden';
+            document.body.style.position = 'fixed';
+            document.body.style.width = '100%';
+            document.body.style.height = '100%';
         } else if (isStudentMode) {
             // 학생 모드: 하단 네비, 빠른 칭찬 버튼 숨기기
             if (bottomNav) bottomNav.classList.add('hidden');
@@ -213,6 +219,12 @@ class Router {
             if (content) {
                 content.classList.remove('pb-20');
             }
+
+            // body 스크롤 복원
+            document.body.style.overflow = '';
+            document.body.style.position = '';
+            document.body.style.width = '';
+            document.body.style.height = '';
         } else {
             // 교사 모드: 원래대로
             if (bottomNav) bottomNav.classList.remove('hidden');
@@ -235,6 +247,12 @@ class Router {
             if (appContainer) {
                 appContainer.style.paddingBottom = '';
             }
+
+            // body 스크롤 복원
+            document.body.style.overflow = '';
+            document.body.style.position = '';
+            document.body.style.width = '';
+            document.body.style.height = '';
         }
     }
 
