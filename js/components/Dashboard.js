@@ -44,8 +44,7 @@ export function render() {
 
     return `
         <div class="space-y-4">
-            ${isGoogleTeacher ? `
-            <!-- 현재 학급 정보 + QR 코드 (Google 로그인 시) -->
+            <!-- 현재 학급 정보 + QR 코드 -->
             <div class="card border border-gray-100 py-3" style="background: #ffffff !important;">
                 <div class="flex items-center justify-between gap-4">
                     <!-- 좌측: 학급 정보 (2행 구조) -->
@@ -54,10 +53,12 @@ export function render() {
                         <div class="flex items-center gap-2">
                             <span class="text-lg">🏫</span>
                             <p class="font-bold text-gray-800 text-lg truncate">${settings?.className || '학급 이름 없음'}</p>
+                            ${isGoogleTeacher ? `
                             <span class="text-gray-300 text-lg">|</span>
                             <button id="switchClassBtn" class="liquid-btn-small">
                                 전환
                             </button>
+                            ` : ''}
                         </div>
                         <!-- 2열: 학급코드 -->
                         <p class="text-lg text-sky-500">
@@ -83,7 +84,6 @@ export function render() {
                     <p class="text-gray-400 text-sm">화면을 클릭하면 닫힙니다</p>
                 </div>
             </div>
-            ` : ''}
 
             <!-- 오늘의 요약 카드 -->
             <div class="card bg-gradient-to-br from-primary/10 to-success/10 py-3">
@@ -289,37 +289,48 @@ export function afterRender() {
             // QR 코드에 담을 URL (학급 참가 링크)
             const joinUrl = `${window.location.origin}${window.location.pathname}#student-login?code=${classCode}`;
 
-            // QRCode 라이브러리 사용 (qrcodejs)
-            if (typeof QRCode !== 'undefined') {
-                try {
-                    // 작은 QR 코드 (카드용)
-                    new QRCode(qrCodeContainer, {
-                        text: joinUrl,
-                        width: 52,
-                        height: 52,
-                        colorDark: '#6366f1',
-                        colorLight: '#ffffff',
-                        correctLevel: QRCode.CorrectLevel.M
-                    });
+            // QR 라이브러리 로드 후 QR 코드 생성
+            const generateQRCodes = async () => {
+                // loadQRLibrary가 있으면 호출하여 라이브러리 로드
+                if (typeof window.loadQRLibrary === 'function') {
+                    await window.loadQRLibrary();
+                }
 
-                    // 큰 QR 코드 (전체화면용)
-                    if (qrCodeLarge) {
-                        new QRCode(qrCodeLarge, {
+                // QRCode 라이브러리 사용 (qrcodejs)
+                if (typeof QRCode !== 'undefined') {
+                    try {
+                        // 작은 QR 코드 (카드용)
+                        new QRCode(qrCodeContainer, {
                             text: joinUrl,
-                            width: 280,
-                            height: 280,
+                            width: 52,
+                            height: 52,
                             colorDark: '#6366f1',
                             colorLight: '#ffffff',
                             correctLevel: QRCode.CorrectLevel.M
                         });
+
+                        // 큰 QR 코드 (전체화면용)
+                        if (qrCodeLarge) {
+                            new QRCode(qrCodeLarge, {
+                                text: joinUrl,
+                                width: 280,
+                                height: 280,
+                                colorDark: '#6366f1',
+                                colorLight: '#ffffff',
+                                correctLevel: QRCode.CorrectLevel.M
+                            });
+                        }
+                    } catch (error) {
+                        console.error('QR 코드 생성 실패:', error);
+                        qrCodeContainer.innerHTML = '<span class="text-xl">📱</span>';
                     }
-                } catch (error) {
-                    console.error('QR 코드 생성 실패:', error);
+                } else {
                     qrCodeContainer.innerHTML = '<span class="text-xl">📱</span>';
                 }
-            } else {
-                qrCodeContainer.innerHTML = '<span class="text-xl">📱</span>';
-            }
+            };
+
+            // QR 코드 생성 실행
+            generateQRCodes();
 
             // QR 코드 클릭 → 전체화면 모달 열기
             qrCodeContainer.addEventListener('click', () => {

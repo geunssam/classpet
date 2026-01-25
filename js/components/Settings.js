@@ -21,7 +21,7 @@ export function render() {
     return `
         <div class="settings-container pb-8">
             <!-- 헤더 -->
-            <div class="flex items-center justify-between sticky top-[88px] z-40 bg-white py-2 -mx-4 px-4 mb-4">
+            <div class="flex items-center justify-between mb-4">
                 <h2 class="text-xl font-bold whitespace-nowrap">⚙️ 설정</h2>
             </div>
 
@@ -62,8 +62,9 @@ export function render() {
                     </div>
                 </div>
             </section>
+            ` : ''}
 
-            <!-- 현재 학급 정보 + QR 코드 -->
+            <!-- 현재 학급 정보 + QR 코드 (모든 교사에게 표시) -->
             <section class="mb-6">
                 <h2 class="section-title">
                     <span>🏫</span>
@@ -104,7 +105,6 @@ export function render() {
                     <p class="text-gray-400 text-sm">화면을 클릭하면 닫힙니다</p>
                 </div>
             </div>
-            ` : ''}
 
             <!-- 학급 코드 섹션 (Google 미로그인 시에만 표시) -->
             ${!isGoogleTeacher ? (isFirebaseEnabled ? `
@@ -563,7 +563,12 @@ function showQRCodeModal() {
     openModal();
 
     // QR 코드 생성 (QRCode 라이브러리 사용 - Dashboard.js와 동일한 방식)
-    setTimeout(() => {
+    setTimeout(async () => {
+        // loadQRLibrary가 있으면 호출하여 라이브러리 로드
+        if (typeof window.loadQRLibrary === 'function') {
+            await window.loadQRLibrary();
+        }
+
         const qrContainer = document.getElementById('qrContainer');
         if (qrContainer && typeof QRCode !== 'undefined') {
             try {
@@ -953,37 +958,48 @@ export function afterRender() {
         if (classCode) {
             const joinUrl = `${window.location.origin}${window.location.pathname}#student-login?code=${classCode}`;
 
-            if (typeof QRCode !== 'undefined') {
-                try {
-                    // 작은 QR 코드 (설정 화면용)
-                    new QRCode(settingsQRCodeContainer, {
-                        text: joinUrl,
-                        width: 36,
-                        height: 36,
-                        colorDark: '#6366f1',
-                        colorLight: '#ffffff',
-                        correctLevel: QRCode.CorrectLevel.M
-                    });
+            // QR 라이브러리 로드 후 QR 코드 생성
+            const generateSettingsQRCodes = async () => {
+                // loadQRLibrary가 있으면 호출하여 라이브러리 로드
+                if (typeof window.loadQRLibrary === 'function') {
+                    await window.loadQRLibrary();
+                }
 
-                    // 큰 QR 코드 (전체화면용)
-                    const settingsQRCodeLarge = document.getElementById('settingsQRCodeLarge');
-                    if (settingsQRCodeLarge) {
-                        new QRCode(settingsQRCodeLarge, {
+                if (typeof QRCode !== 'undefined') {
+                    try {
+                        // 작은 QR 코드 (설정 화면용)
+                        new QRCode(settingsQRCodeContainer, {
                             text: joinUrl,
-                            width: 280,
-                            height: 280,
+                            width: 36,
+                            height: 36,
                             colorDark: '#6366f1',
                             colorLight: '#ffffff',
                             correctLevel: QRCode.CorrectLevel.M
                         });
+
+                        // 큰 QR 코드 (전체화면용)
+                        const settingsQRCodeLarge = document.getElementById('settingsQRCodeLarge');
+                        if (settingsQRCodeLarge) {
+                            new QRCode(settingsQRCodeLarge, {
+                                text: joinUrl,
+                                width: 280,
+                                height: 280,
+                                colorDark: '#6366f1',
+                                colorLight: '#ffffff',
+                                correctLevel: QRCode.CorrectLevel.M
+                            });
+                        }
+                    } catch (error) {
+                        console.error('QR 코드 생성 실패:', error);
+                        settingsQRCodeContainer.innerHTML = '<span class="text-xl">📱</span>';
                     }
-                } catch (error) {
-                    console.error('QR 코드 생성 실패:', error);
+                } else {
                     settingsQRCodeContainer.innerHTML = '<span class="text-xl">📱</span>';
                 }
-            } else {
-                settingsQRCodeContainer.innerHTML = '<span class="text-xl">📱</span>';
-            }
+            };
+
+            // QR 코드 생성 실행
+            generateSettingsQRCodes();
 
             // QR 코드 클릭 → 전체화면 모달 열기
             const settingsQRFullscreenModal = document.getElementById('settingsQRFullscreenModal');
