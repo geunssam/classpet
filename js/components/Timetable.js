@@ -466,38 +466,37 @@ function showEditModal(cellKey) {
     // 직접 색상 선택 (컬러피커)
     const customColorBtn = document.getElementById('customColorBtn');
     const bgColorPicker = document.getElementById('bgColorPicker');
-    const customColorPreview = document.getElementById('customColorPreview');
-    const previewSwatch = document.getElementById('previewSwatch');
 
-    customColorBtn.addEventListener('click', () => {
-        bgColorPicker.click();
-    });
-
-    bgColorPicker.addEventListener('input', (e) => {
-        if (!selectedSubject) return;
-
-        const bgColor = e.target.value;
-        // 배경색에 맞는 텍스트색 자동 계산 (밝기 기반)
-        const textColor = getContrastTextColor(bgColor);
-
-        pendingColor = { bg: bgColor, text: textColor };
-
-        // 미리보기 표시
-        customColorPreview.classList.remove('hidden');
-        previewSwatch.style.backgroundColor = bgColor;
-
-        // 과목 버튼 미리보기 업데이트
-        const subjectBtn = document.querySelector(`.subject-option[data-subject="${selectedSubject}"]`);
-        if (subjectBtn) {
-            subjectBtn.style.backgroundColor = bgColor;
-            subjectBtn.style.color = textColor;
-        }
-
-        // 프리셋 선택 해제
-        document.querySelectorAll('.color-preset').forEach(b => {
-            b.classList.remove('ring-2', 'ring-primary', 'ring-offset-1');
+    if (customColorBtn && bgColorPicker) {
+        customColorBtn.addEventListener('click', () => {
+            bgColorPicker.click();
         });
-    });
+
+        bgColorPicker.addEventListener('input', (e) => {
+            if (!selectedSubject) return;
+
+            const bgColor = e.target.value;
+            // 배경색에 맞는 텍스트색 자동 계산 (밝기 기반)
+            const textColor = getContrastTextColor(bgColor);
+
+            pendingColor = { bg: bgColor, text: textColor };
+
+            // 팔레트 버튼에 선택 표시
+            customColorBtn.classList.add('ring-2', 'ring-primary', 'ring-offset-1');
+
+            // 과목 버튼 미리보기 업데이트
+            const subjectBtn = document.querySelector(`.subject-option[data-subject="${selectedSubject}"]`);
+            if (subjectBtn) {
+                subjectBtn.style.backgroundColor = bgColor;
+                subjectBtn.style.color = textColor;
+            }
+
+            // 프리셋 선택 해제
+            document.querySelectorAll('.color-preset').forEach(b => {
+                b.classList.remove('ring-2', 'ring-primary', 'ring-offset-1');
+            });
+        });
+    }
 
     // 기본값 복원 버튼
     const resetColorBtn = document.getElementById('resetColorBtn');
