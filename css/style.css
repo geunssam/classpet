@@ -2296,4 +2296,22 @@ input[type="password"]:focus {
     main {
         -webkit-overflow-scrolling: touch;
     }
+
+    /* 펫 카드 원형 중앙 정렬 보장 */
+    .circle-center-content {
+        position: absolute !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        -webkit-transform: translate(-50%, -50%) !important;
+    }
+
+    /* 모달 중앙 정렬 보장 */
+    #modalContainer .modal-content {
+        position: absolute !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) scale(1) !important;
+        -webkit-transform: translate(-50%, -50%) scale(1) !important;
+    }
 }
