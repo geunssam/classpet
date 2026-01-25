@@ -2991,23 +2991,33 @@ input[type="password"]:focus {
 /* ===== 반응형: 모바일 ===== */
 @media (max-width: 768px) {
     .navbar-tabs {
-        display: none;
+        display: none !important;
     }
 
     .hamburger-btn {
-        display: flex;
+        display: flex !important;
     }
 
     .right-toolbar {
-        display: none;
+        display: none !important;
     }
 
     .main-content {
         padding: 16px;
+        margin-right: 0 !important;
     }
 
     .top-navbar {
         padding: 0 16px;
+        flex-wrap: nowrap !important;
+    }
+
+    .navbar-left {
+        flex-shrink: 0;
+    }
+
+    .navbar-right {
+        flex-shrink: 0;
     }
 
     .navbar-title {
@@ -3021,15 +3031,15 @@ input[type="password"]:focus {
 
 @media (min-width: 769px) {
     .hamburger-btn {
-        display: none;
+        display: none !important;
     }
 
     .mobile-drawer {
-        display: none;
+        display: none !important;
     }
 
     .mobile-drawer-overlay {
-        display: none;
+        display: none !important;
     }
 }
 
