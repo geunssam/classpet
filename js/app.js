@@ -444,9 +444,18 @@ function updateCurrentDate() {
  * 학급 정보 업데이트
  */
 function updateClassInfo() {
-    const settings = store.getSettings();
     const classInfoEl = document.getElementById('classInfo');
-    if (classInfoEl && settings) {
+    if (!classInfoEl) return;
+
+    // 로그인 상태 확인 - 로그인하지 않았으면 표시하지 않음
+    const isLoggedIn = store.isGoogleTeacher() || store.getClassCode();
+    if (!isLoggedIn) {
+        classInfoEl.textContent = '';
+        return;
+    }
+
+    const settings = store.getSettings();
+    if (settings) {
         classInfoEl.textContent = `${settings.className} · ${settings.teacherName}`;
     }
 }
