@@ -199,11 +199,16 @@ class Router {
                 appContainer.style.paddingBottom = '0';
             }
 
-            // body 스크롤 완전 차단 (iOS bounce 방지)
+            // 스크롤 완전 차단 (iOS bounce 방지)
+            document.documentElement.style.overflow = 'hidden';
             document.body.style.overflow = 'hidden';
             document.body.style.position = 'fixed';
             document.body.style.width = '100%';
             document.body.style.height = '100%';
+            if (appContainer) {
+                appContainer.style.overflow = 'hidden';
+                appContainer.style.height = '100%';
+            }
         } else if (isStudentMode) {
             // 학생 모드: 하단 네비, 빠른 칭찬 버튼 숨기기
             if (bottomNav) bottomNav.classList.add('hidden');
@@ -220,11 +225,17 @@ class Router {
                 content.classList.remove('pb-20');
             }
 
-            // body 스크롤 복원
+            // 스크롤 복원
+            document.documentElement.style.overflow = '';
             document.body.style.overflow = '';
             document.body.style.position = '';
             document.body.style.width = '';
             document.body.style.height = '';
+            const appContainer2 = document.getElementById('app');
+            if (appContainer2) {
+                appContainer2.style.overflow = '';
+                appContainer2.style.height = '';
+            }
         } else {
             // 교사 모드: 원래대로
             if (bottomNav) bottomNav.classList.remove('hidden');
@@ -242,13 +253,16 @@ class Router {
                 content.classList.remove('p-0', 'overflow-hidden');
             }
 
-            // 앱 컨테이너 패딩 복원
+            // 앱 컨테이너 패딩 복원 + 스크롤 복원
             const appContainer = document.getElementById('app');
             if (appContainer) {
                 appContainer.style.paddingBottom = '';
+                appContainer.style.overflow = '';
+                appContainer.style.height = '';
             }
 
-            // body 스크롤 복원
+            // 스크롤 복원
+            document.documentElement.style.overflow = '';
             document.body.style.overflow = '';
             document.body.style.position = '';
             document.body.style.width = '';
