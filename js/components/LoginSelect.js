@@ -16,7 +16,8 @@ import { showToast } from '../utils/animations.js';
  */
 export function render() {
     return `
-        <div class="login-select-container flex flex-col items-center justify-center px-4 pb-20 overflow-hidden" style="min-height: 100dvh;">
+        <div class="login-select-container flex flex-col items-center justify-center px-4 overflow-hidden" style="min-height: 100dvh;">
+            <div style="transform: translateY(-40px);">
             <!-- 로고 영역 -->
             <div class="text-center mb-10">
                 <div class="text-6xl mb-4 animate-bounce-slow">🐾</div>
@@ -68,6 +69,7 @@ export function render() {
             <!-- 하단 안내 -->
             <div class="mt-12 text-center text-sm text-gray-400">
                 <p>🔒 안전한 Google 계정으로 로그인하세요</p>
+            </div>
             </div>
 
             <!-- 로딩 오버레이 -->
