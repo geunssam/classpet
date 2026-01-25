@@ -80,14 +80,19 @@ async function initApp() {
 
     // 4. 리다이렉트 로그인 완료 후 적절한 페이지로 이동
     if (authUser && store.isTeacherLoggedIn()) {
-        const currentClassId = store.getCurrentClassId();
-        if (currentClassId) {
-            console.log('🔄 리다이렉트 후 대시보드로 이동');
-            router.navigate('dashboard');
-        } else {
-            console.log('🔄 리다이렉트 후 학급선택으로 이동');
-            router.navigate('class-select');
+        // 현재 해시가 login 계열이면 리다이렉트
+        const currentHash = window.location.hash.slice(1);
+        if (!currentHash || currentHash === 'login' || currentHash === 'teacher-login') {
+            const currentClassId = store.getCurrentClassId();
+            if (currentClassId) {
+                console.log('🔄 리다이렉트 후 대시보드로 이동');
+                router.navigate('dashboard');
+            } else {
+                console.log('🔄 리다이렉트 후 학급선택으로 이동');
+                router.navigate('class-select');
+            }
         }
+        // 다른 라우트면 그대로 유지 (뒤로가기 등)
     }
 
     // 네비게이션 이벤트 바인딩
@@ -271,7 +276,7 @@ function initRouter() {
             render: () => {
                 // 교사 로그인 확인
                 if (!store.isTeacherLoggedIn()) {
-                    setTimeout(() => router.navigate('teacher-login'), 0);
+                    setTimeout(() => router.navigate('login'), 0);
                     return '<div class="text-center p-8">로그인이 필요합니다...</div>';
                 }
                 const html = Dashboard.render();
@@ -282,7 +287,7 @@ function initRouter() {
         'timetable': {
             render: () => {
                 if (!store.isTeacherLoggedIn()) {
-                    setTimeout(() => router.navigate('teacher-login'), 0);
+                    setTimeout(() => router.navigate('login'), 0);
                     return '<div class="text-center p-8">로그인이 필요합니다...</div>';
                 }
                 const html = Timetable.render();
@@ -293,7 +298,7 @@ function initRouter() {
         'petfarm': {
             render: () => {
                 if (!store.isTeacherLoggedIn()) {
-                    setTimeout(() => router.navigate('teacher-login'), 0);
+                    setTimeout(() => router.navigate('login'), 0);
                     return '<div class="text-center p-8">로그인이 필요합니다...</div>';
                 }
                 const html = PetFarm.render();
@@ -304,7 +309,7 @@ function initRouter() {
         'student': {
             render: (params) => {
                 if (!store.isTeacherLoggedIn()) {
-                    setTimeout(() => router.navigate('teacher-login'), 0);
+                    setTimeout(() => router.navigate('login'), 0);
                     return '<div class="text-center p-8">로그인이 필요합니다...</div>';
                 }
                 const html = StudentDetail.render(params);
@@ -315,7 +320,7 @@ function initRouter() {
         'emotion': {
             render: () => {
                 if (!store.isTeacherLoggedIn()) {
-                    setTimeout(() => router.navigate('teacher-login'), 0);
+                    setTimeout(() => router.navigate('login'), 0);
                     return '<div class="text-center p-8">로그인이 필요합니다...</div>';
                 }
                 const html = Emotion.render();
@@ -326,7 +331,7 @@ function initRouter() {
         'stats': {
             render: () => {
                 if (!store.isTeacherLoggedIn()) {
-                    setTimeout(() => router.navigate('teacher-login'), 0);
+                    setTimeout(() => router.navigate('login'), 0);
                     return '<div class="text-center p-8">로그인이 필요합니다...</div>';
                 }
                 const html = Stats.render();
@@ -337,7 +342,7 @@ function initRouter() {
         'settings': {
             render: () => {
                 if (!store.isTeacherLoggedIn()) {
-                    setTimeout(() => router.navigate('teacher-login'), 0);
+                    setTimeout(() => router.navigate('login'), 0);
                     return '<div class="text-center p-8">로그인이 필요합니다...</div>';
                 }
                 const html = Settings.render();

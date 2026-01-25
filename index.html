@@ -169,8 +169,16 @@
         };
     </script>
 
+    <!-- 해시 없을 때 기본 라우트 설정 (app.js 로드 전) -->
+    <script>
+        // 해시 없으면 즉시 #login 설정 (replaceState로 히스토리 오염 방지)
+        if (!window.location.hash) {
+            history.replaceState(null, '', '#login');
+        }
+    </script>
+
     <!-- JavaScript 모듈 (defer로 비차단 로딩) -->
-    <script type="module" src="js/app.js"></script>
+    <script type="module" src="js/app.js?v=20260125b"></script>
 
     <!-- Google Fonts 지연 로딩 -->
     <script>
