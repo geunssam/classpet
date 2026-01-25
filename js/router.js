@@ -187,9 +187,16 @@ class Router {
             if (quickPraiseBtn) quickPraiseBtn.classList.add('hidden');
             if (header) header.classList.add('hidden');
 
-            // 컨텐츠 영역 패딩 조정
+            // 컨텐츠 영역 패딩 조정 + 스크롤 방지
             if (content) {
                 content.classList.remove('pb-20');
+                content.classList.add('p-0', 'overflow-hidden');
+            }
+
+            // 앱 컨테이너 패딩 제거
+            const appContainer = document.getElementById('app');
+            if (appContainer) {
+                appContainer.style.paddingBottom = '0';
             }
         } else if (isStudentMode) {
             // 학생 모드: 하단 네비, 빠른 칭찬 버튼 숨기기
@@ -220,6 +227,13 @@ class Router {
             // 컨텐츠 영역 패딩 복원
             if (content) {
                 content.classList.add('pb-20');
+                content.classList.remove('p-0', 'overflow-hidden');
+            }
+
+            // 앱 컨테이너 패딩 복원
+            const appContainer = document.getElementById('app');
+            if (appContainer) {
+                appContainer.style.paddingBottom = '';
             }
         }
     }

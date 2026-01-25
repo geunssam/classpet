@@ -69,8 +69,8 @@
 
     <!-- 앱 컨테이너 -->
     <div id="app" class="app-container">
-        <!-- 헤더 -->
-        <header class="app-header">
+        <!-- 헤더 (기본 숨김 - 플리커링 방지) -->
+        <header class="app-header hidden">
             <div class="flex items-stretch justify-between">
                 <!-- 좌측: 로고 + 타이틀 -->
                 <div class="flex items-center gap-3 py-2">
@@ -119,8 +119,8 @@
             <!-- 라우터에 의해 동적으로 렌더링됨 -->
         </main>
 
-        <!-- 하단 네비게이션 -->
-        <nav class="app-nav">
+        <!-- 하단 네비게이션 (기본 숨김 - 플리커링 방지) -->
+        <nav class="app-nav hidden">
             <div class="nav-dock">
                 <button class="nav-item nav-blue active" data-route="dashboard">
                     <span class="text-xl">🏠</span>
