@@ -2220,31 +2220,21 @@ input[type="password"]:focus {
    모바일 성능 최적화 (핵심!)
    ====================================== */
 @media (max-width: 640px) {
-    /* 모든 GPU 가속/will-change 제거 */
-    * {
-        will-change: auto !important;
-        transform: none !important;
-        -webkit-transform: none !important;
-    }
-
-    /* position: fixed 요소는 transform 유지 안함 */
-    .app-nav,
-    .app-header,
-    #modalContainer {
-        transform: none !important;
-    }
-
-    /* 모든 blur/backdrop-filter 완전 제거 */
-    *,
-    *::before,
-    *::after {
+    /* blur/backdrop-filter 제거 (선택적) */
+    .nav-dock,
+    .header-dock,
+    .week-navigator-dock,
+    .timetable-grid-dock,
+    .timetable-btn-dock,
+    .settings-btn-dock,
+    .header-glass-btn,
+    .timetable-cell-new,
+    .liquid-btn-small {
         backdrop-filter: none !important;
         -webkit-backdrop-filter: none !important;
-        filter: none !important;
-        -webkit-filter: none !important;
     }
 
-    /* 단순 불투명 배경색으로 대체 */
+    /* 단순 배경색으로 대체 */
     .nav-dock {
         background: #ffffff !important;
         border: 1px solid #e5e7eb !important;
@@ -2258,7 +2248,6 @@ input[type="password"]:focus {
     .settings-btn-dock {
         background: #f9fafb !important;
         border: 1px solid #e5e7eb !important;
-        box-shadow: none !important;
     }
 
     .header-glass-btn,
@@ -2271,10 +2260,9 @@ input[type="password"]:focus {
     .app-header,
     header {
         background: #ffffff !important;
-        box-shadow: 0 1px 0 #e5e7eb !important;
     }
 
-    /* 모든 ::before/::after 가상요소 숨김 */
+    /* ::before 가상요소 숨김 (리퀴드 글라스 효과) */
     .nav-dock::before,
     .header-dock::before,
     .week-navigator-dock::before,
@@ -2282,46 +2270,24 @@ input[type="password"]:focus {
     .timetable-btn-dock::before,
     .timetable-cell-new::before,
     .settings-btn-dock::before,
-    .liquid-btn-small::before,
-    .nav-item::before {
+    .liquid-btn-small::before {
         display: none !important;
-        content: none !important;
     }
 
-    /* 모든 트랜지션/애니메이션 제거 */
-    *,
-    *::before,
-    *::after {
+    /* 트랜지션 간소화 */
+    .nav-item,
+    .timetable-cell-new,
+    .card,
+    button {
         transition: none !important;
-        -webkit-transition: none !important;
-        animation: none !important;
-        -webkit-animation: none !important;
     }
 
-    /* 로딩 애니메이션만 허용 */
-    #authLoadingScreen .loading-icon {
-        animation: bounce 1s infinite !important;
-    }
-
-    /* 호버 효과 완전 비활성화 */
-    *:hover {
-        transform: none !important;
-        box-shadow: inherit !important;
-    }
-
-    /* box-shadow 최소화 */
-    .card {
-        box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
-        border: 1px solid #f3f4f6 !important;
-    }
-
-    /* blob 완전 제거 */
+    /* blob 제거 */
     .blob,
     .blob-1,
     .blob-2,
     .blob-3 {
         display: none !important;
-        visibility: hidden !important;
     }
 
     /* 스크롤 성능 */
@@ -2329,6 +2295,5 @@ input[type="password"]:focus {
     #content,
     main {
         -webkit-overflow-scrolling: touch;
-        overflow-y: auto;
     }
 }
