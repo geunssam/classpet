@@ -2462,6 +2462,10 @@ input[type="password"]:focus {
     gap: 4px;
 }
 
+.navbar-tabs.hidden {
+    display: none !important;
+}
+
 .navbar-tab {
     display: flex;
     align-items: center;
