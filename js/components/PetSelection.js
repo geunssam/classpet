@@ -96,7 +96,7 @@ export function render() {
                 </div>
 
                 <!-- 선택 확인 버튼 -->
-                <button id="confirmPetBtn" class="w-full py-4 px-6 rounded-2xl bg-gray-200 text-gray-400 font-bold text-lg transition-all duration-300 cursor-not-allowed" disabled>
+                <button id="confirmPetBtn" class="w-full liquid-btn-student text-lg" disabled>
                     펫을 선택해주세요
                 </button>
 
@@ -130,11 +130,11 @@ export function render() {
                     <p id="nameInputError" class="text-xs text-red-500 mt-2 hidden">이름을 입력해주세요!</p>
                 </div>
 
-                <div class="flex gap-3">
-                    <button id="cancelNameBtn" class="flex-1 py-3 px-4 rounded-xl bg-gray-100 text-gray-600 font-medium hover:bg-gray-200 transition-colors">
+                <div class="modal-buttons">
+                    <button id="cancelNameBtn" class="liquid-btn-student-secondary">
                         다시 고를래
                     </button>
-                    <button id="confirmNameBtn" class="flex-1 py-3 px-4 rounded-xl bg-primary text-white font-medium hover:bg-primary-dark transition-colors">
+                    <button id="confirmNameBtn" class="liquid-btn-student">
                         이 이름으로!
                     </button>
                 </div>
@@ -152,11 +152,11 @@ export function render() {
                 <p class="text-sm text-red-500 mb-5">
                     ⚠️ 한 번 선택하면 바꿀 수 없어요!
                 </p>
-                <div class="flex gap-3">
-                    <button id="cancelPetBtn" class="flex-1 py-3 px-4 rounded-xl bg-gray-100 text-gray-600 font-medium hover:bg-gray-200 transition-colors">
+                <div class="modal-buttons">
+                    <button id="cancelPetBtn" class="liquid-btn-student-secondary">
                         다시 고를래
                     </button>
-                    <button id="finalConfirmPetBtn" class="flex-1 py-3 px-4 rounded-xl bg-primary text-white font-medium hover:bg-primary-dark transition-colors">
+                    <button id="finalConfirmPetBtn" class="liquid-btn-student">
                         선택할래!
                     </button>
                 </div>
@@ -176,7 +176,7 @@ export function render() {
                 <p class="text-sm text-gray-500 mb-6">
                     앞으로 같이 성장하자! 🌟
                 </p>
-                <button id="startJourneyBtn" class="w-full py-3 px-4 rounded-xl bg-primary text-white font-bold hover:bg-primary-dark transition-colors">
+                <button id="startJourneyBtn" class="w-full liquid-btn-student-gold">
                     시작하기 🎉
                 </button>
             </div>
@@ -213,8 +213,6 @@ function selectPet(petType) {
     const confirmBtn = document.getElementById('confirmPetBtn');
     if (confirmBtn) {
         confirmBtn.disabled = false;
-        confirmBtn.classList.remove('bg-gray-200', 'text-gray-400', 'cursor-not-allowed');
-        confirmBtn.classList.add('bg-primary', 'text-white', 'hover:bg-primary-dark');
         confirmBtn.innerHTML = `${pet.stages.baby} ${pet.name} 선택하기`;
     }
 }

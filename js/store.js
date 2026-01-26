@@ -645,6 +645,35 @@ class Store {
     }
 
     /**
+     * 학급 삭제
+     */
+    async deleteClass(classId) {
+        if (!this.firebaseEnabled) {
+            return { success: false, error: 'Firebase가 활성화되지 않았습니다' };
+        }
+
+        try {
+            const teacherUid = this.getCurrentTeacherUid();
+            if (!teacherUid) {
+                return { success: false, error: '교사 정보를 찾을 수 없습니다' };
+            }
+
+            const result = await firebase.deleteClass(teacherUid, classId);
+            if (result) {
+                // 현재 선택된 학급이 삭제된 학급이면 초기화
+                if (this.getCurrentClassId() === classId) {
+                    this.setCurrentClassId(null);
+                }
+                return { success: true };
+            }
+            return { success: false, error: '학급 삭제에 실패했습니다' };
+        } catch (error) {
+            console.error('학급 삭제 실패:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    /**
      * 교사의 모든 학급 가져오기
      */
     async getTeacherClasses() {

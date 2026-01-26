@@ -28,6 +28,7 @@ import * as StudentMode from './components/StudentMode.js';
 import * as PetChat from './components/PetChat.js';
 import * as PetSelection from './components/PetSelection.js';
 import * as PetCollection from './components/PetCollection.js';
+import * as StudentTimetable from './components/StudentTimetable.js';
 
 // 유틸리티 임포트
 import { getPetEmoji, calculateLevel, getLevelUpMessage } from './utils/petLogic.js';
@@ -74,7 +75,31 @@ async function initApp() {
     // 1. Firebase 인증 상태 확정까지 대기
     const authUser = await waitForAuthReady();
 
-    // 2. 로딩 화면 숨기기 (페이드 아웃)
+    // 2. 인증 상태에 따라 적절한 초기 라우트 결정 (렌더링 전에!)
+    const currentHash = window.location.hash.slice(1).split('?')[0];
+
+    if (authUser && store.isTeacherLoggedIn()) {
+        // 로그인된 상태
+        if (!currentHash || currentHash === 'login' || currentHash === 'teacher-login') {
+            const currentClassId = store.getCurrentClassId();
+            if (currentClassId) {
+                console.log('🔄 초기 라우트: 대시보드');
+                window.location.hash = 'dashboard';
+            } else {
+                console.log('🔄 초기 라우트: 학급선택');
+                window.location.hash = 'class-select';
+            }
+        }
+    } else {
+        // 로그인되지 않은 상태에서 보호된 라우트 접근 시
+        const protectedRoutes = ['dashboard', 'timetable', 'petfarm', 'student', 'emotion', 'stats', 'settings'];
+        if (protectedRoutes.some(r => currentHash.startsWith(r))) {
+            console.log('🔄 초기 라우트: 로그인');
+            window.location.hash = 'login';
+        }
+    }
+
+    // 3. 로딩 화면 숨기기 (페이드 아웃)
     hideAuthLoadingScreen();
 
     // 오늘 날짜 표시
@@ -83,25 +108,8 @@ async function initApp() {
     // 학급 정보 표시
     updateClassInfo();
 
-    // 3. 라우터 초기화 (인증 상태 확정 후)
+    // 4. 라우터 초기화 (적절한 해시가 이미 설정된 후)
     initRouter();
-
-    // 4. 리다이렉트 로그인 완료 후 적절한 페이지로 이동
-    if (authUser && store.isTeacherLoggedIn()) {
-        // 현재 해시가 login 계열이면 리다이렉트
-        const currentHash = window.location.hash.slice(1);
-        if (!currentHash || currentHash === 'login' || currentHash === 'teacher-login') {
-            const currentClassId = store.getCurrentClassId();
-            if (currentClassId) {
-                console.log('🔄 리다이렉트 후 대시보드로 이동');
-                router.navigate('dashboard');
-            } else {
-                console.log('🔄 리다이렉트 후 학급선택으로 이동');
-                router.navigate('class-select');
-            }
-        }
-        // 다른 라우트면 그대로 유지 (뒤로가기 등)
-    }
 
     // 네비게이션 이벤트 바인딩
     bindNavigation();
@@ -406,6 +414,19 @@ function initRouter() {
                 setTimeout(() => PetCollection.afterRender?.(), 0);
                 return html;
             }
+        },
+        'student-timetable': {
+            render: () => {
+                // 학생 로그인 확인
+                if (!store.isStudentLoggedIn()) {
+                    setTimeout(() => router.navigate('student-login'), 0);
+                    return '<div class="text-center p-8">로그인이 필요합니다...</div>';
+                }
+                updateHeaderForStudentMode(true, true);
+                const html = StudentTimetable.render();
+                setTimeout(() => StudentTimetable.afterRender?.(), 0);
+                return html;
+            }
         }
     });
 
@@ -414,7 +435,7 @@ function initRouter() {
 
     // 라우트 변경 시 헤더 업데이트
     router.onRouteChange = (route, params) => {
-        const isStudentRoute = ['student-login', 'student-main', 'student-chat', 'pet-selection', 'pet-collection'].includes(route);
+        const isStudentRoute = ['student-login', 'student-main', 'student-chat', 'pet-selection', 'pet-collection', 'student-timetable'].includes(route);
         const isLoginRoute = ['login', 'teacher-login', 'student-login', 'class-select'].includes(route);
 
         if (!isStudentRoute && !isLoginRoute) {
@@ -1215,7 +1236,7 @@ function updateUIVisibility(route) {
     const mobileDrawerOverlay = document.getElementById('mobileDrawerOverlay');
     const classInfoEl = document.getElementById('classInfo');
     const isLoginRoute = ['login', 'teacher-login', 'student-login', 'class-select'].includes(route);
-    const isStudentRoute = ['student-main', 'student-chat', 'pet-selection', 'pet-collection'].includes(route);
+    const isStudentRoute = ['student-main', 'student-chat', 'pet-selection', 'pet-collection', 'student-timetable'].includes(route);
 
     if (isLoginRoute) {
         // 로그인 화면: 헤더, 툴바, 모바일 드로어 모두 숨김
@@ -1248,6 +1269,11 @@ function updateUIVisibility(route) {
             mobileDrawer.classList.remove('hidden');
         }
         if (mobileDrawerOverlay) mobileDrawerOverlay.classList.remove('hidden');
+        // 모바일 드로어: 교사 메뉴 숨기고 학생 메뉴 표시
+        const mobileTeacherNav = mobileDrawer?.querySelector('.mobile-drawer-nav:not(#mobileStudentNav)');
+        const mobileStudentNav = document.getElementById('mobileStudentNav');
+        if (mobileTeacherNav) mobileTeacherNav.classList.add('hidden');
+        if (mobileStudentNav) mobileStudentNav.classList.remove('hidden');
     } else {
         // 교사 모드: 모두 표시
         if (header) {
@@ -1263,6 +1289,11 @@ function updateUIVisibility(route) {
             mobileDrawer.classList.remove('hidden');
         }
         if (mobileDrawerOverlay) mobileDrawerOverlay.classList.remove('hidden');
+        // 모바일 드로어: 학생 메뉴 숨기고 교사 메뉴 표시
+        const mobileTeacherNav = mobileDrawer?.querySelector('.mobile-drawer-nav:not(#mobileStudentNav)');
+        const mobileStudentNav = document.getElementById('mobileStudentNav');
+        if (mobileTeacherNav) mobileTeacherNav.classList.remove('hidden');
+        if (mobileStudentNav) mobileStudentNav.classList.add('hidden');
         updateClassInfo();
     }
 }
@@ -1282,7 +1313,7 @@ function updateHeaderForStudentMode(isStudentMode, isLoggedIn) {
             // 로그인 후: 학생 이름 표시
             const student = store.getCurrentStudent();
             if (headerTitle && student) {
-                headerTitle.textContent = `${student.name}의 펫`;
+                headerTitle.textContent = `${student.name}의 페이지`;
             }
             if (classInfo) {
                 const settings = store.getSettings();

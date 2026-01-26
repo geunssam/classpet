@@ -34,12 +34,12 @@ export function render() {
         <div class="pet-chat-container pb-8">
             <!-- 헤더 -->
             <div class="flex items-center justify-between mb-6">
-                <button id="backToMainBtn" class="text-gray-500 hover:text-gray-700 flex items-center gap-1">
+                <button id="backToMainBtn" class="liquid-btn-student-sm">
                     <span>←</span>
                     <span>돌아가기</span>
                 </button>
                 <h2 class="text-lg font-bold text-gray-800">펫과의 대화</h2>
-                <div class="w-16"></div>
+                <div class="w-24"></div>
             </div>
 
             <!-- 펫 미니 프로필 -->
@@ -61,7 +61,7 @@ export function render() {
                     <div class="text-5xl mb-4">💬</div>
                     <p>아직 펫과 나눈 이야기가 없어요</p>
                     <p class="text-sm mt-2">오늘의 기분을 펫에게 알려주세요!</p>
-                    <button id="goToChatBtn" class="btn btn-primary mt-4">
+                    <button id="goToChatBtn" class="liquid-btn-student mt-4">
                         기분 알려주기
                     </button>
                 </div>

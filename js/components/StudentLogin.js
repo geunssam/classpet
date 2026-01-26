@@ -127,11 +127,11 @@ export function render(params = {}) {
                 </p>
 
                 <!-- 버튼 -->
-                <div class="flex gap-2">
-                    <button id="pinCancelBtn" class="flex-1 py-3 px-4 rounded-xl bg-gray-100 text-gray-600 font-medium hover:bg-gray-200 transition-colors">
+                <div class="modal-buttons">
+                    <button id="pinCancelBtn" class="liquid-btn-student-secondary">
                         취소
                     </button>
-                    <button id="pinConfirmBtn" class="flex-1 py-3 px-4 rounded-xl bg-primary text-white font-medium hover:bg-primary-dark transition-colors">
+                    <button id="pinConfirmBtn" class="liquid-btn-student">
                         확인
                     </button>
                 </div>
@@ -269,7 +269,11 @@ export function afterRender() {
     }
 
     const grid = document.getElementById('studentNumberGrid');
-    if (!grid) return;
+    // 학급 코드 입력 화면인 경우
+    if (!grid) {
+        setupClassCodeInput();
+        return;
+    }
 
     // 번호 버튼 클릭 이벤트
     grid.addEventListener('click', (e) => {
@@ -490,7 +494,7 @@ function renderClassCodeInput(settings) {
                         확인 중...
                     </div>
 
-                    <button id="classCodeSubmitBtn" class="btn btn-primary w-full py-3 opacity-50 cursor-not-allowed" disabled>
+                    <button id="classCodeSubmitBtn" class="liquid-btn-student w-full" disabled>
                         학급 참가하기
                     </button>
                 </div>
@@ -527,13 +531,7 @@ function setupClassCodeInput() {
     function updateSubmitButton() {
         const code = getClassCodeValue();
         if (submitBtn) {
-            if (code.length === 6) {
-                submitBtn.disabled = false;
-                submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-            } else {
-                submitBtn.disabled = true;
-                submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
-            }
+            submitBtn.disabled = code.length !== 6;
         }
     }
 
@@ -631,10 +629,6 @@ function setupClassCodeInput() {
             } finally {
                 if (loadingEl) loadingEl.classList.add('hidden');
                 submitBtn.disabled = false;
-                // 버튼 상태 복원
-                if (code.length === 6) {
-                    submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                }
             }
         });
     }

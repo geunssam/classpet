@@ -93,7 +93,8 @@
                 </span>
                 <h1 class="navbar-title">클래스펫</h1>
             </div>
-            <nav class="navbar-tabs">
+            <!-- 교사용 네비게이션 -->
+            <nav class="navbar-tabs" id="teacherNav">
                 <button data-route="dashboard" class="navbar-tab active">
                     <span class="nav-icon">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -145,6 +146,40 @@
                         </svg>
                     </span>
                     <span>통계</span>
+                </button>
+            </nav>
+            <!-- 학생용 네비게이션 (기본 숨김) -->
+            <nav class="navbar-tabs hidden justify-center" id="studentNav">
+                <button data-route="student-main" class="navbar-tab">
+                    <span class="nav-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M12 21C12 21 4 14.5 4 9.5C4 6.5 6.5 4 9.5 4C11 4 12 5 12 5C12 5 13 4 14.5 4C17.5 4 20 6.5 20 9.5C20 14.5 12 21 12 21Z"/>
+                            <path d="M12 8v4M10 10h4" stroke-width="1.2"/>
+                        </svg>
+                    </span>
+                    <span>마음 보내기</span>
+                </button>
+                <button data-route="student-timetable" class="navbar-tab">
+                    <span class="nav-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <rect x="3" y="4" width="18" height="16" rx="2"/>
+                            <line x1="3" y1="10" x2="21" y2="10"/>
+                            <line x1="8" y1="2" x2="8" y2="6"/>
+                            <line x1="16" y1="2" x2="16" y2="6"/>
+                            <text x="12" y="17" text-anchor="middle" font-size="7" font-weight="600" fill="currentColor" stroke="none">17</text>
+                        </svg>
+                    </span>
+                    <span>주간 시간표</span>
+                </button>
+                <button data-route="pet-collection" class="navbar-tab">
+                    <span class="nav-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                            <circle cx="12" cy="10" r="3"/>
+                        </svg>
+                    </span>
+                    <span>펫도감</span>
                 </button>
             </nav>
             <div class="navbar-right">
@@ -279,6 +314,40 @@
                     <span>통계</span>
                 </button>
             </div>
+            <!-- 학생용 네비게이션 (기본 숨김) -->
+            <div class="mobile-drawer-nav hidden" id="mobileStudentNav">
+                <button data-route="student-main" class="mobile-nav-item">
+                    <span class="mobile-nav-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M12 21C12 21 4 14.5 4 9.5C4 6.5 6.5 4 9.5 4C11 4 12 5 12 5C12 5 13 4 14.5 4C17.5 4 20 6.5 20 9.5C20 14.5 12 21 12 21Z"/>
+                            <path d="M12 8v4M10 10h4" stroke-width="1.2"/>
+                        </svg>
+                    </span>
+                    <span>마음 보내기</span>
+                </button>
+                <button data-route="student-timetable" class="mobile-nav-item">
+                    <span class="mobile-nav-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <rect x="3" y="4" width="18" height="16" rx="2"/>
+                            <line x1="3" y1="10" x2="21" y2="10"/>
+                            <line x1="8" y1="2" x2="8" y2="6"/>
+                            <line x1="16" y1="2" x2="16" y2="6"/>
+                            <text x="12" y="17" text-anchor="middle" font-size="7" font-weight="600" fill="currentColor" stroke="none">17</text>
+                        </svg>
+                    </span>
+                    <span>주간 시간표</span>
+                </button>
+                <button data-route="pet-collection" class="mobile-nav-item">
+                    <span class="mobile-nav-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                            <circle cx="12" cy="10" r="3"/>
+                        </svg>
+                    </span>
+                    <span>펫도감</span>
+                </button>
+            </div>
             <div class="mobile-drawer-tools">
                 <button id="mobileNotificationBtn" class="mobile-tool-btn">
                     <span class="mobile-tool-icon">
@@ -345,24 +414,43 @@
     </script>
 
     <!-- JavaScript 모듈 (defer로 비차단 로딩) -->
-    <script type="module" src="js/app.js?v=20260125b"></script>
+    <script type="module" src="js/app.js?v=20260126a"></script>
 
     <!-- Service Worker 등록 -->
     <script>
         if ('serviceWorker' in navigator) {
+            // 이미 새로고침 중인지 플래그
+            let isReloading = false;
+            // 첫 방문인지 (SW controller가 없으면 첫 방문)
+            const isFirstVisit = !navigator.serviceWorker.controller;
+
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/service-worker.js')
                     .then((registration) => {
                         console.log('[PWA] Service Worker 등록 성공:', registration.scope);
 
-                        // 새 버전 감지 시 알림
+                        // 새 버전 감지 시 skipWaiting 요청
                         registration.addEventListener('updatefound', () => {
                             const newWorker = registration.installing;
                             newWorker.addEventListener('statechange', () => {
                                 if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                    console.log('[PWA] 새 버전 사용 가능');
+                                    console.log('[PWA] 새 버전 감지 - skipWaiting 요청');
+                                    newWorker.postMessage('skipWaiting');
                                 }
                             });
+                        });
+
+                        // 컨트롤러 변경 시 새로고침 (첫 방문이 아닌 경우만)
+                        navigator.serviceWorker.addEventListener('controllerchange', () => {
+                            // 첫 방문이면 새로고침 안함 (플리커링 방지)
+                            if (isFirstVisit) {
+                                console.log('[PWA] 첫 방문 - 새로고침 건너뜀');
+                                return;
+                            }
+                            if (isReloading) return;
+                            isReloading = true;
+                            console.log('[PWA] 컨트롤러 변경 - 새로고침');
+                            window.location.reload();
                         });
                     })
                     .catch((error) => {

@@ -47,12 +47,8 @@ export function render() {
     return `
         <div class="pet-collection-container pb-8">
             <!-- 헤더 -->
-            <div class="flex items-center justify-between mb-6 px-4">
-                <button id="backToMainBtn" class="text-gray-400 hover:text-gray-600 transition-colors p-2 -ml-2">
-                    <span class="text-xl">←</span>
-                </button>
-                <h2 class="text-lg font-bold text-gray-800">📖 펫 도감</h2>
-                <div class="w-8"></div>
+            <div class="text-center mb-6 px-4">
+                <h2 class="text-xl font-bold text-gray-800">📖 펫 도감</h2>
             </div>
 
             <!-- 완성 현황 -->
@@ -159,14 +155,6 @@ function renderPetCard(petKey, pet, status, currentLevel, completedPet) {
  * 렌더 후 이벤트 바인딩
  */
 export function afterRender() {
-    // 뒤로가기 버튼
-    const backBtn = document.getElementById('backToMainBtn');
-    if (backBtn) {
-        backBtn.addEventListener('click', () => {
-            router.navigate('student-main');
-        });
-    }
-
     // 펫 카드 클릭 (상세 정보 표시)
     const petCards = document.querySelectorAll('.pet-collection-card');
     petCards.forEach(card => {

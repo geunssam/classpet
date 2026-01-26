@@ -57,7 +57,7 @@ export async function render() {
     const teacherSession = store.getTeacherSession();
 
     return `
-        <div class="class-select-container min-h-[70vh] px-4 py-8">
+        <div class="class-select-container min-h-[70vh] px-4 pt-4 pb-8">
             <!-- 헤더 -->
             <div class="max-w-lg mx-auto mb-8">
                 <div class="flex items-center justify-between mb-6">
@@ -193,16 +193,23 @@ function renderClassList() {
     return `
         <div class="space-y-3">
             ${classes.map(cls => `
-                <button class="class-item w-full p-4 bg-white border-2 border-gray-100 rounded-xl hover:border-primary hover:shadow-md transition-all text-left"
-                        data-class-id="${cls.id}">
+                <div class="class-item-wrapper w-full p-4 bg-white border-2 border-gray-100 rounded-xl hover:border-primary hover:shadow-md transition-all"
+                     data-class-id="${cls.id}">
                     <div class="flex items-center gap-4">
                         <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center text-white text-xl">
                             🏫
                         </div>
                         <p class="flex-1 font-bold text-gray-800 truncate">${cls.className || '이름 없는 학급'}</p>
                         <p class="text-sm text-gray-500">${cls.studentCount || 0}명</p>
+                        <button class="delete-class-btn p-2 rounded-lg hover:bg-red-50 transition-all text-red-300 hover:text-red-500"
+                                data-class-id="${cls.id}"
+                                data-class-name="${cls.className || '이름 없는 학급'}">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                        </button>
                     </div>
-                </button>
+                </div>
             `).join('')}
         </div>
     `;
@@ -242,13 +249,49 @@ async function refreshClassList() {
  * 학급 아이템 클릭 이벤트 바인딩
  */
 function bindClassItemEvents() {
-    const items = document.querySelectorAll('.class-item');
+    // 학급 선택 (카드 전체 클릭)
+    const items = document.querySelectorAll('.class-item-wrapper');
     items.forEach(item => {
-        item.addEventListener('click', async () => {
+        item.addEventListener('click', async (e) => {
+            // 삭제 버튼 클릭 시에는 선택하지 않음
+            if (e.target.closest('.delete-class-btn')) return;
             const classId = item.dataset.classId;
             await selectClass(classId);
         });
     });
+
+    // 학급 삭제
+    const deleteButtons = document.querySelectorAll('.delete-class-btn');
+    deleteButtons.forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            e.stopPropagation(); // 부모 클릭 이벤트 방지
+            const classId = btn.dataset.classId;
+            const className = btn.dataset.className;
+            await handleDeleteClass(classId, className);
+        });
+    });
+}
+
+/**
+ * 학급 삭제 처리
+ */
+async function handleDeleteClass(classId, className) {
+    if (!confirm(`정말 "${className}" 학급을 삭제하시겠습니까?\n\n⚠️ 모든 학생 데이터가 함께 삭제되며 복구할 수 없습니다.`)) {
+        return;
+    }
+
+    try {
+        const result = await store.deleteClass(classId);
+        if (result.success) {
+            showToast(`${className} 학급이 삭제되었습니다`, 'info');
+            await refreshClassList();
+        } else {
+            throw new Error(result.error || '삭제에 실패했습니다');
+        }
+    } catch (error) {
+        console.error('학급 삭제 오류:', error);
+        showToast(error.message || '학급 삭제에 실패했습니다', 'error');
+    }
 }
 
 /**

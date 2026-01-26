@@ -88,27 +88,19 @@ export function render() {
             <div class="flex items-center justify-between pb-2">
                 <h2 class="text-xl font-bold whitespace-nowrap">📅 주간시간표</h2>
 
-                <!-- 버튼 그룹 (리퀴드 글라스) -->
-                <div class="timetable-btn-dock">
-                    <button id="editModeBtn" class="timetable-header-btn ${editMode ? 'active' : ''}">
-                        <span>${editMode ? '완료' : '편집'}</span>
-                        ${editMode ? `
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                        </svg>
-                        ` : `
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
-                        </svg>
-                        `}
-                    </button>
-                    <button id="subjectSettingsBtn" class="timetable-header-btn">
-                        <span>과목설정</span>
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
-                        </svg>
-                    </button>
-                </div>
+                <!-- 편집 버튼 -->
+                <button id="editModeBtn" class="timetable-header-btn ${editMode ? 'active' : ''}">
+                    <span>${editMode ? '완료' : '편집'}</span>
+                    ${editMode ? `
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    ` : `
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                    </svg>
+                    `}
+                </button>
             </div>
 
             <!-- 시간표 그리드 -->
@@ -155,8 +147,8 @@ export function render() {
                                         const subjectColors = getSubjectColors();
                                         const colors = cell?.subject ? subjectColors[cell.subject] || { bg: '#F3F4F6', text: '#4B5563' } : null;
 
-                                        // 60% 투명도의 파스텔 배경색 적용
-                                        const bgStyle = colors ? `background: linear-gradient(145deg, ${hexToRgba(colors.bg, 0.6)} 0%, ${hexToRgba(colors.bg, 0.6)} 100%); color: ${colors.text};` : '';
+                                        // 파스텔톤 200 수준의 밝은 배경색 적용 (35% 투명도)
+                                        const bgStyle = colors ? `background: ${hexToRgba(colors.bg, 0.35)} !important; color: ${colors.text};` : '';
 
                                         return `
                                             <td class="p-1">
@@ -168,7 +160,11 @@ export function render() {
                                                     ${cell?.subject ? `
                                                         <div class="font-bold text-sm">${cell.subject}</div>
                                                     ` : `
-                                                        <div class="text-gray-300 text-sm">${editMode ? '+' : '-'}</div>
+                                                        ${editMode ? `
+                                                            <div class="text-primary text-xl font-bold">+</div>
+                                                        ` : `
+                                                            <div class="text-gray-200 text-sm">-</div>
+                                                        `}
                                                     `}
                                                 </div>
                                             </td>
@@ -199,14 +195,6 @@ export function afterRender() {
             if (editMode) {
                 showToast('💡 셀 클릭: 과목 입력\n📌 길게 누르고 드래그: 교환\n\n👆 아무 곳이나 클릭하면 편집 시작', 'info', { clickToClose: true });
             }
-        });
-    }
-
-    // 과목 설정 버튼
-    const subjectSettingsBtn = document.getElementById('subjectSettingsBtn');
-    if (subjectSettingsBtn) {
-        subjectSettingsBtn.addEventListener('click', () => {
-            showSubjectSettingsModal();
         });
     }
 
@@ -328,17 +316,18 @@ function showEditModal(cellKey) {
                                 style="background-color: ${preset.bg};">
                         </button>
                     `).join('')}
-                    <!-- 직접 선택 (팔레트) 버튼 -->
-                    <button type="button" id="customColorBtn" class="w-6 h-6 rounded-full shadow-sm hover:scale-110 transition-transform flex items-center justify-center relative"
-                            title="직접 선택"
-                            style="background: conic-gradient(from 0deg, #ff0000, #ff8000, #ffff00, #80ff00, #00ff00, #00ff80, #00ffff, #0080ff, #0000ff, #8000ff, #ff00ff, #ff0080, #ff0000);">
-                        <span class="absolute inset-0.5 bg-white rounded-full flex items-center justify-center">
-                            <svg class="w-3 h-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                            </svg>
-                        </span>
-                    </button>
-                    <input type="color" id="bgColorPicker" class="sr-only" value="#DBEAFE">
+                    <!-- 직접 선택 (팔레트) 버튼 - 색상 입력을 버튼 위에 오버레이 -->
+                    <div class="relative w-6 h-6">
+                        <div class="w-6 h-6 rounded-full shadow-sm hover:scale-110 transition-transform flex items-center justify-center"
+                             style="background: conic-gradient(from 0deg, #ff0000, #ff8000, #ffff00, #80ff00, #00ff00, #00ff80, #00ffff, #0080ff, #0000ff, #8000ff, #ff00ff, #ff0080, #ff0000);">
+                            <span class="absolute inset-0.5 bg-white rounded-full flex items-center justify-center pointer-events-none">
+                                <svg class="w-3 h-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                </svg>
+                            </span>
+                        </div>
+                        <input type="color" id="bgColorPicker" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" value="#DBEAFE" title="직접 선택">
+                    </div>
                 </div>
             </div>
 
@@ -463,15 +452,10 @@ function showEditModal(cellKey) {
         });
     });
 
-    // 직접 색상 선택 (컬러피커)
-    const customColorBtn = document.getElementById('customColorBtn');
+    // 직접 색상 선택 (컬러피커) - 색상 입력이 버튼 위에 오버레이 되어있어 직접 클릭됨
     const bgColorPicker = document.getElementById('bgColorPicker');
 
-    if (customColorBtn && bgColorPicker) {
-        customColorBtn.addEventListener('click', () => {
-            bgColorPicker.click();
-        });
-
+    if (bgColorPicker) {
         bgColorPicker.addEventListener('input', (e) => {
             if (!selectedSubject) return;
 
@@ -480,9 +464,6 @@ function showEditModal(cellKey) {
             const textColor = getContrastTextColor(bgColor);
 
             pendingColor = { bg: bgColor, text: textColor };
-
-            // 팔레트 버튼에 선택 표시
-            customColorBtn.classList.add('ring-2', 'ring-primary', 'ring-offset-1');
 
             // 과목 버튼 미리보기 업데이트
             const subjectBtn = document.querySelector(`.subject-option[data-subject="${selectedSubject}"]`);
@@ -520,9 +501,6 @@ function showEditModal(cellKey) {
                 btn.classList.add('ring-2', 'ring-primary', 'ring-offset-1');
             }
         });
-
-        // 커스텀 미리보기 숨김
-        customColorPreview.classList.add('hidden');
 
         showToast(`${selectedSubject} 색상이 기본값으로 설정됩니다`, 'info');
     });

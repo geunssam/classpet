@@ -157,7 +157,7 @@ export function render() {
                 <!-- 전송 버튼 -->
                 <button
                     id="sendEmotionBtn"
-                    class="w-full btn btn-primary opacity-50 cursor-not-allowed transition-all"
+                    class="w-full liquid-btn-student"
                     disabled
                 >
                     펫에게 말하기
@@ -175,7 +175,7 @@ export function render() {
                                 ${petName}(이)가 최고 레벨에 도달했어요!<br>
                                 이제 새로운 펫을 키울 수 있어요!
                             </p>
-                            <button id="selectNewPetBtn" class="mt-4 btn bg-gradient-to-r from-amber-400 to-yellow-400 text-white font-bold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all">
+                            <button id="selectNewPetBtn" class="mt-4 liquid-btn-student-gold">
                                 ✨ 새 펫 선택하기
                             </button>
                         </div>
@@ -208,13 +208,13 @@ export function render() {
             <!-- 하단 버튼 영역 -->
             <div class="mt-6 px-4 space-y-3">
                 <!-- 펫 도감 버튼 -->
-                <button id="petCollectionBtn" class="w-full py-3 rounded-xl bg-gradient-to-r from-amber-100 to-yellow-100 hover:from-amber-200 hover:to-yellow-200 text-amber-700 text-sm font-medium transition-colors flex items-center justify-center gap-2 border border-amber-200">
+                <button id="petCollectionBtn" class="w-full liquid-btn-student-gold">
                     <span>📖</span>
                     <span>펫 도감</span>
                 </button>
 
                 <!-- PIN 변경 버튼 -->
-                <button id="changePinBtn" class="w-full py-3 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-600 text-sm font-medium transition-colors flex items-center justify-center gap-2">
+                <button id="changePinBtn" class="w-full liquid-btn-student-secondary">
                     <span>🔐</span>
                     <span>내 PIN 변경하기</span>
                 </button>
@@ -267,11 +267,11 @@ export function render() {
                 <p id="changePinError" class="text-center text-sm text-red-500 mb-4 hidden"></p>
 
                 <!-- 버튼 -->
-                <div class="flex gap-2">
-                    <button id="cancelChangePinBtn" class="flex-1 py-3 px-4 rounded-xl bg-gray-100 text-gray-600 font-medium hover:bg-gray-200 transition-colors">
+                <div class="modal-buttons">
+                    <button id="cancelChangePinBtn" class="liquid-btn-student-secondary">
                         취소
                     </button>
-                    <button id="confirmChangePinBtn" class="flex-1 py-3 px-4 rounded-xl bg-primary text-white font-medium hover:bg-primary-dark transition-colors">
+                    <button id="confirmChangePinBtn" class="liquid-btn-student">
                         변경하기
                     </button>
                 </div>
@@ -334,11 +334,6 @@ export function afterRender() {
 
         if (sendBtn) {
             sendBtn.disabled = !isValid;
-            if (isValid) {
-                sendBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-            } else {
-                sendBtn.classList.add('opacity-50', 'cursor-not-allowed');
-            }
         }
     }
 
@@ -415,12 +410,10 @@ export function afterRender() {
                 }
 
                 sendBtn.textContent = resultMessage;
-                sendBtn.classList.add('opacity-50');
             } catch (error) {
                 console.error('감정 저장 실패:', error);
                 sendBtn.disabled = false;
                 sendBtn.textContent = '다시 시도하기';
-                sendBtn.classList.remove('opacity-50');
             }
         });
     }
@@ -692,7 +685,7 @@ function showNewPetSelectionModal() {
                            placeholder="펫 이름을 지어주세요">
                 </div>
 
-                <button id="confirmNewPetBtn" class="btn btn-primary w-full py-3 opacity-50 cursor-not-allowed" disabled>
+                <button id="confirmNewPetBtn" class="liquid-btn-student w-full" disabled>
                     선택하기
                 </button>
             ` : `
@@ -703,7 +696,7 @@ function showNewPetSelectionModal() {
                 </div>
             `}
 
-            <button id="cancelNewPetBtn" class="mt-3 w-full py-2 text-gray-500 text-sm hover:text-gray-700">
+            <button id="cancelNewPetBtn" class="mt-3 w-full liquid-btn-student-sm justify-center">
                 나중에 선택하기
             </button>
         </div>
@@ -733,7 +726,6 @@ function showNewPetSelectionModal() {
             const confirmBtn = document.getElementById('confirmNewPetBtn');
             if (confirmBtn) {
                 confirmBtn.disabled = false;
-                confirmBtn.classList.remove('opacity-50', 'cursor-not-allowed');
             }
         });
     });

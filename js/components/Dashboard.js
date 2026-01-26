@@ -142,12 +142,19 @@ export function render() {
 
                 ${todaySchedule.length > 0 ? `
                 <div class="grid grid-cols-3 gap-2">
-                    ${todaySchedule.map(item => `
-                    <div class="flex items-center gap-1 bg-cream rounded-lg px-2 py-1">
-                        <span class="text-xs text-gray-400">${item.period}</span>
-                        <span class="text-sm font-medium">${item.subject}</span>
-                    </div>
-                    `).join('')}
+                    ${(() => {
+                        const subjectColors = store.getSubjectColors();
+                        return todaySchedule.map(item => {
+                            const colors = subjectColors[item.subject] || { bg: '#F3F4F6', text: '#4B5563' };
+                            return `
+                            <div class="flex items-center rounded-xl px-3 py-2"
+                                 style="background-color: ${colors.bg};">
+                                <span class="text-lg font-bold w-6 text-left" style="color: ${colors.text};">${item.period}</span>
+                                <span class="flex-1 text-sm font-semibold text-center" style="color: ${colors.text};">${item.subject}</span>
+                            </div>
+                            `;
+                        }).join('');
+                    })()}
                 </div>
                 ` : `
                 <div class="text-center text-gray-400 py-2 text-sm">
@@ -167,11 +174,11 @@ export function render() {
 
                 <div class="grid grid-cols-2 gap-2">
                     ${students.slice(0, 6).map(student => `
-                    <div class="flex items-center gap-2 bg-cream rounded-xl px-3 py-2 cursor-pointer hover:bg-cream-dark transition-colors"
+                    <div class="flex items-center bg-cream rounded-xl px-2 py-2 cursor-pointer hover:bg-cream-dark transition-colors"
                          onclick="window.classpet.router.navigate('student', { id: ${student.id} })">
-                        <span class="text-xl">${getPetEmoji(student.petType, student.level || 1)}</span>
-                        <span class="text-sm font-medium flex-1 truncate">${student.name}</span>
-                        <span class="text-xs text-gray-400">Lv.${student.level || 1}</span>
+                        <span class="text-xl w-8 text-left">${getPetEmoji(student.petType, student.level || 1)}</span>
+                        <span class="text-sm font-semibold flex-1 text-center truncate">${student.name}</span>
+                        <span class="text-xs text-gray-500 w-10 text-right">Lv.${student.level || 1}</span>
                     </div>
                     `).join('')}
                 </div>

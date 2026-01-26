@@ -4,7 +4,7 @@
  */
 
 // 학생 모드 라우트 목록
-const STUDENT_MODE_ROUTES = ['student-login', 'student-main', 'student-chat', 'pet-selection', 'pet-collection'];
+const STUDENT_MODE_ROUTES = ['student-login', 'student-main', 'student-chat', 'pet-selection', 'pet-collection', 'student-timetable'];
 
 // 로그인 관련 라우트 목록 (하단 네비 숨김)
 const LOGIN_ROUTES = ['login', 'teacher-login', 'student-login', 'class-select'];
@@ -27,15 +27,19 @@ class Router {
 
     /**
      * 라우터 초기화
+     * @param {string} contentElementId - 콘텐츠 요소 ID
+     * @param {boolean} skipInitialRender - 초기 렌더링 건너뛰기
      */
-    init(contentElementId = 'content') {
+    init(contentElementId = 'content', skipInitialRender = false) {
         this.contentElement = document.getElementById(contentElementId);
 
         // 해시 변경 이벤트 리스너
         window.addEventListener('hashchange', () => this.handleRoute());
 
-        // 초기 라우트 처리
-        this.handleRoute();
+        // 초기 라우트 처리 (옵션)
+        if (!skipInitialRender) {
+            this.handleRoute();
+        }
     }
 
     /**
@@ -180,6 +184,9 @@ class Router {
         const quickPraiseBtn = document.getElementById('quickPraiseBtn');
         const header = document.querySelector('header');
         const content = document.getElementById('content');
+        const teacherNav = document.getElementById('teacherNav');
+        const studentNav = document.getElementById('studentNav');
+        const rightToolbar = document.getElementById('rightToolbar');
 
         if (isLoginScreen) {
             // 로그인 화면: 하단 네비, 빠른 칭찬 버튼, 헤더 숨기기
@@ -187,10 +194,10 @@ class Router {
             if (quickPraiseBtn) quickPraiseBtn.classList.add('hidden');
             if (header) header.classList.add('hidden');
 
-            // 컨텐츠 영역 패딩 조정 + 스크롤 방지
+            // 컨텐츠 영역 패딩 조정
             if (content) {
                 content.classList.remove('pb-20');
-                content.classList.add('p-0', 'overflow-hidden');
+                content.classList.add('p-0');
             }
 
             // 앱 컨테이너 패딩 제거
@@ -199,21 +206,29 @@ class Router {
                 appContainer.style.paddingBottom = '0';
             }
 
-            // 스크롤 완전 차단 (iOS bounce 방지)
-            document.documentElement.style.overflow = 'hidden';
-            document.body.style.overflow = 'hidden';
-            document.body.style.position = 'fixed';
-            document.body.style.width = '100%';
-            document.body.style.height = '100%';
+            // 스크롤 허용 (pull-to-refresh 가능하도록)
+            document.documentElement.style.overflow = '';
+            document.body.style.overflow = '';
+            document.body.style.position = '';
+            document.body.style.width = '';
+            document.body.style.height = '';
             if (appContainer) {
-                appContainer.style.overflow = 'hidden';
-                appContainer.style.height = '100%';
+                appContainer.style.overflow = '';
+                appContainer.style.height = '';
             }
         } else if (isStudentMode) {
-            // 학생 모드: 하단 네비, 빠른 칭찬 버튼 숨기기
+            // 학생 모드: 하단 네비, 빠른 칭찬 버튼, 우측 툴바 숨기기
             if (bottomNav) bottomNav.classList.add('hidden');
             if (quickPraiseBtn) quickPraiseBtn.classList.add('hidden');
             if (header) header.classList.remove('hidden');
+            if (rightToolbar) rightToolbar.classList.add('hidden');
+
+            // 학생/교사 네비게이션 전환
+            if (teacherNav) teacherNav.classList.add('hidden');
+            if (studentNav) studentNav.classList.remove('hidden');
+
+            // 학생 네비게이션 활성 상태 업데이트
+            this.updateStudentNavigation(route);
 
             // 헤더 스타일 변경 (학생 모드) - 크림색 유지
             if (header) {
@@ -241,6 +256,11 @@ class Router {
             if (bottomNav) bottomNav.classList.remove('hidden');
             if (quickPraiseBtn) quickPraiseBtn.classList.remove('hidden');
             if (header) header.classList.remove('hidden');
+            if (rightToolbar) rightToolbar.classList.remove('hidden');
+
+            // 교사/학생 네비게이션 전환
+            if (teacherNav) teacherNav.classList.remove('hidden');
+            if (studentNav) studentNav.classList.add('hidden');
 
             // 헤더 스타일 복원 - 크림색 유지
             if (header) {
@@ -268,6 +288,24 @@ class Router {
             document.body.style.width = '';
             document.body.style.height = '';
         }
+    }
+
+    /**
+     * 학생 네비게이션 활성 상태 업데이트
+     */
+    updateStudentNavigation(route) {
+        const studentNav = document.getElementById('studentNav');
+        if (!studentNav) return;
+
+        const navItems = studentNav.querySelectorAll('.navbar-tab');
+        navItems.forEach(item => {
+            const itemRoute = item.dataset.route;
+            if (itemRoute === route) {
+                item.classList.add('active');
+            } else {
+                item.classList.remove('active');
+            }
+        });
     }
 
     /**
