@@ -2819,6 +2819,10 @@ input[type="password"]:focus {
     flex: 1;
 }
 
+.mobile-drawer-nav.hidden {
+    display: none !important;
+}
+
 .mobile-nav-item {
     display: flex;
     align-items: center;
