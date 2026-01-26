@@ -1269,6 +1269,11 @@ function updateUIVisibility(route) {
             mobileDrawer.classList.remove('hidden');
         }
         if (mobileDrawerOverlay) mobileDrawerOverlay.classList.remove('hidden');
+        // 상단바: 교사 메뉴 숨기고 학생 메뉴 표시
+        const teacherNav = document.getElementById('teacherNav');
+        const studentNav = document.getElementById('studentNav');
+        if (teacherNav) teacherNav.classList.add('hidden');
+        if (studentNav) studentNav.classList.remove('hidden');
         // 모바일 드로어: 교사 메뉴 숨기고 학생 메뉴 표시
         const mobileTeacherNav = mobileDrawer?.querySelector('.mobile-drawer-nav:not(#mobileStudentNav)');
         const mobileStudentNav = document.getElementById('mobileStudentNav');
@@ -1289,6 +1294,11 @@ function updateUIVisibility(route) {
             mobileDrawer.classList.remove('hidden');
         }
         if (mobileDrawerOverlay) mobileDrawerOverlay.classList.remove('hidden');
+        // 상단바: 학생 메뉴 숨기고 교사 메뉴 표시
+        const teacherNav = document.getElementById('teacherNav');
+        const studentNav = document.getElementById('studentNav');
+        if (teacherNav) teacherNav.classList.remove('hidden');
+        if (studentNav) studentNav.classList.add('hidden');
         // 모바일 드로어: 학생 메뉴 숨기고 교사 메뉴 표시
         const mobileTeacherNav = mobileDrawer?.querySelector('.mobile-drawer-nav:not(#mobileStudentNav)');
         const mobileStudentNav = document.getElementById('mobileStudentNav');
