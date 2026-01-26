@@ -306,6 +306,9 @@ export function afterRender() {
                 // QRCode 라이브러리 사용 (qrcodejs)
                 if (typeof QRCode !== 'undefined') {
                     try {
+                        // 기존 QR 코드 제거 (중복 방지)
+                        qrCodeContainer.innerHTML = '';
+
                         // 작은 QR 코드 (카드용)
                         new QRCode(qrCodeContainer, {
                             text: joinUrl,
@@ -318,6 +321,7 @@ export function afterRender() {
 
                         // 큰 QR 코드 (전체화면용)
                         if (qrCodeLarge) {
+                            qrCodeLarge.innerHTML = '';
                             new QRCode(qrCodeLarge, {
                                 text: joinUrl,
                                 width: 280,

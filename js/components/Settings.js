@@ -967,6 +967,9 @@ export function afterRender() {
 
                 if (typeof QRCode !== 'undefined') {
                     try {
+                        // 기존 QR 코드 제거 (중복 방지)
+                        settingsQRCodeContainer.innerHTML = '';
+
                         // 작은 QR 코드 (설정 화면용)
                         new QRCode(settingsQRCodeContainer, {
                             text: joinUrl,
@@ -980,6 +983,7 @@ export function afterRender() {
                         // 큰 QR 코드 (전체화면용)
                         const settingsQRCodeLarge = document.getElementById('settingsQRCodeLarge');
                         if (settingsQRCodeLarge) {
+                            settingsQRCodeLarge.innerHTML = '';
                             new QRCode(settingsQRCodeLarge, {
                                 text: joinUrl,
                                 width: 280,

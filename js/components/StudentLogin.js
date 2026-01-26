@@ -386,10 +386,36 @@ async function handleAutoJoin() {
     const errorText = document.getElementById('joiningErrorText');
     const retryBtn = document.getElementById('retryJoinBtn');
     const manualBtn = document.getElementById('manualInputBtn');
+    const spinner = document.getElementById('joiningSpinner');
+    const title = document.getElementById('joiningTitle');
+    const subtitle = document.getElementById('joiningSubtitle');
+
+    // 에러 표시 헬퍼 함수
+    function showError(message) {
+        // 로딩 UI 숨기기
+        if (spinner) spinner.classList.add('hidden');
+        if (title) title.textContent = '참가 실패';
+        if (subtitle) subtitle.textContent = '';
+
+        // 에러 메시지 표시
+        if (errorDiv) {
+            errorDiv.classList.remove('hidden');
+            if (errorText) {
+                errorText.textContent = message;
+            }
+        }
+    }
 
     try {
-        // 학급 참가 시도
-        const success = await store.joinClass(code);
+        // 학급 참가 시도 (10초 타임아웃)
+        const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('timeout')), 10000)
+        );
+
+        const success = await Promise.race([
+            store.joinClass(code),
+            timeoutPromise
+        ]);
 
         if (success) {
             // 성공: URL 코드 초기화 후 화면 새로고침
@@ -398,20 +424,14 @@ async function handleAutoJoin() {
             router.handleRoute();
         } else {
             // 실패: 에러 표시
-            if (errorDiv) {
-                errorDiv.classList.remove('hidden');
-                if (errorText) {
-                    errorText.textContent = '학급 코드가 올바르지 않아요. 선생님에게 확인해주세요!';
-                }
-            }
+            showError('학급 코드가 올바르지 않아요. 선생님에게 확인해주세요!');
         }
     } catch (error) {
         console.error('자동 학급 참가 실패:', error);
-        if (errorDiv) {
-            errorDiv.classList.remove('hidden');
-            if (errorText) {
-                errorText.textContent = '참가 중 오류가 발생했어요. 다시 시도해주세요.';
-            }
+        if (error.message === 'timeout') {
+            showError('연결 시간이 초과되었어요. 네트워크를 확인하고 다시 시도해주세요.');
+        } else {
+            showError('참가 중 오류가 발생했어요. 다시 시도해주세요.');
         }
     }
 
@@ -441,10 +461,10 @@ function renderJoiningScreen(code) {
         <div class="student-login-container min-h-[calc(100vh-200px)] flex flex-col items-center justify-center px-4">
             <div class="text-center">
                 <div class="text-6xl mb-6 animate-bounce">🐾</div>
-                <h1 class="text-2xl font-bold text-gray-800 mb-2">학급에 참가하는 중...</h1>
-                <p class="text-gray-500 mb-4">잠시만 기다려주세요</p>
+                <h1 id="joiningTitle" class="text-2xl font-bold text-gray-800 mb-2">학급에 참가하는 중...</h1>
+                <p id="joiningSubtitle" class="text-gray-500 mb-4">잠시만 기다려주세요</p>
                 <p class="text-sm text-primary font-mono font-bold">${code}</p>
-                <div class="mt-6">
+                <div id="joiningSpinner" class="mt-6">
                     <span class="inline-block animate-spin text-2xl">⏳</span>
                 </div>
             </div>
