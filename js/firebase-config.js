@@ -872,12 +872,19 @@ export async function addReplyToEmotion(teacherUid, classId, studentId, emotionI
         }
 
         // 해당 대화에 답장 추가
+        const now = new Date().toISOString();
         conversations[targetIndex].teacherReply = message;
-        conversations[targetIndex].replyAt = new Date().toISOString();
+        conversations[targetIndex].replyAt = now;
         conversations[targetIndex].read = false;
 
         await updateDoc(emotionRef, {
             conversations: conversations,
+            // 학생 페이지 호환: reply 객체도 업데이트
+            reply: {
+                message,
+                timestamp: now,
+                read: false
+            },
             updatedAt: serverTimestamp()
         });
 

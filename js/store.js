@@ -2196,11 +2196,20 @@ class Store {
             const targetIdx = conversationIndex === -1 ? conversations.length - 1 : conversationIndex;
 
             if (targetIdx >= 0 && targetIdx < conversations.length) {
+                const now = new Date().toISOString();
                 conversations[targetIdx].teacherReply = message;
-                conversations[targetIdx].replyAt = new Date().toISOString();
+                conversations[targetIdx].replyAt = now;
                 conversations[targetIdx].read = false;
 
                 log[index].conversations = conversations;
+
+                // 학생 페이지 호환: reply 객체도 업데이트
+                log[index].reply = {
+                    message,
+                    timestamp: now,
+                    read: false
+                };
+
                 this.saveEmotionLog(log);
 
                 // Firebase 동기화
