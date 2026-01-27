@@ -406,27 +406,26 @@ function renderTimeline(emotions, student) {
             lastDateStr = dateStr;
         }
 
-        // 감정 태그
-        if (emotionInfo) {
-            html += `
-                <div class="flex justify-center my-1">
-                    <span class="text-xs px-2 py-0.5 rounded-full" style="background: ${emotionInfo.color}20; color: ${emotionInfo.color}">
-                        ${emotionInfo.icon} ${emotionInfo.name}
-                    </span>
-                </div>
-            `;
-        }
+        // 감정 태그 HTML (말풍선 안에 삽입용)
+        const emotionTag = emotionInfo
+            ? `<span class="inline-block text-xs px-2 py-0.5 rounded-full mb-1" style="background: ${emotionInfo.color}20; color: ${emotionInfo.color}">${emotionInfo.icon} ${emotionInfo.name}</span>`
+            : '';
 
         // conversations 기반 말풍선
         const convos = e.conversations || [];
+        let isFirstStudentMsg = true; // 첫 학생 메시지에만 감정 태그 표시
+
         if (convos.length > 0) {
             convos.forEach(c => {
-                // 학생 메시지 (왼쪽)
+                // 학생 메시지 (왼쪽) — 감정 이모지 + 메시지 통합 카드
                 if (c.studentMessage) {
                     const time = formatChatTime(c.studentAt || e.timestamp, true);
+                    const showTag = isFirstStudentMsg && emotionTag;
+                    isFirstStudentMsg = false;
                     html += `
                         <div class="flex items-end gap-2 mb-2">
                             <div class="max-w-[75%] bg-yellow-100 rounded-2xl rounded-tl-sm px-3 py-2">
+                                ${showTag ? `<div>${emotionTag}</div>` : ''}
                                 <p class="text-sm">${escapeHtml(c.studentMessage)}</p>
                             </div>
                             <span class="text-xs text-gray-400 flex-shrink-0">${time}</span>
@@ -446,6 +445,16 @@ function renderTimeline(emotions, student) {
                     `;
                 }
             });
+            // 메시지 없이 감정만 기록된 경우 (conversations는 있지만 studentMessage가 모두 null)
+            if (isFirstStudentMsg && emotionTag) {
+                html += `
+                    <div class="flex items-end gap-2 mb-2">
+                        <div class="bg-yellow-100 rounded-2xl rounded-tl-sm px-3 py-2">
+                            <div>${emotionTag}</div>
+                        </div>
+                    </div>
+                `;
+            }
         } else {
             // 구 데이터 호환: conversations가 없는 경우
             const msg = e.note || e.memo;
@@ -454,9 +463,19 @@ function renderTimeline(emotions, student) {
                 html += `
                     <div class="flex items-end gap-2 mb-2">
                         <div class="max-w-[75%] bg-yellow-100 rounded-2xl rounded-tl-sm px-3 py-2">
+                            ${emotionTag ? `<div>${emotionTag}</div>` : ''}
                             <p class="text-sm">${escapeHtml(msg)}</p>
                         </div>
                         <span class="text-xs text-gray-400 flex-shrink-0">${time}</span>
+                    </div>
+                `;
+            } else if (emotionTag) {
+                // 메시지 없이 감정만 있는 경우
+                html += `
+                    <div class="flex items-end gap-2 mb-2">
+                        <div class="bg-yellow-100 rounded-2xl rounded-tl-sm px-3 py-2">
+                            <div>${emotionTag}</div>
+                        </div>
                     </div>
                 `;
             }
