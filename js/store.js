@@ -886,6 +886,9 @@ class Store {
                 console.error('Firebase 감정 로드 실패:', emotionError);
             }
 
+            // 데이터 로드 완료 알림 (화면 갱신용)
+            this.notify('dataLoaded', { students: true, praises: true, emotions: true });
+
             return true;
         } catch (error) {
             console.error('Firebase 학급 데이터 로드 실패:', error);

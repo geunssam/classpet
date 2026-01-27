@@ -135,6 +135,11 @@ async function initApp() {
         if (type === 'settings') {
             updateClassInfo();
         }
+        // Firebase 데이터 로드 완료 시 현재 화면 갱신
+        if (type === 'dataLoaded') {
+            console.log('📦 데이터 로드 완료 → 화면 갱신');
+            refreshCurrentView();
+        }
     });
 
     // Firebase 인증 상태 리스너 설정 (지속적 감시용)
