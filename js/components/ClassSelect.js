@@ -501,20 +501,12 @@ function collectStudentData() {
             students.push({
                 number: number,
                 name: name,
-                emoji: getRandomEmoji()
+                pin: String(number).padStart(4, '0')
             });
         }
     });
 
     return students;
-}
-
-/**
- * 랜덤 이모지 반환
- */
-function getRandomEmoji() {
-    const emojis = ['🐶', '🐱', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐸', '🐵', '🐔', '🐧', '🐦', '🦆', '🦉', '🐴', '🦄', '🐝', '🐛', '🦋', '🐌', '🐞', '🐢', '🐍', '🦎', '🐙', '🦀', '🐠', '🐟', '🐬', '🐳', '🦈', '🐊'];
-    return emojis[Math.floor(Math.random() * emojis.length)];
 }
 
 /**

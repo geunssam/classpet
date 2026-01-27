@@ -542,7 +542,7 @@ function showDeleteSubjectConfirm(subject, usageCount) {
 function showQRCodeModal() {
     const settings = store.getSettings();
     const classCode = settings?.classCode || store.getClassCode();
-    const url = `${window.location.origin}${window.location.pathname}?code=${classCode}`;
+    const url = `https://classpet.netlify.app/?code=${classCode}`;
 
     const modalContent = `
         <div class="space-y-4">
@@ -956,7 +956,7 @@ export function afterRender() {
         const classCode = settings?.classCode || store.getClassCode();
 
         if (classCode) {
-            const joinUrl = `${window.location.origin}${window.location.pathname}#student-login?code=${classCode}`;
+            const joinUrl = `https://classpet.netlify.app/#student-login?code=${classCode}`;
 
             // QR 라이브러리 로드 후 QR 코드 생성
             const generateSettingsQRCodes = async () => {

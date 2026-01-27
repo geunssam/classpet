@@ -1,5 +1,5 @@
 // 클래스펫 Service Worker
-const CACHE_NAME = 'classpet-v1769435536886';
+const CACHE_NAME = 'classpet-v1738016400000';
 const OFFLINE_URL = '/offline.html';
 
 // 캐시할 정적 파일들 (앱 셸)
@@ -10,29 +10,31 @@ const STATIC_ASSETS = [
     '/css/output.css',
     '/css/style.css',
     '/js/app.js',
+    '/js/store.js',
+    '/js/firebase-config.js',
+    '/js/components/ClassSelect.js',
     '/js/components/Dashboard.js',
     '/js/components/Login.js',
     '/js/components/Settings.js',
     '/js/components/Timetable.js',
-    '/js/components/PetFarm.js',
+    '/js/components/PetSelection.js',
     '/js/components/Emotion.js',
+    '/js/components/StudentLogin.js',
+    '/js/components/StudentMode.js',
     '/js/components/Stats.js',
     '/js/utils/router.js',
-    '/js/utils/store.js',
     '/js/utils/toast.js',
     '/manifest.json'
 ];
 
-// 캐시하지 않을 URL 패턴들 (Firebase 등 API 요청)
+// 캐시하지 않을 URL 패턴들 (Firebase API 요청만 - SDK는 캐시 허용)
 const NO_CACHE_PATTERNS = [
     /firestore\.googleapis\.com/,
     /firebase\.googleapis\.com/,
     /identitytoolkit\.googleapis\.com/,
     /securetoken\.googleapis\.com/,
-    /firebaseio\.com/,
-    /googleapis\.com/,
-    /google\.com/,
-    /gstatic\.com/
+    /firebaseio\.com/
+    // gstatic.com (Firebase SDK CDN)은 캐시 허용하여 로딩 속도 개선
 ];
 
 // 설치 이벤트 - 정적 파일 캐싱
@@ -74,6 +76,11 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
     const { request } = event;
     const url = new URL(request.url);
+
+    // http/https 외의 요청은 무시 (chrome-extension 등)
+    if (!url.protocol.startsWith('http')) {
+        return;
+    }
 
     // POST 등 GET 외 요청은 무시
     if (request.method !== 'GET') {

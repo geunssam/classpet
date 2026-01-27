@@ -92,8 +92,10 @@ async function initApp() {
         }
     } else {
         // 로그인되지 않은 상태에서 보호된 라우트 접근 시
-        const protectedRoutes = ['dashboard', 'timetable', 'petfarm', 'student', 'emotion', 'stats', 'settings'];
-        if (protectedRoutes.some(r => currentHash.startsWith(r))) {
+        // student-login 등 학생 모드 라우트는 제외
+        const studentModeRoutes = ['student-login', 'student-main', 'student-chat', 'pet-selection', 'pet-collection', 'student-timetable'];
+        const protectedRoutes = ['dashboard', 'timetable', 'petfarm', 'student/', 'emotion', 'stats', 'settings'];
+        if (!studentModeRoutes.includes(currentHash) && protectedRoutes.some(r => currentHash.startsWith(r))) {
             console.log('🔄 초기 라우트: 로그인');
             window.location.hash = 'login';
         }

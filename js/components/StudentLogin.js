@@ -262,29 +262,42 @@ function showPinError() {
  * 렌더 후 이벤트 바인딩
  */
 export function afterRender() {
+    console.log('🔧 StudentLogin afterRender 호출됨, urlClassCode:', urlClassCode);
+
     // QR 코드로 참가 중인 경우 자동 처리
     if (urlClassCode) {
+        console.log('🔧 handleAutoJoin 시작');
         handleAutoJoin();
         return;
     }
 
     const grid = document.getElementById('studentNumberGrid');
+    console.log('🔧 studentNumberGrid:', grid);
+
     // 학급 코드 입력 화면인 경우
     if (!grid) {
+        console.log('🔧 grid 없음 - setupClassCodeInput 호출');
         setupClassCodeInput();
         return;
     }
 
+    console.log('🔧 번호 버튼 클릭 이벤트 바인딩 시작');
+
     // 번호 버튼 클릭 이벤트
     grid.addEventListener('click', (e) => {
+        console.log('🔧 그리드 클릭됨', e.target);
         const btn = e.target.closest('.student-number-btn');
+        console.log('🔧 찾은 버튼:', btn);
         if (!btn) return;
 
-        const studentId = parseInt(btn.dataset.studentId);
+        const studentId = btn.dataset.studentId;
+        console.log('🔧 studentId:', studentId);
         const student = store.getStudent(studentId);
+        console.log('🔧 student:', student);
         const petEmoji = btn.dataset.petEmoji;
 
         if (student) {
+            console.log('🔧 학생 찾음, PIN 모달 열기');
             // 버튼 선택 표시
             document.querySelectorAll('.student-number-btn').forEach(b => {
                 b.classList.remove('ring-4', 'ring-primary', 'scale-105');
@@ -293,6 +306,8 @@ export function afterRender() {
 
             // PIN 모달 열기
             openPinModal(student, petEmoji);
+        } else {
+            console.log('🔧 학생을 찾지 못함, store.getStudents():', store.getStudents());
         }
     });
 
@@ -421,6 +436,9 @@ async function handleAutoJoin() {
             // 성공: URL 코드 초기화 후 화면 새로고침
             urlClassCode = null;
             showClassCodeInput = false;
+            // history.replaceState로 해시 변경 (hashchange 이벤트 방지하여 중복 렌더링 방지)
+            history.replaceState(null, '', '#student-login');
+            // 직접 라우트 처리
             router.handleRoute();
         } else {
             // 실패: 에러 표시

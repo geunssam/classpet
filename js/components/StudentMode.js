@@ -5,7 +5,7 @@
 
 import { store, PET_TYPES, EMOTION_TYPES, PET_REACTIONS, PET_SPEECH_STYLES, convertToPetSpeech } from '../store.js';
 import { router } from '../router.js';
-import { getPetEmoji, getGrowthStage, getExpProgress, getCurrentLevelExp, getExpForNextLevel, isMaxLevel, calculateLevel } from '../utils/petLogic.js';
+import { getPetEmoji, getGrowthStage, getExpProgress, getCurrentLevelExp, getExpForNextLevel, isMaxLevel } from '../utils/petLogic.js';
 import { showToast } from '../utils/animations.js';
 import { getNameWithSuffix } from '../utils/nameUtils.js';
 
@@ -378,35 +378,26 @@ export function afterRender() {
 
             try {
                 // 감정 저장 (Firebase 동기화 포함)
-                await store.addEmotionWithSync({
+                await store.addEmotion({
                     studentId: student.id,
                     emotion: selectedEmotion,
-                    note: memo,  // Emotion.js와 키 이름 통일 (note)
-                    source: 'student' // 학생이 직접 입력
+                    memo: memo,
+                    source: 'student'
                 });
 
                 // 교사에게 알림 전송
                 store.createEmotionNotification(student.id, selectedEmotion, memo);
 
-                // 펫 경험치 +5 추가
-                const newExp = student.exp + 5;
-                const oldLevel = student.level;
-                const newLevel = calculateLevel(newExp);
-
-                // 학생 정보 업데이트 (Firebase 동기화 포함)
-                await store.saveStudentWithSync({
-                    ...student,
-                    exp: newExp,
-                    level: newLevel
-                });
+                // 펫 경험치 +5 추가 (로컬 + Firebase pets 컬렉션 동기화)
+                const petResult = await store.addPetExp(student.id, 5);
 
                 // 펫 반응 애니메이션
                 showPetReaction(selectedEmotion);
 
                 // 레벨업 메시지
                 let resultMessage = '펫에게 마음을 전달했어요! +5 EXP';
-                if (newLevel > oldLevel) {
-                    resultMessage = `🎉 레벨업! Lv.${newLevel} +5 EXP`;
+                if (petResult && petResult.levelUp) {
+                    resultMessage = `🎉 레벨업! Lv.${petResult.newLevel} +5 EXP`;
                 }
 
                 sendBtn.textContent = resultMessage;

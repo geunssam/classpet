@@ -46,8 +46,8 @@ service cloud.firestore {
             // 교사: 모든 권한
             allow read, write: if isOwner(uid);
 
-            // 학생 (익명 인증): 생성 및 읽기 가능
-            allow create, read: if isAuthenticated();
+            // 학생 (익명 인증): 생성, 읽기, 수정 가능 (addStudentMessage, markReplyAsRead)
+            allow create, read, update: if isAuthenticated();
           }
 
           // 칭찬 기록: /teachers/{uid}/classes/{classId}/students/{studentId}/praises/{praiseId}
@@ -64,8 +64,8 @@ service cloud.firestore {
             // 교사: 모든 권한
             allow read, write: if isOwner(uid);
 
-            // 학생 (익명 인증): 생성 및 읽기 가능 (자기 펫 등록)
-            allow create, read: if isAuthenticated();
+            // 학생 (익명 인증): 생성, 읽기, 수정 가능 (addPetExp 경험치 업데이트)
+            allow create, read, update: if isAuthenticated();
           }
         }
 

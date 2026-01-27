@@ -537,11 +537,11 @@ export function showEmotionCheck(studentId, emotionId = null) {
 
                 try {
                     // Firebase 동기화 포함 저장
-                    await store.addEmotionWithSync({
+                    await store.addEmotion({
                         studentId,
                         emotion: selectedEmotion,
-                        note,
-                        source: 'teacher' // 교사가 입력
+                        memo: note,
+                        source: 'teacher'
                     });
 
                     const emotionInfo = EMOTION_TYPES[selectedEmotion];
@@ -625,11 +625,11 @@ export function showBulkEmotionCheck() {
 
                 try {
                     // Firebase 동기화 포함 저장
-                    await store.addEmotionWithSync({
+                    await store.addEmotion({
                         studentId: student.id,
                         emotion,
-                        note: '',
-                        source: 'teacher' // 교사가 입력
+                        memo: '',
+                        source: 'teacher'
                     });
                 } catch (error) {
                     console.error('감정 저장 실패:', error);

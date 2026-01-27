@@ -294,7 +294,7 @@ export function afterRender() {
 
         if (classCode) {
             // QR 코드에 담을 URL (학급 참가 링크)
-            const joinUrl = `${window.location.origin}${window.location.pathname}#student-login?code=${classCode}`;
+            const joinUrl = `https://classpet.netlify.app/#student-login?code=${classCode}`;
 
             // QR 라이브러리 로드 후 QR 코드 생성
             const generateQRCodes = async () => {

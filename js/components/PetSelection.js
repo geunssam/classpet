@@ -287,12 +287,12 @@ function openWelcomeModal() {
 /**
  * 최종 펫 선택 확정
  */
-function confirmPetSelection() {
+async function confirmPetSelection() {
     const session = store.getStudentSession();
     if (!session || !selectedPetType) return;
 
-    // 펫 저장 (이름 포함)
-    const result = store.selectPet(session.studentId, selectedPetType, inputPetName.trim());
+    // 펫 저장 (이름 포함) - Firebase에도 동기화
+    const result = await store.selectPet(session.studentId, selectedPetType, inputPetName.trim());
 
     if (result) {
         closeConfirmModal();
