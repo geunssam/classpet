@@ -1871,6 +1871,7 @@ class Store {
             studentName: emotion.studentName,
             studentNumber: emotion.studentNumber,
             emotion: emotion.emotion,
+            memo: emotion.memo || null,
             // conversations 배열 구조
             conversations: [
                 {
@@ -1896,11 +1897,16 @@ class Store {
     async syncEmotionToFirebase(emotion) {
         const teacherUid = this.getCurrentTeacherUid();
         const classId = this.getCurrentClassId();
-        if (!teacherUid || !classId || !this.firebaseEnabled) return;
+        console.log('🔍 감정 Firebase 동기화 시도:', { teacherUid, classId, firebaseEnabled: this.firebaseEnabled, isOnline: this.isOnline });
+        if (!teacherUid || !classId || !this.firebaseEnabled) {
+            console.warn('⚠️ 감정 Firebase 동기화 스킵:', { teacherUid: !!teacherUid, classId: !!classId, firebaseEnabled: this.firebaseEnabled });
+            return;
+        }
 
         if (this.isOnline) {
             try {
                 const result = await firebase.saveEmotion(teacherUid, classId, emotion);
+                console.log('✅ Firebase 감정 저장 완료:', result);
                 // Firebase에서 생성된 ID로 로컬 데이터 업데이트
                 if (result && result.id) {
                     const log = this.getEmotionLog() || [];
