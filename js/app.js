@@ -137,8 +137,14 @@ async function initApp() {
         }
         // Firebase 데이터 로드 완료 시 현재 화면 갱신
         if (type === 'dataLoaded') {
-            console.log('📦 데이터 로드 완료 → 화면 갱신');
-            refreshCurrentView();
+            const currentRoute = window.location.hash.slice(1).split('/')[0].split('?')[0];
+            const skipRoutes = ['login', 'teacher-login', 'class-select', 'student-login'];
+            if (!skipRoutes.includes(currentRoute)) {
+                console.log('📦 데이터 로드 완료 → 화면 갱신:', currentRoute);
+                refreshCurrentView();
+            } else {
+                console.log('📦 데이터 로드 완료 (화면 갱신 스킵:', currentRoute + ')');
+            }
         }
     });
 
