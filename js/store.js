@@ -21,7 +21,8 @@ const STORAGE_KEYS = {
     NOTIFICATIONS: 'classpet_notifications',
     OFFLINE_QUEUE: 'classpet_offline_queue',
     CURRENT_CLASS_ID: 'classpet_current_class_id',
-    CURRENT_TEACHER_UID: 'classpet_current_teacher_uid'
+    CURRENT_TEACHER_UID: 'classpet_current_teacher_uid',
+    PRAISE_CATEGORIES_CUSTOM: 'classpet_praise_categories'
 };
 
 // 기본 과목 목록
@@ -1805,7 +1806,7 @@ class Store {
         this.syncPraiseToFirebase(newPraise);
 
         // 펫 경험치 추가 (칭찬 카테고리에 따른 경험치)
-        const expAmount = PRAISE_CATEGORIES[praise.category]?.exp || 10;
+        const expAmount = this.getPraiseCategories()[praise.category]?.exp || 10;
         if (praise.studentId) {
             this.addPetExp(praise.studentId, expAmount);
         }
@@ -1849,6 +1850,50 @@ class Store {
         const log = this.getPraiseLog() || [];
         const today = new Date().toISOString().split('T')[0];
         return log.filter(p => p.timestamp.startsWith(today));
+    }
+
+    // ==================== 칭찬 카테고리 관리 ====================
+
+    getPraiseCategories() {
+        const data = localStorage.getItem(STORAGE_KEYS.PRAISE_CATEGORIES_CUSTOM);
+        if (data) {
+            return JSON.parse(data);
+        }
+        return { ...PRAISE_CATEGORIES };
+    }
+
+    savePraiseCategories(categories) {
+        localStorage.setItem(STORAGE_KEYS.PRAISE_CATEGORIES_CUSTOM, JSON.stringify(categories));
+        this.notify('praiseCategories', categories);
+    }
+
+    addPraiseCategory({ icon, name, exp }) {
+        const categories = this.getPraiseCategories();
+        const key = `custom_${Date.now()}`;
+        categories[key] = { icon, name, exp: Number(exp) };
+        this.savePraiseCategories(categories);
+        return key;
+    }
+
+    updatePraiseCategory(key, { icon, name, exp }) {
+        const categories = this.getPraiseCategories();
+        if (categories[key]) {
+            categories[key] = { icon, name, exp: Number(exp) };
+            this.savePraiseCategories(categories);
+        }
+    }
+
+    deletePraiseCategory(key) {
+        const categories = this.getPraiseCategories();
+        if (categories[key]) {
+            delete categories[key];
+            this.savePraiseCategories(categories);
+        }
+    }
+
+    resetPraiseCategories() {
+        localStorage.removeItem(STORAGE_KEYS.PRAISE_CATEGORIES_CUSTOM);
+        this.notify('praiseCategories', PRAISE_CATEGORIES);
     }
 
     // ==================== 감정 로그 관련 ====================

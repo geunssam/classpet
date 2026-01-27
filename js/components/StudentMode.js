@@ -9,6 +9,9 @@ import { getPetEmoji, getGrowthStage, getExpProgress, getCurrentLevelExp, getExp
 import { showToast } from '../utils/animations.js';
 import { getNameWithSuffix } from '../utils/nameUtils.js';
 
+let currentStudentTab = 'send'; // 'send' | 'history'
+let historyDate = new Date();
+
 /**
  * 렌더링
  */
@@ -88,80 +91,98 @@ export function render() {
                 </p>
             </div>
 
-            ${hasEmotionsToday ? `
-                <!-- 오늘 보낸 마음 목록 -->
-                <div class="px-4 mb-6">
-                    <div class="bg-blue-50 rounded-2xl p-4">
-                        <p class="text-blue-600 font-medium text-center mb-3">📝 오늘 보낸 마음 (${todayEmotions.length}개)</p>
-                        <div class="space-y-3 max-h-64 overflow-y-auto">
-                            ${todayEmotions.map(emotion => {
-                                const emotionTime = new Date(emotion.timestamp).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
-                                const hasReply = !!emotion.reply;
-                                const petSpeech = hasReply ? convertToPetSpeech(emotion.reply.message, student.petType, petName) : null;
-                                const petStyle = PET_SPEECH_STYLES[student.petType] || {};
-                                return `
-                                <div class="bg-white rounded-xl p-3 shadow-sm">
-                                    <div class="flex items-center gap-2 mb-1">
-                                        <span class="text-xl">${EMOTION_TYPES[emotion.emotion]?.icon || '😊'}</span>
-                                        <span class="text-xs text-gray-400">${emotionTime}</span>
-                                        ${hasReply ? `<span class="ml-auto text-xs ${!emotion.reply.read ? 'text-red-500 font-bold' : 'text-green-500'}">💌 ${!emotion.reply.read ? 'NEW' : '답장 있음'}</span>` : ''}
-                                    </div>
-                                    ${(emotion.note || emotion.memo) ? `
-                                        <p class="text-sm text-gray-600 italic pl-7">"${emotion.note || emotion.memo}"</p>
-                                    ` : ''}
-                                    ${hasReply ? `
-                                        <div class="mt-2 pl-7 pt-2 border-t border-gray-100">
-                                            <div class="flex items-center gap-1 mb-1">
-                                                <span class="text-sm">${petEmoji}</span>
-                                                <span class="text-xs text-amber-600 font-medium">${petName}의 답장</span>
-                                            </div>
-                                            <p class="text-sm text-gray-700">"${petSpeech.petMessage}"</p>
+            <!-- 탭 UI -->
+            <div class="flex gap-2 mx-4 mb-6">
+                <button id="tabSendEmotion" class="student-tab-btn flex-1 py-2.5 px-4 rounded-xl text-sm font-medium transition-all ${currentStudentTab === 'send' ? 'bg-primary text-white shadow-md' : 'bg-gray-100 text-gray-600'}">
+                    💝 마음 보내기
+                </button>
+                <button id="tabHistory" class="student-tab-btn flex-1 py-2.5 px-4 rounded-xl text-sm font-medium transition-all ${currentStudentTab === 'history' ? 'bg-primary text-white shadow-md' : 'bg-gray-100 text-gray-600'}">
+                    📜 기록 보기
+                </button>
+            </div>
+
+            <!-- 마음 보내기 탭 -->
+            <div id="sendEmotionContent" class="${currentStudentTab !== 'send' ? 'hidden' : ''}">
+                ${hasEmotionsToday ? `
+                    <!-- 오늘 보낸 마음 목록 -->
+                    <div class="px-4 mb-6">
+                        <div class="bg-blue-50 rounded-2xl p-4">
+                            <p class="text-blue-600 font-medium text-center mb-3">📝 오늘 보낸 마음 (${todayEmotions.length}개)</p>
+                            <div class="space-y-3 max-h-64 overflow-y-auto">
+                                ${todayEmotions.map(emotion => {
+                                    const emotionTime = new Date(emotion.timestamp).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+                                    const hasReply = !!emotion.reply;
+                                    const petSpeech = hasReply ? convertToPetSpeech(emotion.reply.message, student.petType, petName) : null;
+                                    const petStyle = PET_SPEECH_STYLES[student.petType] || {};
+                                    return `
+                                    <div class="bg-white rounded-xl p-3 shadow-sm">
+                                        <div class="flex items-center gap-2 mb-1">
+                                            <span class="text-xl">${EMOTION_TYPES[emotion.emotion]?.icon || '😊'}</span>
+                                            <span class="text-xs text-gray-400">${emotionTime}</span>
+                                            ${hasReply ? `<span class="ml-auto text-xs ${!emotion.reply.read ? 'text-red-500 font-bold' : 'text-green-500'}">💌 ${!emotion.reply.read ? 'NEW' : '답장 있음'}</span>` : ''}
                                         </div>
-                                    ` : ''}
-                                </div>
-                            `;}).join('')}
+                                        ${(emotion.note || emotion.memo) ? `
+                                            <p class="text-sm text-gray-600 italic pl-7">"${emotion.note || emotion.memo}"</p>
+                                        ` : ''}
+                                        ${hasReply ? `
+                                            <div class="mt-2 pl-7 pt-2 border-t border-gray-100">
+                                                <div class="flex items-center gap-1 mb-1">
+                                                    <span class="text-sm">${petEmoji}</span>
+                                                    <span class="text-xs text-amber-600 font-medium">${petName}의 답장</span>
+                                                </div>
+                                                <p class="text-sm text-gray-700">"${petSpeech.petMessage}"</p>
+                                            </div>
+                                        ` : ''}
+                                    </div>
+                                `;}).join('')}
+                            </div>
                         </div>
                     </div>
+                ` : ''}
+
+                <!-- 감정 선택 (항상 표시) -->
+                <div class="emotion-check-area px-4">
+                    <p class="text-center text-sm text-gray-500 mb-4">
+                        ${hasEmotionsToday ? '💭 지금 기분도 알려줘!' : '오늘 기분을 펫에게 알려주세요'}
+                    </p>
+
+                    <!-- 감정 버튼들 -->
+                    <div class="flex justify-center gap-3 mb-6" id="emotionButtons">
+                        ${Object.entries(EMOTION_TYPES).map(([key, emotion]) => `
+                            <button
+                                class="emotion-select-btn w-14 h-14 rounded-full bg-gray-50 hover:bg-gray-100 flex items-center justify-center text-3xl transition-all border-3 border-transparent hover:scale-110"
+                                data-emotion="${key}"
+                                title="${emotion.name}"
+                            >
+                                ${emotion.icon}
+                            </button>
+                        `).join('')}
+                    </div>
+
+                    <!-- 감정 선택 이유 -->
+                    <div class="mb-4">
+                        <textarea
+                            id="petMemo"
+                            class="w-full p-4 border-2 border-gray-200 rounded-2xl resize-none focus:border-primary focus:ring-0 transition-colors"
+                            rows="3"
+                            placeholder="그 감정을 선택한 이유는 뭘까? 왜 그런 감정을 느꼈어?"
+                        ></textarea>
+                    </div>
+
+                    <!-- 전송 버튼 -->
+                    <button
+                        id="sendEmotionBtn"
+                        class="w-full liquid-btn-student"
+                        disabled
+                    >
+                        펫에게 말하기
+                    </button>
                 </div>
-            ` : ''}
+            </div>
 
-            <!-- 감정 선택 (항상 표시) -->
-            <div class="emotion-check-area px-4">
-                <p class="text-center text-sm text-gray-500 mb-4">
-                    ${hasEmotionsToday ? '💭 지금 기분도 알려줘!' : '오늘 기분을 펫에게 알려주세요'}
-                </p>
-
-                <!-- 감정 버튼들 -->
-                <div class="flex justify-center gap-3 mb-6" id="emotionButtons">
-                    ${Object.entries(EMOTION_TYPES).map(([key, emotion]) => `
-                        <button
-                            class="emotion-select-btn w-14 h-14 rounded-full bg-gray-50 hover:bg-gray-100 flex items-center justify-center text-3xl transition-all border-3 border-transparent hover:scale-110"
-                            data-emotion="${key}"
-                            title="${emotion.name}"
-                        >
-                            ${emotion.icon}
-                        </button>
-                    `).join('')}
-                </div>
-
-                <!-- 감정 선택 이유 -->
-                <div class="mb-4">
-                    <textarea
-                        id="petMemo"
-                        class="w-full p-4 border-2 border-gray-200 rounded-2xl resize-none focus:border-primary focus:ring-0 transition-colors"
-                        rows="3"
-                        placeholder="그 감정을 선택한 이유는 뭘까? 왜 그런 감정을 느꼈어?"
-                    ></textarea>
-                </div>
-
-                <!-- 전송 버튼 -->
-                <button
-                    id="sendEmotionBtn"
-                    class="w-full liquid-btn-student"
-                    disabled
-                >
-                    펫에게 말하기
-                </button>
+            <!-- 기록 보기 탭 -->
+            <div id="historyContent" class="${currentStudentTab !== 'history' ? 'hidden' : ''}">
+                ${renderHistoryTab(student, petEmoji, petName)}
             </div>
 
             ${isMaxLevel(student.level) ? `
@@ -295,6 +316,30 @@ export function afterRender() {
             }
         });
     }
+
+    // 탭 전환
+    document.getElementById('tabSendEmotion')?.addEventListener('click', () => {
+        currentStudentTab = 'send';
+        router.handleRoute();
+    });
+    document.getElementById('tabHistory')?.addEventListener('click', () => {
+        currentStudentTab = 'history';
+        router.handleRoute();
+    });
+
+    // 기록 보기 날짜 네비게이션
+    document.getElementById('historyPrevDay')?.addEventListener('click', () => {
+        historyDate.setDate(historyDate.getDate() - 1);
+        router.handleRoute();
+    });
+    document.getElementById('historyNextDay')?.addEventListener('click', () => {
+        const tomorrow = new Date(historyDate);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        if (tomorrow <= new Date()) {
+            historyDate = tomorrow;
+            router.handleRoute();
+        }
+    });
 
     // 로그아웃 버튼
     const logoutBtn = document.getElementById('studentLogoutBtn');
@@ -756,4 +801,83 @@ function showNewPetSelectionModal() {
             document.body.removeChild(modalContent);
         }
     });
+}
+
+/**
+ * 기록 보기 탭 렌더링 (카톡 스타일)
+ */
+function renderHistoryTab(student, petEmoji, petName) {
+    const dateStr = historyDate.toISOString().split('T')[0];
+    const month = historyDate.getMonth() + 1;
+    const date = historyDate.getDate();
+    const days = ['일', '월', '화', '수', '목', '금', '토'];
+    const day = days[historyDate.getDay()];
+
+    const isToday = dateStr === new Date().toISOString().split('T')[0];
+
+    // 해당 날짜 감정 기록 필터
+    const allEmotions = store.getEmotionsByStudent(student.id);
+    const dayEmotions = allEmotions.filter(e => e.timestamp.startsWith(dateStr));
+
+    return `
+        <div class="px-4">
+            <!-- 날짜 네비게이션 -->
+            <div class="flex items-center justify-center gap-4 mb-4">
+                <button id="historyPrevDay" class="p-2 rounded-full hover:bg-gray-100 transition-colors">
+                    <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                </button>
+                <span class="text-base font-medium text-gray-800">${month}월 ${date}일 (${day})</span>
+                <button id="historyNextDay" class="p-2 rounded-full hover:bg-gray-100 transition-colors ${isToday ? 'opacity-30 cursor-not-allowed' : ''}">
+                    <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                </button>
+            </div>
+
+            <!-- 대화 내용 -->
+            <div class="space-y-4 pb-4">
+                ${dayEmotions.length > 0 ? dayEmotions.map(emotion => {
+                    const emotionTime = new Date(emotion.timestamp).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+                    const emotionIcon = EMOTION_TYPES[emotion.emotion]?.icon || '😊';
+                    const emotionName = EMOTION_TYPES[emotion.emotion]?.name || '';
+                    const hasReply = !!emotion.reply;
+                    const petSpeech = hasReply ? convertToPetSpeech(emotion.reply.message, student.petType, petName) : null;
+
+                    return `
+                        <!-- 내 메시지 (오른쪽) -->
+                        <div class="flex justify-end gap-2">
+                            <div class="flex flex-col items-end">
+                                <div class="bg-primary/10 rounded-2xl rounded-tr-sm p-3 max-w-[75%]">
+                                    <div class="flex items-center gap-1 mb-1">
+                                        <span class="text-lg">${emotionIcon}</span>
+                                        <span class="text-xs text-gray-500">${emotionName}</span>
+                                    </div>
+                                    ${(emotion.note || emotion.memo) ? `
+                                        <p class="text-sm text-gray-700">${emotion.note || emotion.memo}</p>
+                                    ` : ''}
+                                </div>
+                                <span class="text-xs text-gray-400 mt-1">${emotionTime}</span>
+                            </div>
+                        </div>
+
+                        ${hasReply ? `
+                            <!-- 선생님 답장 (왼쪽) -->
+                            <div class="flex justify-start gap-2">
+                                <span class="text-2xl flex-shrink-0 mt-1">${petEmoji}</span>
+                                <div class="flex flex-col">
+                                    <div class="bg-white rounded-2xl rounded-tl-sm p-3 max-w-[75%] shadow-sm border border-gray-100">
+                                        <p class="text-sm text-gray-700">${petSpeech.petMessage}</p>
+                                    </div>
+                                    <span class="text-xs text-gray-400 mt-1">${new Date(emotion.reply.timestamp).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</span>
+                                </div>
+                            </div>
+                        ` : ''}
+                    `;
+                }).join('') : `
+                    <div class="text-center py-12">
+                        <div class="text-4xl mb-3">📭</div>
+                        <p class="text-gray-400">이 날은 기록이 없어요</p>
+                    </div>
+                `}
+            </div>
+        </div>
+    `;
 }

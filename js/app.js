@@ -14,6 +14,7 @@ import * as StudentDetail from './components/StudentDetail.js';
 import * as Emotion from './components/Emotion.js';
 import * as Stats from './components/Stats.js';
 import * as Settings from './components/Settings.js';
+import * as PraiseManagement from './components/PraiseManagement.js';
 // showQuickPraise는 Dashboard에서 직접 import하여 사용
 import { showQuickPraise } from './components/QuickPraise.js'; // 전역 함수 등록용
 
@@ -29,6 +30,7 @@ import * as PetChat from './components/PetChat.js';
 import * as PetSelection from './components/PetSelection.js';
 import * as PetCollection from './components/PetCollection.js';
 import * as StudentTimetable from './components/StudentTimetable.js';
+import * as StudentPraise from './components/StudentPraise.js';
 
 // 유틸리티 임포트
 import { getPetEmoji, calculateLevel, getLevelUpMessage } from './utils/petLogic.js';
@@ -93,7 +95,7 @@ async function initApp() {
     } else {
         // 로그인되지 않은 상태에서 보호된 라우트 접근 시
         // student-login 등 학생 모드 라우트는 제외
-        const studentModeRoutes = ['student-login', 'student-main', 'student-chat', 'pet-selection', 'pet-collection', 'student-timetable'];
+        const studentModeRoutes = ['student-login', 'student-main', 'student-chat', 'pet-selection', 'pet-collection', 'student-timetable', 'student-praise'];
         const protectedRoutes = ['dashboard', 'timetable', 'petfarm', 'student/', 'emotion', 'stats', 'settings'];
         if (!studentModeRoutes.includes(currentHash) && protectedRoutes.some(r => currentHash.startsWith(r))) {
             console.log('🔄 초기 라우트: 로그인');
@@ -346,6 +348,17 @@ function initRouter() {
                 return html;
             }
         },
+        'praise': {
+            render: () => {
+                if (!store.isTeacherLoggedIn()) {
+                    setTimeout(() => router.navigate('login'), 0);
+                    return '<div class="text-center p-8">로그인이 필요합니다...</div>';
+                }
+                const html = PraiseManagement.render();
+                setTimeout(() => PraiseManagement.afterRender?.(), 0);
+                return html;
+            }
+        },
         'stats': {
             render: () => {
                 if (!store.isTeacherLoggedIn()) {
@@ -429,6 +442,18 @@ function initRouter() {
                 setTimeout(() => StudentTimetable.afterRender?.(), 0);
                 return html;
             }
+        },
+        'student-praise': {
+            render: () => {
+                if (!store.isStudentLoggedIn()) {
+                    setTimeout(() => router.navigate('student-login'), 0);
+                    return '<div class="text-center p-8">로그인이 필요합니다...</div>';
+                }
+                updateHeaderForStudentMode(true, true);
+                const html = StudentPraise.render();
+                setTimeout(() => StudentPraise.afterRender?.(), 0);
+                return html;
+            }
         }
     });
 
@@ -437,7 +462,7 @@ function initRouter() {
 
     // 라우트 변경 시 헤더 업데이트
     router.onRouteChange = (route, params) => {
-        const isStudentRoute = ['student-login', 'student-main', 'student-chat', 'pet-selection', 'pet-collection', 'student-timetable'].includes(route);
+        const isStudentRoute = ['student-login', 'student-main', 'student-chat', 'pet-selection', 'pet-collection', 'student-timetable', 'student-praise'].includes(route);
         const isLoginRoute = ['login', 'teacher-login', 'student-login', 'class-select'].includes(route);
 
         if (!isStudentRoute && !isLoginRoute) {
@@ -1238,7 +1263,7 @@ function updateUIVisibility(route) {
     const mobileDrawerOverlay = document.getElementById('mobileDrawerOverlay');
     const classInfoEl = document.getElementById('classInfo');
     const isLoginRoute = ['login', 'teacher-login', 'student-login', 'class-select'].includes(route);
-    const isStudentRoute = ['student-main', 'student-chat', 'pet-selection', 'pet-collection', 'student-timetable'].includes(route);
+    const isStudentRoute = ['student-main', 'student-chat', 'pet-selection', 'pet-collection', 'student-timetable', 'student-praise'].includes(route);
 
     if (isLoginRoute) {
         // 로그인 화면: 헤더, 툴바, 모바일 드로어 모두 숨김

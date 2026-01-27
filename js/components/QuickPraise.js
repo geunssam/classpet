@@ -50,7 +50,7 @@ export function showQuickPraise() {
             <div>
                 <label class="text-sm font-medium text-gray-700 mb-2 block">2. 칭찬 카테고리</label>
                 <div class="grid grid-cols-3 gap-2" id="categoryGrid">
-                    ${Object.entries(PRAISE_CATEGORIES).map(([key, cat]) => `
+                    ${Object.entries(store.getPraiseCategories()).map(([key, cat]) => `
                         <button class="category-select-btn category-btn" data-category="${key}">
                             <span class="text-xl">${cat.icon}</span>
                             <span class="text-xs mt-1">${cat.name}</span>
@@ -167,7 +167,7 @@ function updateGivePraiseBtn() {
         btn.disabled = !isValid;
 
         if (isValid) {
-            const cat = PRAISE_CATEGORIES[selectedCategory];
+            const cat = store.getPraiseCategories()[selectedCategory];
             btn.innerHTML = `${cat.icon} ${selectedStudents.size}명에게 칭찬하기`;
         } else {
             btn.innerHTML = '칭찬하기';
@@ -181,7 +181,7 @@ function updateGivePraiseBtn() {
 function executeQuickPraise() {
     if (selectedStudents.size === 0 || !selectedCategory) return;
 
-    const categoryInfo = PRAISE_CATEGORIES[selectedCategory];
+    const categoryInfo = store.getPraiseCategories()[selectedCategory];
     const expGain = categoryInfo.exp;
 
     let levelUpCount = 0;
