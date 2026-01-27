@@ -860,9 +860,10 @@ class Store {
                             replyAt: c.replyAt?.toDate?.()?.toISOString() || c.replyAt
                         }));
 
-                        // 학생 메시지: 최상위 note/memo 또는 conversations[0].studentMessage
+                        // 학생 메시지: conversations[0].studentMessage 최우선 (Firestore 정본)
                         const firstMessage = conversations[0]?.studentMessage || '';
-                        const noteText = e.note || e.memo || firstMessage;
+                        const noteText = firstMessage || e.note || e.memo || '';
+                        console.log(`감정 로드 [${e.studentName}]: studentMessage="${firstMessage}", note="${e.note}", memo="${e.memo}" → noteText="${noteText}"`);
 
                         // 교사 답장: 최상위 reply 또는 conversations의 마지막 teacherReply
                         const lastReply = [...conversations].reverse().find(c => c.teacherReply);
@@ -2086,6 +2087,75 @@ class Store {
         } else {
             this.addToOfflineQueue({ type: 'saveEmotion', teacherUid, classId, data: emotion });
         }
+    }
+
+    /**
+     * 오늘 감정 기록 실시간 구독 (Firebase → 로컬 머지 + 알림 생성)
+     */
+    subscribeToTodayEmotions(callback) {
+        const teacherUid = this.getCurrentTeacherUid();
+        const classId = this.getCurrentClassId();
+        if (!teacherUid || !classId || !this.firebaseEnabled) return null;
+
+        return firebase.subscribeToTodayEmotions(teacherUid, classId, (firebaseEmotions) => {
+            // Firebase 데이터를 로컬 형식으로 변환 후 머지
+            const localLog = this.getEmotionLog() || [];
+            const existingFirebaseIds = new Set(localLog.map(e => e.firebaseId).filter(Boolean));
+            let hasNew = false;
+
+            firebaseEmotions.forEach(fe => {
+                if (existingFirebaseIds.has(fe.id)) {
+                    // 기존 데이터 업데이트 (conversations 등)
+                    const idx = localLog.findIndex(e => e.firebaseId === fe.id);
+                    if (idx !== -1) {
+                        const conversations = (fe.conversations || []).map(c => ({
+                            ...c,
+                            studentAt: c.studentAt?.toDate?.()?.toISOString() || c.studentAt,
+                            replyAt: c.replyAt?.toDate?.()?.toISOString() || c.replyAt
+                        }));
+                        const firstMessage = conversations[0]?.studentMessage || '';
+                        const noteText = firstMessage || fe.note || fe.memo || '';
+                        localLog[idx].conversations = conversations;
+                        localLog[idx].note = noteText;
+                        localLog[idx].memo = noteText;
+                        localLog[idx].emotion = fe.emotion;
+                        localLog[idx].source = fe.source || localLog[idx].source;
+                    }
+                } else {
+                    // 새 데이터 추가
+                    const conversations = (fe.conversations || []).map(c => ({
+                        ...c,
+                        studentAt: c.studentAt?.toDate?.()?.toISOString() || c.studentAt,
+                        replyAt: c.replyAt?.toDate?.()?.toISOString() || c.replyAt
+                    }));
+                    const firstMessage = conversations[0]?.studentMessage || '';
+                    const noteText = firstMessage || fe.note || fe.memo || '';
+                    const newEmotion = {
+                        id: Date.now() + Math.random(),
+                        firebaseId: fe.id,
+                        timestamp: fe.timestamp || fe.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
+                        studentId: fe.studentId,
+                        studentName: fe.studentName,
+                        studentNumber: fe.studentNumber,
+                        emotion: fe.emotion,
+                        note: noteText,
+                        memo: noteText,
+                        source: fe.source || 'student',
+                        conversations
+                    };
+                    localLog.unshift(newEmotion);
+                    hasNew = true;
+
+                    // 학생이 보낸 감정이면 알림 생성
+                    if (fe.source === 'student') {
+                        this.createEmotionNotification(fe.studentId, fe.emotion, noteText);
+                    }
+                }
+            });
+
+            this.saveEmotionLog(localLog);
+            callback(localLog);
+        });
     }
 
     getEmotionsByStudent(studentId) {

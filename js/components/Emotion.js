@@ -655,18 +655,31 @@ function setupFirebaseSubscription() {
         emotionsUnsubscribe = store.subscribeToTodayEmotions((emotions) => {
             console.log('실시간 감정 업데이트:', emotions.length, '개');
 
-            // 화면 갱신 (현재 탭 유지)
+            // 화면 갱신 (현재 탭·채팅방 상태 유지)
             const content = document.getElementById('content');
             if (content) {
                 content.innerHTML = render();
                 // 실시간 구독 다시 설정하지 않음 (무한 루프 방지)
+                // 탭 전환 + 채팅방 이벤트만 바인딩
                 document.querySelectorAll('.tab-item').forEach(tab => {
                     tab.addEventListener('click', () => {
                         viewMode = tab.dataset.view;
+                        if (tab.dataset.view === 'history') {
+                            historySubView = 'chatList';
+                            selectedChatStudentId = null;
+                        }
                         content.innerHTML = render();
                         afterRender();
                     });
                 });
+                // 채팅방 뒤로가기
+                const backBtn = document.getElementById('backToChatListBtn');
+                if (backBtn) backBtn.addEventListener('click', backToChatList);
+                // 채팅방 스크롤 유지
+                if (historySubView === 'chatRoom') {
+                    const timeline = document.getElementById('chatTimeline');
+                    if (timeline) timeline.scrollTop = timeline.scrollHeight;
+                }
             }
         });
     }
