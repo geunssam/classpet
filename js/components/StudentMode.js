@@ -380,6 +380,8 @@ export function afterRender() {
                 // 감정 저장 (Firebase 동기화 포함)
                 await store.addEmotion({
                     studentId: student.id,
+                    studentName: student.name,
+                    studentNumber: student.number,
                     emotion: selectedEmotion,
                     memo: memo,
                     source: 'student'

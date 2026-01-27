@@ -809,8 +809,8 @@ export async function saveEmotion(teacherUid, classId, emotion) {
 
         const emotionData = {
             studentId: emotion.studentId,
-            studentName: emotion.studentName,
-            studentNumber: emotion.studentNumber,
+            studentName: emotion.studentName || '',
+            studentNumber: emotion.studentNumber || 0,
             emotion: emotion.emotion,
             date: emotion.timestamp?.split('T')[0] || now.split('T')[0],
             // collectionGroup 쿼리용 필드
