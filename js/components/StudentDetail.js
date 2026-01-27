@@ -101,7 +101,7 @@ export function render(params) {
                         </div>
                     </div>
 
-                    <button onclick="window.classpet.showEditStudent(${student.id})" class="text-gray-400 hover:text-gray-600">
+                    <button onclick="window.classpet.showEditStudent('${student.id}')" class="text-gray-400 hover:text-gray-600">
                         ⚙️
                     </button>
                 </div>
@@ -149,7 +149,7 @@ export function render(params) {
                         <div class="text-xs text-gray-400">${formatDate(recentEmotion.timestamp)}</div>
                     </div>
                 </div>
-                <button onclick="window.classpet.showEmotionCheck(${student.id})" class="btn btn-secondary text-sm">
+                <button onclick="window.classpet.showEmotionCheck('${student.id}')" class="btn btn-secondary text-sm">
                     업데이트
                 </button>
             </div>
@@ -159,7 +159,7 @@ export function render(params) {
                     <span class="text-3xl">💭</span>
                     <div class="text-gray-500">오늘 감정을 체크해주세요</div>
                 </div>
-                <button onclick="window.classpet.showEmotionCheck(${student.id})" class="btn btn-primary text-sm">
+                <button onclick="window.classpet.showEmotionCheck('${student.id}')" class="btn btn-primary text-sm">
                     체크하기
                 </button>
             </div>

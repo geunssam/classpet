@@ -175,7 +175,7 @@ export function render() {
                 <div class="grid grid-cols-2 gap-2">
                     ${students.slice(0, 6).map(student => `
                     <div class="flex items-center bg-cream rounded-xl px-2 py-2 cursor-pointer hover:bg-cream-dark transition-colors"
-                         onclick="window.classpet.router.navigate('student', { id: ${student.id} })">
+                         onclick="window.classpet.router.navigate('student', { id: '${student.id}' })">
                         <span class="text-xl w-8 text-left">${getPetEmoji(student.petType, student.level || 1)}</span>
                         <span class="text-sm font-semibold flex-1 text-center truncate">${student.name}</span>
                         <span class="text-xs text-gray-500 w-10 text-right">Lv.${student.level || 1}</span>
@@ -200,7 +200,7 @@ export function render() {
                 <div class="flex flex-wrap gap-2">
                     ${almostLevelUp.map(student => `
                     <div class="flex items-center gap-2 bg-white rounded-full px-3 py-1 cursor-pointer hover:bg-gray-50"
-                         onclick="window.classpet.router.navigate('student', { id: ${student.id} })">
+                         onclick="window.classpet.router.navigate('student', { id: '${student.id}' })">
                         <span class="text-lg">${getPetEmoji(student.petType, student.level)}</span>
                         <span class="text-sm font-medium">${student.name}</span>
                         <span class="text-xs text-gray-400">${getExpProgress(student.exp, student.level)}%</span>

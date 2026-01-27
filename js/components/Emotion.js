@@ -86,7 +86,7 @@ export function render() {
                         const emotionInfo = emotion ? EMOTION_TYPES[emotion.emotion] : null;
                         return `
                         <div class="bg-white rounded-xl p-3 cursor-pointer hover:bg-gray-50"
-                             onclick="window.classpet.router.navigate('student', { id: ${student.id} })">
+                             onclick="window.classpet.router.navigate('student', { id: '${student.id}' })">
                             <div class="flex items-center gap-3">
                                 <span class="text-2xl">${getPetEmoji(student.petType, student.level)}</span>
                                 <div class="flex-1">
@@ -137,7 +137,7 @@ function renderCheckinView(students, checkedIds) {
                 <h3 class="text-sm font-medium text-gray-600 mb-2">체크 필요 (${uncheckedStudents.length}명)</h3>
                 <div class="grid grid-cols-4 gap-2">
                     ${uncheckedStudents.map(student => `
-                        <button class="pet-card py-3" onclick="window.classpet.showEmotionCheck(${student.id})">
+                        <button class="pet-card py-3" onclick="window.classpet.showEmotionCheck('${student.id}')">
                             <span class="text-2xl">${getPetEmoji(student.petType, student.level)}</span>
                             <div class="text-xs mt-1 truncate">${student.name}</div>
                             <div class="text-xs text-gray-400 mt-0.5">미체크</div>
@@ -157,7 +157,7 @@ function renderCheckinView(students, checkedIds) {
                         const emotionInfo = emotion ? EMOTION_TYPES[emotion.emotion] : null;
                         return `
                         <div class="bg-white rounded-xl p-3 flex items-start gap-3 cursor-pointer hover:bg-gray-50"
-                             onclick="window.classpet.showEmotionCheck(${student.id})">
+                             onclick="window.classpet.showEmotionCheck('${student.id}')">
                             <div class="relative flex-shrink-0">
                                 <span class="text-2xl">${getPetEmoji(student.petType, student.level)}</span>
                                 ${emotionInfo ? `<span class="absolute -top-1 -right-1 text-lg">${emotionInfo.icon}</span>` : ''}
@@ -250,7 +250,7 @@ function renderHistoryView(students) {
 
                         return `
                             <div class="bg-white rounded-xl p-3 cursor-pointer hover:bg-gray-50"
-                                 onclick="window.classpet.showEmotionCheck(${student.id}, '${emotion.id}')">
+                                 onclick="window.classpet.showEmotionCheck('${student.id}', '${emotion.id}')">
                                 <div class="flex items-center gap-3">
                                     <span class="text-2xl">${getPetEmoji(student.petType, student.level)}</span>
                                     <div class="flex-1">

@@ -72,7 +72,7 @@ export function render() {
                     ${rankedStudents.map((student, index) => {
                         const medals = ['🥇', '🥈', '🥉'];
                         return `
-                        <div class="ranking-card" onclick="window.classpet.router.navigate('student', { id: ${student.id} })">
+                        <div class="ranking-card" onclick="window.classpet.router.navigate('student', { id: '${student.id}' })">
                             <span class="ranking-col-rank text-xl">${index < 3 ? medals[index] : (index + 1)}</span>
                             <span class="ranking-col-emoji text-xl">${getPetEmoji(student.petType, student.level)}</span>
                             <span class="ranking-col-number">${student.number}</span>
