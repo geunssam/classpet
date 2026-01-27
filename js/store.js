@@ -852,23 +852,40 @@ class Store {
             try {
                 const emotions = await firebase.getAllEmotions(teacherUid, classId);
                 if (emotions && emotions.length > 0) {
-                    emotionLog = emotions.map(e => ({
-                        id: e.id || Date.now(),
-                        timestamp: e.timestamp || e.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
-                        studentId: e.studentId,
-                        studentName: e.studentName,
-                        studentNumber: e.studentNumber,
-                        emotion: e.emotion,
-                        note: e.note || e.memo || '',
-                        memo: e.memo || e.note || '',
-                        source: e.source || 'student',
-                        conversations: (e.conversations || []).map(c => ({
+                    emotionLog = emotions.map(e => {
+                        // conversations에서 Timestamp 변환
+                        const conversations = (e.conversations || []).map(c => ({
                             ...c,
                             studentAt: c.studentAt?.toDate?.()?.toISOString() || c.studentAt,
                             replyAt: c.replyAt?.toDate?.()?.toISOString() || c.replyAt
-                        })),
-                        reply: e.reply || null
-                    }));
+                        }));
+
+                        // 학생 메시지: 최상위 note/memo 또는 conversations[0].studentMessage
+                        const firstMessage = conversations[0]?.studentMessage || '';
+                        const noteText = e.note || e.memo || firstMessage;
+
+                        // 교사 답장: 최상위 reply 또는 conversations의 마지막 teacherReply
+                        const lastReply = [...conversations].reverse().find(c => c.teacherReply);
+                        const replyData = e.reply || (lastReply ? {
+                            message: lastReply.teacherReply,
+                            timestamp: lastReply.replyAt,
+                            read: lastReply.read ?? false
+                        } : null);
+
+                        return {
+                            id: e.id || Date.now(),
+                            timestamp: e.timestamp || e.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
+                            studentId: e.studentId,
+                            studentName: e.studentName,
+                            studentNumber: e.studentNumber,
+                            emotion: e.emotion,
+                            note: noteText,
+                            memo: noteText,
+                            source: e.source || 'student',
+                            conversations,
+                            reply: replyData
+                        };
+                    });
                     console.log(`Firebase에서 ${emotionLog.length}개의 감정 로드 완료`);
                 }
             } catch (emotionError) {
