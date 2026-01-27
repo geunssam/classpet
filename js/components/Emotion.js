@@ -250,7 +250,7 @@ function renderHistoryView(students) {
 
                         return `
                             <div class="bg-white rounded-xl p-3 cursor-pointer hover:bg-gray-50"
-                                 onclick="window.classpet.showEmotionCheck(${student.id}, ${emotion.id})">
+                                 onclick="window.classpet.showEmotionCheck(${student.id}, '${emotion.id}')">
                                 <div class="flex items-center gap-3">
                                     <span class="text-2xl">${getPetEmoji(student.petType, student.level)}</span>
                                     <div class="flex-1">
