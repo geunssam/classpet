@@ -972,6 +972,7 @@ function registerGlobalFunctions() {
         // 감정 체크
         showEmotionCheck: Emotion.showEmotionCheck,
         showBulkEmotionCheck: Emotion.showBulkEmotionCheck,
+        openChatRoom: Emotion.openChatRoom,
 
         // 설정
         showSettings: Stats.showSettings,

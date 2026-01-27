@@ -13,14 +13,17 @@ let viewMode = 'checkin'; // 'checkin', 'history', 'attention'
 let emotionsUnsubscribe = null; // 실시간 구독 해제 함수
 let isFirebaseMode = false; // Firebase 모드 여부
 let selectedDate = new Date().toISOString().split('T')[0]; // 선택된 날짜 (기본: 오늘)
+let historySubView = 'chatList'; // 'chatList' | 'chatRoom'
+let selectedChatStudentId = null;
 
 export function render() {
     // sessionStorage에서 외부 날짜 파라미터 확인
     const externalDate = sessionStorage.getItem('emotionHistoryDate');
     if (externalDate) {
-        // 파라미터가 있으면 히스토리 뷰로 전환하고 해당 날짜 설정
+        // 파라미터가 있으면 히스토리 뷰로 전환하고 채팅 목록으로 리셋
         selectedDate = externalDate;
         viewMode = 'history';
+        historySubView = 'chatList';
         // 사용 후 즉시 삭제 (일회성)
         sessionStorage.removeItem('emotionHistoryDate');
     }
@@ -198,90 +201,339 @@ function renderCheckinView(students, checkedIds) {
 }
 
 /**
- * 기록 보기 뷰 (날짜 선택 가능)
+ * 기록 보기 뷰 — 채팅방 목록 / 채팅방 분기
  */
 function renderHistoryView(students) {
-    const today = new Date().toISOString().split('T')[0];
-    const isToday = selectedDate === today;
+    if (historySubView === 'chatRoom' && selectedChatStudentId) {
+        return renderChatRoom(students);
+    }
+    return renderChatRoomList(students);
+}
 
-    // 선택된 날짜의 감정 기록 가져오기
+/**
+ * 채팅방 목록 (카카오톡 채팅 리스트 스타일)
+ */
+function renderChatRoomList(students) {
     const emotionLog = store.getEmotionLog() || [];
-    const dateEmotions = emotionLog.filter(e => e.timestamp.startsWith(selectedDate));
 
-    // 날짜 표시 포맷
-    const displayDate = new Date(selectedDate + 'T00:00:00');
-    const dateStr = displayDate.toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'short' });
+    // 학생별 그룹핑: 각 학생의 마지막 감정 기록 + 미답장 카운트
+    const studentMap = {};
+    emotionLog.forEach(e => {
+        const sid = e.studentId;
+        if (!studentMap[sid]) {
+            studentMap[sid] = { lastEmotion: e, unreadCount: 0 };
+        }
+        // 최신 기록이 먼저 (emotionLog는 unshift로 추가되므로 첫 번째가 최신)
+        // 미답장 카운트: conversations에서 teacherReply가 없는 항목
+        const convos = e.conversations || [];
+        convos.forEach(c => {
+            if (c.studentMessage && !c.teacherReply) {
+                studentMap[sid].unreadCount++;
+            }
+        });
+        // reply 기반 호환 (conversations가 없는 옛 데이터)
+        if (!e.conversations?.length && e.source === 'student' && !e.reply) {
+            studentMap[sid].unreadCount++;
+        }
+    });
+
+    // 최신 메시지순 정렬
+    const sortedStudents = Object.entries(studentMap)
+        .map(([sid, data]) => {
+            const student = students.find(s => String(s.id) === String(sid));
+            return student ? { student, ...data } : null;
+        })
+        .filter(Boolean)
+        .sort((a, b) => new Date(b.lastEmotion.timestamp) - new Date(a.lastEmotion.timestamp));
+
+    if (sortedStudents.length === 0) {
+        return `
+            <div class="empty-state py-8">
+                <div class="text-3xl mb-2">💬</div>
+                <div class="text-gray-500">아직 감정 기록이 없어요</div>
+            </div>
+        `;
+    }
 
     return `
-        <div class="space-y-3">
-            <!-- 날짜 선택 -->
-            <div class="flex items-center justify-between bg-white rounded-xl p-3">
-                <button id="prevDateBtn" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-600">
-                    ←
-                </button>
-                <div class="flex items-center gap-2">
-                    <input type="date" id="datePicker" value="${selectedDate}" max="${today}"
-                           class="text-center font-medium text-gray-700 bg-transparent border-none cursor-pointer" />
-                    ${isToday ? '<span class="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">오늘</span>' : ''}
-                </div>
-                <button id="nextDateBtn" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-600 ${isToday ? 'opacity-30 cursor-not-allowed' : ''}">
-                    →
-                </button>
-            </div>
+        <div class="space-y-1">
+            ${sortedStudents.map(({ student, lastEmotion, unreadCount }) => {
+                const emotionInfo = EMOTION_TYPES[lastEmotion.emotion];
+                const lastConvo = lastEmotion.conversations?.slice(-1)[0];
+                // 미리보기: 마지막 대화 내용
+                let preview = '';
+                if (lastConvo?.teacherReply) {
+                    preview = `나: ${lastConvo.teacherReply}`;
+                } else if (lastConvo?.studentMessage) {
+                    preview = lastConvo.studentMessage;
+                } else if (lastEmotion.note || lastEmotion.memo) {
+                    preview = lastEmotion.note || lastEmotion.memo;
+                } else {
+                    preview = emotionInfo ? `${emotionInfo.icon} ${emotionInfo.name}` : '기록 있음';
+                }
+                // 미리보기 길이 제한
+                if (preview.length > 25) preview = preview.slice(0, 25) + '…';
 
-            <!-- 해당 날짜 요약 -->
-            <div class="bg-gray-50 rounded-xl p-3 text-center">
-                <span class="text-sm text-gray-500">총 </span>
-                <span class="font-bold text-primary">${dateEmotions.length}</span>
-                <span class="text-sm text-gray-500">명이 마음을 기록했어요</span>
-            </div>
-
-            ${dateEmotions.length === 0 ? `
-                <div class="empty-state py-8">
-                    <div class="text-3xl mb-2">💭</div>
-                    <div class="text-gray-500">${isToday ? '오늘' : dateStr} 감정 기록이 없어요</div>
-                </div>
-            ` : `
-                <div class="space-y-3">
-                    ${dateEmotions.map(emotion => {
-                        const student = students.find(s => s.id === emotion.studentId);
-                        const emotionInfo = EMOTION_TYPES[emotion.emotion];
-                        if (!student || !emotionInfo) return '';
-
-                        return `
-                            <div class="bg-white rounded-xl p-3 cursor-pointer hover:bg-gray-50"
-                                 onclick="window.classpet.showEmotionCheck('${student.id}', '${emotion.id}')">
-                                <div class="flex items-center gap-3">
-                                    <span class="text-2xl">${getPetEmoji(student.petType, student.level)}</span>
-                                    <div class="flex-1">
-                                        <div class="flex items-center gap-2">
-                                            <span class="font-medium">${student.name}</span>
-                                            <span class="text-xl">${emotionInfo.icon}</span>
-                                        </div>
-                                        ${emotion.source === 'student' ? '<span class="text-xs text-blue-500">학생 입력</span>' : ''}
-                                    </div>
-                                    <div class="text-xs text-gray-400">
-                                        ${new Date(emotion.timestamp).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
-                                    </div>
-                                </div>
-                                ${(emotion.note || emotion.memo) ? `
-                                    <div class="mt-2 text-sm text-gray-600 bg-gray-50 rounded-lg p-2">
-                                        💬 "${emotion.note || emotion.memo}"
-                                    </div>
-                                ` : ''}
-                                ${emotion.reply ? `
-                                    <div class="mt-2 text-sm text-green-700 bg-green-50 rounded-lg p-2">
-                                        💌 선생님: "${emotion.reply.message}"
-                                        <span class="text-xs text-gray-400 ml-1">${emotion.reply.read ? '(읽음)' : '(안읽음)'}</span>
-                                    </div>
+                return `
+                    <div class="flex items-center gap-3 bg-white rounded-xl p-3 cursor-pointer hover:bg-gray-50 active:bg-gray-100 transition-colors"
+                         onclick="window.classpet.openChatRoom('${student.id}')">
+                        <div class="relative flex-shrink-0">
+                            <span class="text-3xl">${getPetEmoji(student.petType, student.level)}</span>
+                            ${emotionInfo ? `<span class="absolute -bottom-1 -right-1 text-sm">${emotionInfo.icon}</span>` : ''}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center justify-between">
+                                <span class="font-medium text-sm">${student.name}</span>
+                                <span class="text-xs text-gray-400">${formatChatTime(lastEmotion.timestamp)}</span>
+                            </div>
+                            <div class="flex items-center justify-between mt-0.5">
+                                <span class="text-xs text-gray-500 truncate pr-2">${preview}</span>
+                                ${unreadCount > 0 ? `
+                                    <span class="flex-shrink-0 bg-red-500 text-white text-xs font-bold rounded-full min-w-[20px] h-5 flex items-center justify-center px-1.5">
+                                        ${unreadCount}
+                                    </span>
                                 ` : ''}
                             </div>
-                        `;
-                    }).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('')}
+        </div>
+    `;
+}
+
+/**
+ * 채팅방 뷰 (카카오톡 대화방 스타일)
+ */
+function renderChatRoom(students) {
+    const student = students.find(s => String(s.id) === String(selectedChatStudentId));
+    if (!student) {
+        historySubView = 'chatList';
+        return renderChatRoomList(students);
+    }
+
+    const emotions = store.getEmotionsByStudent(student.id)
+        .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+    // 미답장 메시지 존재 여부 확인
+    let hasUnreplied = false;
+    let lastUnrepliedEmotionId = null;
+    let lastUnrepliedConvoIndex = -1;
+    emotions.forEach(e => {
+        const convos = e.conversations || [];
+        convos.forEach((c, ci) => {
+            if (c.studentMessage && !c.teacherReply) {
+                hasUnreplied = true;
+                lastUnrepliedEmotionId = e.id || e.firebaseId;
+                lastUnrepliedConvoIndex = ci;
+            }
+        });
+        // 구 데이터 호환
+        if (!e.conversations?.length && e.source === 'student' && !e.reply) {
+            hasUnreplied = true;
+            lastUnrepliedEmotionId = e.id || e.firebaseId;
+            lastUnrepliedConvoIndex = -1;
+        }
+    });
+
+    return `
+        <div class="flex flex-col" style="min-height: 300px;">
+            <!-- 채팅방 헤더 -->
+            <div class="flex items-center gap-3 bg-white rounded-xl p-3 mb-2">
+                <button id="backToChatListBtn" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-600 text-lg">
+                    ←
+                </button>
+                <span class="text-2xl">${getPetEmoji(student.petType, student.level)}</span>
+                <span class="font-bold">${student.name}</span>
+            </div>
+
+            <!-- 타임라인 -->
+            <div id="chatTimeline" class="flex-1 overflow-y-auto space-y-2 px-2 pb-2" style="max-height: 55vh;">
+                ${renderTimeline(emotions, student)}
+            </div>
+
+            <!-- 답장 입력창 -->
+            ${hasUnreplied ? `
+                <div class="bg-white rounded-xl p-3 mt-2 flex items-center gap-2">
+                    <input type="text" id="chatReplyInput" class="flex-1 border border-gray-200 rounded-full px-4 py-2 text-sm focus:outline-none focus:border-primary"
+                           placeholder="답장을 입력하세요..."
+                           data-emotion-id="${lastUnrepliedEmotionId}"
+                           data-convo-index="${lastUnrepliedConvoIndex}" />
+                    <button id="chatSendBtn" class="w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center hover:bg-primary/90 flex-shrink-0">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                    </button>
+                </div>
+            ` : `
+                <div class="bg-gray-50 rounded-xl p-3 mt-2 text-center text-sm text-gray-400">
+                    모든 메시지에 답장 완료
                 </div>
             `}
         </div>
     `;
+}
+
+/**
+ * 타임라인 렌더링 (날짜 구분선 + 감정 태그 + 말풍선)
+ */
+function renderTimeline(emotions, student) {
+    if (emotions.length === 0) {
+        return `
+            <div class="text-center py-8 text-gray-400">
+                <div class="text-3xl mb-2">💬</div>
+                <div>아직 대화가 없어요</div>
+            </div>
+        `;
+    }
+
+    let html = '';
+    let lastDateStr = '';
+
+    emotions.forEach(e => {
+        const emotionInfo = EMOTION_TYPES[e.emotion];
+        const dateObj = new Date(e.timestamp);
+        const dateStr = dateObj.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' });
+
+        // 날짜 구분선
+        if (dateStr !== lastDateStr) {
+            html += `
+                <div class="flex items-center justify-center my-3">
+                    <span class="bg-gray-200 text-gray-500 text-xs px-3 py-1 rounded-full">${dateStr}</span>
+                </div>
+            `;
+            lastDateStr = dateStr;
+        }
+
+        // 감정 태그
+        if (emotionInfo) {
+            html += `
+                <div class="flex justify-center my-1">
+                    <span class="text-xs px-2 py-0.5 rounded-full" style="background: ${emotionInfo.color}20; color: ${emotionInfo.color}">
+                        ${emotionInfo.icon} ${emotionInfo.name}
+                    </span>
+                </div>
+            `;
+        }
+
+        // conversations 기반 말풍선
+        const convos = e.conversations || [];
+        if (convos.length > 0) {
+            convos.forEach(c => {
+                // 학생 메시지 (왼쪽)
+                if (c.studentMessage) {
+                    const time = formatChatTime(c.studentAt || e.timestamp, true);
+                    html += `
+                        <div class="flex items-end gap-2 mb-2">
+                            <div class="max-w-[75%] bg-yellow-100 rounded-2xl rounded-tl-sm px-3 py-2">
+                                <p class="text-sm">${escapeHtml(c.studentMessage)}</p>
+                            </div>
+                            <span class="text-xs text-gray-400 flex-shrink-0">${time}</span>
+                        </div>
+                    `;
+                }
+                // 선생님 답장 (오른쪽)
+                if (c.teacherReply) {
+                    const time = formatChatTime(c.replyAt || e.timestamp, true);
+                    html += `
+                        <div class="flex items-end justify-end gap-2 mb-2">
+                            <span class="text-xs text-gray-400 flex-shrink-0">${time}</span>
+                            <div class="max-w-[75%] bg-primary text-white rounded-2xl rounded-tr-sm px-3 py-2">
+                                <p class="text-sm">${escapeHtml(c.teacherReply)}</p>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+        } else {
+            // 구 데이터 호환: conversations가 없는 경우
+            const msg = e.note || e.memo;
+            if (msg) {
+                const time = formatChatTime(e.timestamp, true);
+                html += `
+                    <div class="flex items-end gap-2 mb-2">
+                        <div class="max-w-[75%] bg-yellow-100 rounded-2xl rounded-tl-sm px-3 py-2">
+                            <p class="text-sm">${escapeHtml(msg)}</p>
+                        </div>
+                        <span class="text-xs text-gray-400 flex-shrink-0">${time}</span>
+                    </div>
+                `;
+            }
+            if (e.reply?.message) {
+                const time = formatChatTime(e.reply.timestamp || e.timestamp, true);
+                html += `
+                    <div class="flex items-end justify-end gap-2 mb-2">
+                        <span class="text-xs text-gray-400 flex-shrink-0">${time}</span>
+                        <div class="max-w-[75%] bg-primary text-white rounded-2xl rounded-tr-sm px-3 py-2">
+                            <p class="text-sm">${escapeHtml(e.reply.message)}</p>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+    });
+
+    return html;
+}
+
+/**
+ * 채팅 시간 포맷
+ * @param {string} timestamp - ISO string
+ * @param {boolean} timeOnly - true면 시간만 표시
+ */
+function formatChatTime(timestamp, timeOnly = false) {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const target = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const diffDays = Math.floor((today - target) / (1000 * 60 * 60 * 24));
+
+    const timeStr = date.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: true });
+
+    if (timeOnly) return timeStr;
+
+    if (diffDays === 0) return timeStr;
+    if (diffDays === 1) return '어제';
+    if (date.getFullYear() === now.getFullYear()) {
+        return date.toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' });
+    }
+    return `${date.getFullYear()}.${date.getMonth() + 1}.${date.getDate()}`;
+}
+
+/**
+ * HTML 이스케이프
+ */
+function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+/**
+ * 채팅방 열기
+ */
+export function openChatRoom(studentId) {
+    selectedChatStudentId = studentId;
+    historySubView = 'chatRoom';
+    const content = document.getElementById('content');
+    content.innerHTML = render();
+    afterRender();
+    // 스크롤 맨 아래로
+    setTimeout(() => {
+        const timeline = document.getElementById('chatTimeline');
+        if (timeline) timeline.scrollTop = timeline.scrollHeight;
+    }, 50);
+}
+
+/**
+ * 채팅방 목록으로 복귀
+ */
+function backToChatList() {
+    selectedChatStudentId = null;
+    historySubView = 'chatList';
+    const content = document.getElementById('content');
+    content.innerHTML = render();
+    afterRender();
 }
 
 export function afterRender() {
@@ -289,9 +541,10 @@ export function afterRender() {
     document.querySelectorAll('.tab-item').forEach(tab => {
         tab.addEventListener('click', () => {
             viewMode = tab.dataset.view;
-            // 기록 보기 탭으로 전환시 오늘 날짜로 초기화
+            // 기록 보기 탭으로 전환시 채팅 목록으로 초기화
             if (tab.dataset.view === 'history') {
-                selectedDate = new Date().toISOString().split('T')[0];
+                historySubView = 'chatList';
+                selectedChatStudentId = null;
             }
             const content = document.getElementById('content');
             content.innerHTML = render();
@@ -299,58 +552,59 @@ export function afterRender() {
         });
     });
 
-    // 날짜 선택 이벤트 (기록 보기 탭)
-    setupDateNavigation();
+    // 채팅방 뒤로가기 버튼
+    const backBtn = document.getElementById('backToChatListBtn');
+    if (backBtn) {
+        backBtn.addEventListener('click', backToChatList);
+    }
+
+    // 채팅방 답장 전송
+    const sendBtn = document.getElementById('chatSendBtn');
+    const replyInput = document.getElementById('chatReplyInput');
+    if (sendBtn && replyInput) {
+        const sendReply = () => {
+            const message = replyInput.value.trim();
+            if (!message) return;
+
+            const emotionId = replyInput.dataset.emotionId;
+            const convoIndex = parseInt(replyInput.dataset.convoIndex);
+
+            store.addReplyToEmotion(emotionId, message, convoIndex);
+
+            const students = store.getStudents() || [];
+            const student = students.find(s => String(s.id) === String(selectedChatStudentId));
+            showToast(`${student?.name || '학생'}에게 답장을 보냈어요! 💌`, 'success');
+
+            // 리렌더
+            const content = document.getElementById('content');
+            content.innerHTML = render();
+            afterRender();
+            // 스크롤 맨 아래
+            setTimeout(() => {
+                const timeline = document.getElementById('chatTimeline');
+                if (timeline) timeline.scrollTop = timeline.scrollHeight;
+            }, 50);
+        };
+
+        sendBtn.addEventListener('click', sendReply);
+        replyInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendReply();
+            }
+        });
+    }
+
+    // 채팅방 타임라인 스크롤 맨 아래
+    if (historySubView === 'chatRoom') {
+        const timeline = document.getElementById('chatTimeline');
+        if (timeline) timeline.scrollTop = timeline.scrollHeight;
+    }
 
     // Firebase 실시간 구독 설정
     setupFirebaseSubscription();
 }
 
-/**
- * 날짜 네비게이션 설정
- */
-function setupDateNavigation() {
-    const prevBtn = document.getElementById('prevDateBtn');
-    const nextBtn = document.getElementById('nextDateBtn');
-    const datePicker = document.getElementById('datePicker');
-
-    if (prevBtn) {
-        prevBtn.addEventListener('click', () => {
-            const current = new Date(selectedDate);
-            current.setDate(current.getDate() - 1);
-            selectedDate = current.toISOString().split('T')[0];
-            refreshHistoryView();
-        });
-    }
-
-    if (nextBtn) {
-        nextBtn.addEventListener('click', () => {
-            const today = new Date().toISOString().split('T')[0];
-            if (selectedDate >= today) return; // 오늘 이후로는 이동 불가
-
-            const current = new Date(selectedDate);
-            current.setDate(current.getDate() + 1);
-            selectedDate = current.toISOString().split('T')[0];
-            refreshHistoryView();
-        });
-    }
-
-    if (datePicker) {
-        datePicker.addEventListener('change', (e) => {
-            selectedDate = e.target.value;
-            refreshHistoryView();
-        });
-    }
-}
-
-/**
- * 기록 보기 뷰만 새로고침
- */
-function refreshHistoryView() {
-    const content = document.getElementById('content');
-    content.innerHTML = render();
-    afterRender();
-}
 
 /**
  * Firebase 실시간 구독 설정
