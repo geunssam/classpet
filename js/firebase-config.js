@@ -1084,6 +1084,40 @@ export function subscribeToTodayEmotions(teacherUid, classId, callback) {
 }
 
 /**
+ * 특정 학생의 감정 기록 실시간 구독
+ * 학생 모드에서 교사 답장을 실시간으로 반영하기 위해 사용
+ */
+export function subscribeToStudentEmotions(teacherUid, classId, studentId, callback) {
+    if (!db) return null;
+
+    const uid = teacherUid || getCurrentTeacherUid();
+    const cId = classId || getCurrentClassId();
+
+    if (!uid || !cId || !studentId) return null;
+
+    try {
+        const emotionsRef = collection(db, 'teachers', uid, 'classes', cId, 'students', String(studentId), 'emotions');
+        const q = query(emotionsRef, orderBy('createdAt', 'desc'));
+
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const emotions = [];
+            snapshot.forEach(doc => {
+                emotions.push({ id: doc.id, ...doc.data() });
+            });
+            callback(emotions);
+        }, (error) => {
+            console.error('학생 감정 구독 오류:', error);
+        });
+
+        unsubscribeFunctions.push(unsubscribe);
+        return unsubscribe;
+    } catch (error) {
+        console.error('학생 감정 구독 실패:', error);
+        return null;
+    }
+}
+
+/**
  * 모든 감정 기록 가져오기 (계층 구조)
  */
 export async function getAllEmotions(teacherUid, classId, limitCount = 500) {

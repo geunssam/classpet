@@ -11,6 +11,7 @@ import { getNameWithSuffix } from '../utils/nameUtils.js';
 
 let currentStudentTab = 'send'; // 'send' | 'history'
 let historyDate = new Date();
+let studentEmotionsUnsubscribe = null; // Firebase 실시간 구독 해제 함수
 
 /**
  * 렌더링
@@ -111,15 +112,19 @@ export function render() {
                             <div class="space-y-3 max-h-64 overflow-y-auto">
                                 ${todayEmotions.map(emotion => {
                                     const emotionTime = new Date(emotion.timestamp).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
-                                    const hasReply = !!emotion.reply;
-                                    const petSpeech = hasReply ? convertToPetSpeech(emotion.reply.message, student.petType, petName) : null;
-                                    const petStyle = PET_SPEECH_STYLES[student.petType] || {};
+                                    // conversations에서 답장 찾기 (우선) → 없으면 reply 객체 호환
+                                    const convos = emotion.conversations || [];
+                                    const lastReplyConvo = convos.slice().reverse().find(c => c.teacherReply);
+                                    const replyMessage = lastReplyConvo?.teacherReply || emotion.reply?.message || null;
+                                    const replyRead = lastReplyConvo?.read ?? emotion.reply?.read ?? true;
+                                    const hasReply = !!replyMessage;
+                                    const petSpeech = hasReply ? convertToPetSpeech(replyMessage, student.petType, petName) : null;
                                     return `
                                     <div class="bg-white rounded-xl p-3 shadow-sm">
                                         <div class="flex items-center gap-2 mb-1">
                                             <span class="text-xl">${EMOTION_TYPES[emotion.emotion]?.icon || '😊'}</span>
                                             <span class="text-xs text-gray-400">${emotionTime}</span>
-                                            ${hasReply ? `<span class="ml-auto text-xs ${!emotion.reply.read ? 'text-red-500 font-bold' : 'text-green-500'}">💌 ${!emotion.reply.read ? 'NEW' : '답장 있음'}</span>` : ''}
+                                            ${hasReply ? `<span class="ml-auto text-xs ${!replyRead ? 'text-red-500 font-bold' : 'text-green-500'}">💌 ${!replyRead ? 'NEW' : '답장 있음'}</span>` : ''}
                                         </div>
                                         ${(emotion.note || emotion.memo) ? `
                                             <p class="text-sm text-gray-600 italic pl-7">"${emotion.note || emotion.memo}"</p>
@@ -366,49 +371,49 @@ export function afterRender() {
         });
     }
 
-    // 감정 버튼들
+    // 감정/전송 이벤트 바인딩
+    bindEmotionSendEvents();
+
+    // PIN 변경 기능
+    setupPinChangeModal();
+
+    // Firebase 실시간 구독 (교사 답장 반영)
+    setupStudentEmotionSubscription();
+}
+
+/**
+ * 감정 선택/전송 이벤트 바인딩
+ */
+function bindEmotionSendEvents() {
     const emotionButtons = document.querySelectorAll('.emotion-select-btn');
     const sendBtn = document.getElementById('sendEmotionBtn');
     const memoTextarea = document.getElementById('petMemo');
     let selectedEmotion = null;
 
-    // 전송 버튼 활성화 상태 체크 함수
     function updateSendButtonState() {
         const memoValue = memoTextarea?.value.trim() || '';
         const isValid = selectedEmotion && memoValue.length > 0;
-
-        if (sendBtn) {
-            sendBtn.disabled = !isValid;
-        }
+        if (sendBtn) sendBtn.disabled = !isValid;
     }
 
     emotionButtons.forEach(btn => {
         btn.addEventListener('click', () => {
-            // 이전 선택 해제
             emotionButtons.forEach(b => {
                 b.classList.remove('border-primary', 'bg-primary/10', 'scale-110');
                 b.classList.add('border-transparent');
             });
-
-            // 현재 선택
             btn.classList.remove('border-transparent');
             btn.classList.add('border-primary', 'bg-primary/10', 'scale-110');
             selectedEmotion = btn.dataset.emotion;
-
-            // 전송 버튼 상태 업데이트
             updateSendButtonState();
-
-            // 펫 미리 반응 (약한 반응)
             previewPetReaction(selectedEmotion);
         });
     });
 
-    // 메모 입력 시 전송 버튼 상태 업데이트
     if (memoTextarea) {
         memoTextarea.addEventListener('input', updateSendButtonState);
     }
 
-    // 전송 버튼
     if (sendBtn) {
         sendBtn.addEventListener('click', async () => {
             const memo = memoTextarea?.value.trim() || '';
@@ -417,12 +422,10 @@ export function afterRender() {
             const student = store.getCurrentStudent();
             if (!student) return;
 
-            // 버튼 비활성화 (중복 클릭 방지)
             sendBtn.disabled = true;
             sendBtn.textContent = '전송 중...';
 
             try {
-                // 감정 저장 (Firebase 동기화 포함)
                 await store.addEmotion({
                     studentId: student.id,
                     studentName: student.name,
@@ -431,22 +434,14 @@ export function afterRender() {
                     memo: memo,
                     source: 'student'
                 });
-
-                // 교사에게 알림 전송
                 store.createEmotionNotification(student.id, selectedEmotion, memo);
-
-                // 펫 경험치 +5 추가 (로컬 + Firebase pets 컬렉션 동기화)
                 const petResult = await store.addPetExp(student.id, 5);
-
-                // 펫 반응 애니메이션
                 showPetReaction(selectedEmotion);
 
-                // 레벨업 메시지
                 let resultMessage = '펫에게 마음을 전달했어요! +5 EXP';
                 if (petResult && petResult.levelUp) {
                     resultMessage = `🎉 레벨업! Lv.${petResult.newLevel} +5 EXP`;
                 }
-
                 sendBtn.textContent = resultMessage;
             } catch (error) {
                 console.error('감정 저장 실패:', error);
@@ -455,9 +450,91 @@ export function afterRender() {
             }
         });
     }
+}
 
-    // PIN 변경 기능
+/**
+ * 학생 감정 Firebase 실시간 구독 설정
+ * 교사가 답장하면 자동으로 로컬에 반영 + 화면 갱신
+ */
+function setupStudentEmotionSubscription() {
+    // 기존 구독 해제
+    if (studentEmotionsUnsubscribe) {
+        studentEmotionsUnsubscribe();
+        studentEmotionsUnsubscribe = null;
+    }
+
+    const student = store.getCurrentStudent();
+    if (!student || !store.isFirebaseEnabled() || !store.getClassCode()) return;
+
+    studentEmotionsUnsubscribe = store.subscribeToStudentEmotions(student.id, (emotions) => {
+        console.log('학생 감정 실시간 업데이트:', emotions.length, '개');
+        // 화면 갱신 (현재 탭 유지)
+        const content = document.getElementById('content');
+        if (content) {
+            content.innerHTML = render();
+            // 무한 루프 방지: 구독 재설정 없이 이벤트만 바인딩
+            afterRenderWithoutSubscription();
+        }
+    });
+}
+
+/**
+ * Firebase 구독 없이 이벤트만 바인딩 (실시간 업데이트 콜백용)
+ */
+function afterRenderWithoutSubscription() {
+    const student = store.getCurrentStudent();
+    if (student) {
+        const todayEmotions = store.getStudentTodayEmotions(student.id);
+        todayEmotions.forEach(emotion => {
+            if (emotion.reply && !emotion.reply.read) {
+                store.markReplyAsRead(emotion.id);
+            }
+        });
+    }
+
+    document.getElementById('tabSendEmotion')?.addEventListener('click', () => {
+        currentStudentTab = 'send';
+        router.handleRoute();
+    });
+    document.getElementById('tabHistory')?.addEventListener('click', () => {
+        currentStudentTab = 'history';
+        router.handleRoute();
+    });
+    document.getElementById('historyPrevDay')?.addEventListener('click', () => {
+        historyDate.setDate(historyDate.getDate() - 1);
+        router.handleRoute();
+    });
+    document.getElementById('historyNextDay')?.addEventListener('click', () => {
+        const tomorrow = new Date(historyDate);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        if (tomorrow <= new Date()) {
+            historyDate = tomorrow;
+            router.handleRoute();
+        }
+    });
+
+    const logoutBtn = document.getElementById('studentLogoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+            store.studentLogout();
+            router.navigate('login');
+        });
+    }
+
+    // 감정/전송 이벤트 재바인딩
+    bindEmotionSendEvents();
+
     setupPinChangeModal();
+}
+
+/**
+ * 컴포넌트 언마운트 시 구독 해제
+ */
+export function unmount() {
+    if (studentEmotionsUnsubscribe) {
+        studentEmotionsUnsubscribe();
+        studentEmotionsUnsubscribe = null;
+    }
 }
 
 /**
@@ -835,14 +912,61 @@ function renderHistoryTab(student, petEmoji, petName) {
             <!-- 대화 내용 -->
             <div class="space-y-4 pb-4">
                 ${dayEmotions.length > 0 ? dayEmotions.map(emotion => {
-                    const emotionTime = new Date(emotion.timestamp).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
                     const emotionIcon = EMOTION_TYPES[emotion.emotion]?.icon || '😊';
                     const emotionName = EMOTION_TYPES[emotion.emotion]?.name || '';
+                    const convos = emotion.conversations || [];
+
+                    // conversations 배열 기반 렌더링
+                    if (convos.length > 0) {
+                        let isFirst = true;
+                        return convos.map(c => {
+                            let html = '';
+                            // 학생 메시지 (오른쪽)
+                            if (c.studentMessage) {
+                                const time = new Date(c.studentAt || emotion.timestamp).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+                                const showTag = isFirst;
+                                isFirst = false;
+                                html += `
+                                    <div class="flex justify-end gap-2">
+                                        <div class="flex flex-col items-end">
+                                            <div class="bg-primary/10 rounded-2xl rounded-tr-sm p-3 max-w-[75%]">
+                                                ${showTag ? `<div class="flex items-center gap-1 mb-1">
+                                                    <span class="text-lg">${emotionIcon}</span>
+                                                    <span class="text-xs text-gray-500">${emotionName}</span>
+                                                </div>` : ''}
+                                                <p class="text-sm text-gray-700">${c.studentMessage}</p>
+                                            </div>
+                                            <span class="text-xs text-gray-400 mt-1">${time}</span>
+                                        </div>
+                                    </div>
+                                `;
+                            }
+                            // 선생님 답장 (왼쪽)
+                            if (c.teacherReply) {
+                                const replyTime = new Date(c.replyAt || emotion.timestamp).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+                                const petSpeech = convertToPetSpeech(c.teacherReply, student.petType, petName);
+                                html += `
+                                    <div class="flex justify-start gap-2">
+                                        <span class="text-2xl flex-shrink-0 mt-1">${petEmoji}</span>
+                                        <div class="flex flex-col">
+                                            <div class="bg-white rounded-2xl rounded-tl-sm p-3 max-w-[75%] shadow-sm border border-gray-100">
+                                                <p class="text-sm text-gray-700">${petSpeech.petMessage}</p>
+                                            </div>
+                                            <span class="text-xs text-gray-400 mt-1">${replyTime}</span>
+                                        </div>
+                                    </div>
+                                `;
+                            }
+                            return html;
+                        }).join('');
+                    }
+
+                    // 구 데이터 호환: conversations가 없는 경우
+                    const emotionTime = new Date(emotion.timestamp).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
                     const hasReply = !!emotion.reply;
                     const petSpeech = hasReply ? convertToPetSpeech(emotion.reply.message, student.petType, petName) : null;
 
                     return `
-                        <!-- 내 메시지 (오른쪽) -->
                         <div class="flex justify-end gap-2">
                             <div class="flex flex-col items-end">
                                 <div class="bg-primary/10 rounded-2xl rounded-tr-sm p-3 max-w-[75%]">
@@ -857,9 +981,7 @@ function renderHistoryTab(student, petEmoji, petName) {
                                 <span class="text-xs text-gray-400 mt-1">${emotionTime}</span>
                             </div>
                         </div>
-
                         ${hasReply ? `
-                            <!-- 선생님 답장 (왼쪽) -->
                             <div class="flex justify-start gap-2">
                                 <span class="text-2xl flex-shrink-0 mt-1">${petEmoji}</span>
                                 <div class="flex flex-col">

@@ -2158,6 +2158,75 @@ class Store {
         });
     }
 
+    /**
+     * 학생 모드: 특정 학생의 감정 기록 실시간 구독
+     * 교사 답장을 실시간으로 로컬에 반영
+     */
+    subscribeToStudentEmotions(studentId, callback) {
+        const teacherUid = this.getCurrentTeacherUid();
+        const classId = this.getCurrentClassId();
+        if (!teacherUid || !classId || !this.firebaseEnabled) return null;
+
+        return firebase.subscribeToStudentEmotions(teacherUid, classId, studentId, (firebaseEmotions) => {
+            const localLog = this.getEmotionLog() || [];
+            const existingFirebaseIds = new Set(localLog.map(e => e.firebaseId).filter(Boolean));
+
+            firebaseEmotions.forEach(fe => {
+                if (existingFirebaseIds.has(fe.id)) {
+                    // 기존 데이터 업데이트 (conversations, reply 등)
+                    const idx = localLog.findIndex(e => e.firebaseId === fe.id);
+                    if (idx !== -1) {
+                        const conversations = (fe.conversations || []).map(c => ({
+                            ...c,
+                            studentAt: c.studentAt?.toDate?.()?.toISOString() || c.studentAt,
+                            replyAt: c.replyAt?.toDate?.()?.toISOString() || c.replyAt
+                        }));
+                        localLog[idx].conversations = conversations;
+                        // reply 객체도 동기화
+                        if (fe.reply) {
+                            localLog[idx].reply = {
+                                message: fe.reply.message,
+                                timestamp: fe.reply.timestamp?.toDate?.()?.toISOString() || fe.reply.timestamp,
+                                read: fe.reply.read ?? false
+                            };
+                        }
+                    }
+                } else {
+                    // 새 데이터 추가
+                    const conversations = (fe.conversations || []).map(c => ({
+                        ...c,
+                        studentAt: c.studentAt?.toDate?.()?.toISOString() || c.studentAt,
+                        replyAt: c.replyAt?.toDate?.()?.toISOString() || c.replyAt
+                    }));
+                    const firstMessage = conversations[0]?.studentMessage || '';
+                    const noteText = firstMessage || fe.note || fe.memo || '';
+                    const newEmotion = {
+                        id: Date.now() + Math.random(),
+                        firebaseId: fe.id,
+                        timestamp: fe.timestamp || fe.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
+                        studentId: fe.studentId,
+                        studentName: fe.studentName,
+                        studentNumber: fe.studentNumber,
+                        emotion: fe.emotion,
+                        note: noteText,
+                        memo: noteText,
+                        source: fe.source || 'student',
+                        conversations,
+                        reply: fe.reply ? {
+                            message: fe.reply.message,
+                            timestamp: fe.reply.timestamp?.toDate?.()?.toISOString() || fe.reply.timestamp,
+                            read: fe.reply.read ?? false
+                        } : undefined
+                    };
+                    localLog.unshift(newEmotion);
+                }
+            });
+
+            this.saveEmotionLog(localLog);
+            if (callback) callback(localLog.filter(e => e.studentId === studentId));
+        });
+    }
+
     getEmotionsByStudent(studentId) {
         const log = this.getEmotionLog() || [];
         return log.filter(e => e.studentId === studentId);
