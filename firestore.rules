@@ -36,8 +36,8 @@ service cloud.firestore {
           // 교사: 모든 권한
           allow read, write: if isOwner(uid);
 
-          // 학생 (익명 인증): 읽기만 가능 (PIN 검증은 앱 레벨)
-          allow read: if isAuthenticated();
+          // 학생 (익명 인증): 읽기 및 수정 가능 (펫 선택 시 petType 등 업데이트)
+          allow read, update: if isAuthenticated();
 
           // ====== 학생 서브컬렉션 ======
 
