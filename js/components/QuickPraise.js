@@ -209,6 +209,8 @@ function executeQuickPraise() {
         // 칭찬 로그 추가
         store.addPraise({
             studentId,
+            studentName: student.name,
+            studentNumber: student.number,
             category: selectedCategory,
             expGain
         });

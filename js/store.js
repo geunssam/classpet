@@ -1816,12 +1816,18 @@ class Store {
     async syncPraiseToFirebase(praise) {
         const teacherUid = this.getCurrentTeacherUid();
         const classId = this.getCurrentClassId();
-        if (!teacherUid || !classId || !this.firebaseEnabled) return;
+        console.log('🔍 칭찬 Firebase 동기화 시도:', { teacherUid, classId, firebaseEnabled: this.firebaseEnabled, isOnline: this.isOnline });
+        if (!teacherUid || !classId || !this.firebaseEnabled) {
+            console.warn('⚠️ 칭찬 Firebase 동기화 스킵:', { teacherUid: !!teacherUid, classId: !!classId, firebaseEnabled: this.firebaseEnabled });
+            return;
+        }
 
         if (this.isOnline) {
             try {
-                await firebase.savePraise(teacherUid, classId, praise);
+                const result = await firebase.savePraise(teacherUid, classId, praise);
+                console.log('✅ Firebase 칭찬 저장 완료:', result);
             } catch (error) {
+                console.error('❌ Firebase 칭찬 저장 실패:', error);
                 this.addToOfflineQueue({ type: 'savePraise', teacherUid, classId, data: praise });
             }
         } else {

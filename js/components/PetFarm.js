@@ -210,6 +210,8 @@ function givePraise(studentId, category) {
     // 칭찬 로그 추가
     store.addPraise({
         studentId,
+        studentName: student.name,
+        studentNumber: student.number,
         category,
         expGain
     });
