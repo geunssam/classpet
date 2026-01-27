@@ -1077,6 +1077,40 @@ export function subscribeToTodayEmotions(teacherUid, classId, callback) {
 }
 
 /**
+ * 모든 감정 기록 가져오기 (계층 구조)
+ */
+export async function getAllEmotions(teacherUid, classId, limitCount = 500) {
+    if (!db) return [];
+
+    const uid = teacherUid || getCurrentTeacherUid();
+    const cId = classId || getCurrentClassId();
+
+    if (!uid || !cId) return [];
+
+    try {
+        const emotionsGroup = collectionGroup(db, 'emotions');
+        const q = query(
+            emotionsGroup,
+            where('teacherUid', '==', uid),
+            where('classId', '==', cId),
+            orderBy('createdAt', 'desc'),
+            limit(limitCount)
+        );
+
+        const snapshot = await getDocs(q);
+        const emotions = [];
+        snapshot.forEach(doc => {
+            emotions.push({ id: doc.id, ...doc.data() });
+        });
+
+        return emotions;
+    } catch (error) {
+        console.error('전체 감정 목록 가져오기 실패:', error);
+        return [];
+    }
+}
+
+/**
  * 감정 타입별 기록 가져오기 (계층 구조)
  * @param {string} emotionType - 감정 타입 (great|good|soso|bad|terrible)
  */

@@ -841,6 +841,51 @@ class Store {
                 });
             }
 
+            // 칭찬 로그 로드 (Firebase → localStorage)
+            try {
+                const praises = await firebase.getAllPraises(teacherUid, classId);
+                if (praises && praises.length > 0) {
+                    // Firebase 데이터를 localStorage 형식으로 변환
+                    const praiseLog = praises.map(p => ({
+                        id: p.id || Date.now(),
+                        timestamp: p.timestamp || p.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
+                        studentId: p.studentId,
+                        studentName: p.studentName,
+                        studentNumber: p.studentNumber,
+                        category: p.category,
+                        expGain: p.expGain
+                    }));
+                    this.savePraiseLog(praiseLog);
+                    console.log(`Firebase에서 ${praiseLog.length}개의 칭찬 로드 완료`);
+                }
+            } catch (praiseError) {
+                console.error('Firebase 칭찬 로드 실패:', praiseError);
+            }
+
+            // 감정 로그 로드 (Firebase → localStorage)
+            try {
+                const emotions = await firebase.getAllEmotions(teacherUid, classId);
+                if (emotions && emotions.length > 0) {
+                    const emotionLog = emotions.map(e => ({
+                        id: e.id || Date.now(),
+                        timestamp: e.timestamp || e.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
+                        studentId: e.studentId,
+                        studentName: e.studentName,
+                        studentNumber: e.studentNumber,
+                        emotion: e.emotion,
+                        note: e.note || e.memo || '',
+                        memo: e.memo || e.note || '',
+                        source: e.source || 'student',
+                        conversations: e.conversations || [],
+                        reply: e.reply || null
+                    }));
+                    this.saveEmotionLog(emotionLog);
+                    console.log(`Firebase에서 ${emotionLog.length}개의 감정 로드 완료`);
+                }
+            } catch (emotionError) {
+                console.error('Firebase 감정 로드 실패:', emotionError);
+            }
+
             return true;
         } catch (error) {
             console.error('Firebase 학급 데이터 로드 실패:', error);
