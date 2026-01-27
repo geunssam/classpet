@@ -135,7 +135,7 @@ export function afterRender() {
     // 펫 카드 클릭
     document.querySelectorAll('.pet-circle-card').forEach(el => {
         el.addEventListener('click', () => {
-            const studentId = parseInt(el.dataset.studentId);
+            const studentId = el.dataset.studentId;
             router.navigate('student', { id: studentId });
         });
     });

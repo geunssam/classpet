@@ -1111,7 +1111,7 @@ export function afterRender() {
     // PIN 초기화 버튼들
     document.querySelectorAll('.pin-reset-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-            const studentId = parseInt(btn.dataset.studentId);
+            const studentId = btn.dataset.studentId;
             const studentName = btn.dataset.studentName;
             const studentNumber = parseInt(btn.dataset.studentNumber);
             showPinResetConfirm(studentId, studentName, studentNumber);

@@ -82,7 +82,7 @@ function bindQuickPraiseEvents() {
     // 학생 선택
     document.querySelectorAll('.student-select-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-            const studentId = parseInt(btn.dataset.studentId);
+            const studentId = btn.dataset.studentId;
 
             if (selectedStudents.has(studentId)) {
                 selectedStudents.delete(studentId);
