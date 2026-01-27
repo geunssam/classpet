@@ -435,7 +435,7 @@ function renderTimeline(emotions, student, unrepliedList = []) {
         let isFirstStudentMsg = true; // 첫 학생 메시지에만 감정 태그 표시
 
         if (convos.length > 0) {
-            convos.forEach(c => {
+            convos.forEach((c, ci) => {
                 // 학생 메시지 (왼쪽) — 감정 이모지 + 메시지 통합 카드
                 if (c.studentMessage) {
                     const time = formatChatTime(c.studentAt || e.timestamp, true);
