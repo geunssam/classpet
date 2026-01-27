@@ -55,8 +55,8 @@ service cloud.firestore {
             // 교사: 모든 권한
             allow read, write: if isOwner(uid);
 
-            // 학생 (익명 인증): 읽기만 가능
-            allow read: if isAuthenticated();
+            // 인증된 사용자: 생성, 읽기 가능 (교사 세션 복원 전에도 칭찬 저장 가능)
+            allow create, read: if isAuthenticated();
           }
 
           // 펫 데이터: /teachers/{uid}/classes/{classId}/students/{studentId}/pets/{petId}
