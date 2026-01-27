@@ -875,40 +875,46 @@ class Store {
                 console.error('Firebase 감정 로드 실패:', emotionError);
             }
 
-            // 4. 학생 데이터 병합/복구: exp/level/totalPraises가 없으면 칭찬 로그로 재계산
-            let needsFirebaseSync = false;
-            const mergedStudents = studentList.map(student => {
-                const hasExpLevel = student.exp !== undefined && student.level !== undefined;
-                if (hasExpLevel) return student;
+            // 4. 각 학생별 pets 하위 컬렉션에서 펫 데이터 로드 (정본)
+            const mergedStudents = await Promise.all(studentList.map(async (student) => {
+                try {
+                    const activePet = await firebase.getActivePet(teacherUid, classId, student.id);
+                    const completedPets = await firebase.getCompletedPets(teacherUid, classId, student.id);
 
-                // 해당 학생의 칭찬에서 경험치 합산
-                const studentPraises = praiseLog.filter(p => p.studentId === student.id);
-                let totalExp = studentPraises.reduce((sum, p) => sum + (p.expGain || 10), 0);
-                let level = 1;
+                    const petData = {};
+                    if (activePet) {
+                        petData.petType = activePet.petType;
+                        petData.petName = activePet.petName;
+                        petData.exp = activePet.exp || 0;
+                        petData.level = activePet.level || 1;
+                        console.log(`학생 ${student.name} 펫 로드: petType=${activePet.petType}, exp=${activePet.exp || 0}, level=${activePet.level || 1}`);
+                    }
 
-                // 레벨 계산 (100 exp = 1 level, 최대 5)
-                while (totalExp >= 100 && level < 5) {
-                    totalExp -= 100;
-                    level++;
+                    if (completedPets && completedPets.length > 0) {
+                        petData.completedPets = completedPets.map(p => ({
+                            type: p.petType,
+                            name: p.petName,
+                            completedAt: p.completedAt
+                        }));
+                    }
+
+                    // 해당 학생의 칭찬 수 계산
+                    const studentPraises = praiseLog.filter(p => p.studentId === student.id);
+
+                    return {
+                        ...student,
+                        petType: petData.petType ?? student.petType ?? null,
+                        petName: petData.petName ?? student.petName ?? null,
+                        exp: petData.exp ?? student.exp ?? 0,
+                        level: petData.level ?? student.level ?? 1,
+                        completedPets: petData.completedPets ?? student.completedPets ?? [],
+                        totalPraises: studentPraises.length
+                    };
+                } catch (petError) {
+                    console.warn(`학생 ${student.name} 펫 로드 실패:`, petError);
+                    return student;
                 }
-                if (level >= 5) {
-                    totalExp = 100;
-                    level = 5;
-                }
-
-                needsFirebaseSync = true;
-                console.log(`학생 ${student.name} 데이터 복구: exp=${totalExp}, level=${level}, totalPraises=${studentPraises.length}`);
-
-                return {
-                    ...student,
-                    petType: student.petType ?? null,
-                    petName: student.petName ?? null,
-                    exp: totalExp,
-                    level: level,
-                    totalPraises: studentPraises.length,
-                    completedPets: student.completedPets || []
-                };
-            });
+            }));
 
             // 5. localStorage에 완전한 데이터 저장
             this.saveStudents(mergedStudents);
@@ -928,20 +934,7 @@ class Store {
                 });
             }
 
-            // 7. 복구된 학생 데이터를 Firebase에 다시 저장 (1회성, 향후 재로그인 시 정상 로드되도록)
-            if (needsFirebaseSync) {
-                console.log('복구된 학생 데이터를 Firebase에 동기화 중...');
-                for (const student of mergedStudents) {
-                    try {
-                        await this.syncStudentToFirebase(student);
-                    } catch (syncError) {
-                        console.warn(`학생 ${student.name} Firebase 재동기화 실패:`, syncError);
-                    }
-                }
-                console.log('Firebase 학생 데이터 복구 동기화 완료');
-            }
-
-            // 8. 데이터 로드 완료 알림 (화면 갱신용)
+            // 7. 데이터 로드 완료 알림 (화면 갱신용)
             this.notify('dataLoaded', { students: true, praises: true, emotions: true });
 
             return true;
@@ -1048,10 +1041,8 @@ class Store {
         const classId = this.getCurrentClassId();
         if (!teacherUid || !classId || !this.firebaseEnabled) return;
 
-        // completedPets 배열은 별도 pets 컬렉션에서 관리하므로 제외
-        // petType, petName, exp, level, totalPraises는 학생 문서에 보존 (재로그인 시 필요)
-        const studentData = { ...student };
-        delete studentData.completedPets;
+        // pets 하위 컬렉션이 정본(source of truth)이므로 펫 관련 필드는 students 문서에 저장하지 않음
+        const { petType, petName, exp, level, completedPets, totalPraises, ...studentData } = student;
 
         if (this.isOnline) {
             try {
