@@ -81,9 +81,15 @@ async function initApp() {
     const currentHash = window.location.hash.slice(1).split('?')[0];
 
     if (authUser && store.isTeacherLoggedIn()) {
+        // Firebase에서 학급 데이터 로드 (칭찬/감정 포함)
+        const currentClassId = store.getCurrentClassId();
+        if (currentClassId) {
+            await store.loadClassDataFromFirebase();
+            console.log('📦 Firebase 학급 데이터 로드 완료');
+        }
+
         // 로그인된 상태
         if (!currentHash || currentHash === 'login' || currentHash === 'teacher-login') {
-            const currentClassId = store.getCurrentClassId();
             if (currentClassId) {
                 console.log('🔄 초기 라우트: 대시보드');
                 window.location.hash = 'dashboard';
@@ -234,6 +240,8 @@ function setupAuthStateListener() {
                     // Firebase에서 학급 데이터 다시 로드
                     await store.loadClassDataFromFirebase();
                     console.log('🔥 Firebase 뒤늦은 인증 처리 완료 - 학급 데이터 로드됨');
+                    // 현재 화면 갱신
+                    refreshCurrentView();
                 }
 
                 updateClassInfo();
