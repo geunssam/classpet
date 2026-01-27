@@ -1,8 +1,31 @@
 /**
  * Firebase 설정 및 초기화
- * 완전한 계층 구조: /teachers/{uid}/classes/{classId}/...
+ * 계층 구조: /teachers/{uid}/classes/{classId}/students/{studentId}/emotions|praises|pets/...
  * 경로 자체가 소유권을 보장 (ownerId 필드 불필요)
+ * Cross-student 쿼리는 collectionGroup + teacherUid/classId 필드 필터링
  * @updated 2025-01-24 - 학생 ID 처리 수정
+ * @updated 2025-01-27 - pets 컬렉션 추가, emotions/praises 추가 조회 함수
+ * @updated 2025-01-27 - 서브컬렉션 구조 변경 (emotions/praises/pets → students/{id}/하위)
+ *
+ * 필요한 Firebase collectionGroup 인덱스 (firestore.indexes.json):
+ * ----------------------------------------
+ * emotions collectionGroup:
+ *   - (teacherUid ASC, classId ASC, date ASC, createdAt DESC)
+ *   - (teacherUid ASC, classId ASC, emotion ASC, createdAt DESC)
+ *   - (teacherUid ASC, classId ASC, date ASC, emotion ASC, createdAt DESC)
+ *   - (teacherUid ASC, classId ASC, createdAt DESC)
+ *
+ * praises collectionGroup:
+ *   - (teacherUid ASC, classId ASC, date ASC, createdAt DESC)
+ *   - (teacherUid ASC, classId ASC, category ASC, createdAt DESC)
+ *   - (teacherUid ASC, classId ASC, date ASC, category ASC, createdAt DESC)
+ *   - (teacherUid ASC, classId ASC, createdAt DESC)
+ *
+ * Per-student 서브컬렉션 인덱스:
+ *   emotions: (createdAt DESC)
+ *   praises: (createdAt DESC), (category ASC, createdAt DESC)
+ *   pets: (status ASC), (status ASC, completedAt DESC), (petType ASC, status ASC), (createdAt DESC)
+ * ----------------------------------------
  */
 
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
@@ -22,7 +45,8 @@ import {
     limit,
     onSnapshot,
     serverTimestamp,
-    Timestamp
+    Timestamp,
+    collectionGroup
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 import {
     getAuth,
@@ -62,6 +86,24 @@ let currentTeacherUid = null;
 
 // 실시간 리스너 해제 함수들
 const unsubscribeFunctions = [];
+
+// ==================== 서브컬렉션 헬퍼 ====================
+
+/**
+ * 학생 서브컬렉션 참조 헬퍼
+ * 경로: /teachers/{uid}/classes/{classId}/students/{studentId}/{sub}
+ */
+function studentSubRef(uid, classId, studentId, sub) {
+    return collection(db, 'teachers', uid, 'classes', classId, 'students', String(studentId), sub);
+}
+
+/**
+ * 학생 서브컬렉션 문서 참조 헬퍼
+ * 경로: /teachers/{uid}/classes/{classId}/students/{studentId}/{sub}/{docId}
+ */
+function studentSubDoc(uid, classId, studentId, sub, docId) {
+    return doc(db, 'teachers', uid, 'classes', classId, 'students', String(studentId), sub, String(docId));
+}
 
 /**
  * Firebase 초기화
@@ -429,8 +471,7 @@ export async function createClass(classData) {
                 await setDoc(studentDoc, {
                     number: student.number,
                     name: student.name,
-                    emoji: student.emoji || '🐶',
-                    points: 0,
+                    pin: student.pin || String(student.number).padStart(4, '0'),
                     createdAt: serverTimestamp(),
                     updatedAt: serverTimestamp()
                 });
@@ -747,9 +788,11 @@ export function subscribeToStudents(teacherUid, classId, callback) {
 }
 
 // ==================== 감정 기록 (계층 구조) ====================
+// conversations 배열 구조: 학생 메시지 + 교사 답장이 쌍으로 매칭
 
 /**
  * 감정 기록 저장 (계층 구조: /teachers/{uid}/classes/{classId}/emotions/{emotionId})
+ * conversations 배열 구조 사용
  */
 export async function saveEmotion(teacherUid, classId, emotion) {
     if (!db) return null;
@@ -760,12 +803,31 @@ export async function saveEmotion(teacherUid, classId, emotion) {
     if (!uid || !cId) return null;
 
     try {
-        const emotionsRef = collection(db, 'teachers', uid, 'classes', cId, 'emotions');
+        const studentId = emotion.studentId;
+        const emotionsRef = studentSubRef(uid, cId, studentId, 'emotions');
+        const now = new Date().toISOString();
 
         const emotionData = {
-            ...emotion,
-            date: emotion.timestamp?.split('T')[0] || new Date().toISOString().split('T')[0],
-            createdAt: serverTimestamp()
+            studentId: emotion.studentId,
+            studentName: emotion.studentName,
+            studentNumber: emotion.studentNumber,
+            emotion: emotion.emotion,
+            date: emotion.timestamp?.split('T')[0] || now.split('T')[0],
+            // collectionGroup 쿼리용 필드
+            teacherUid: uid,
+            classId: cId,
+            // conversations 배열: 메모-답장 쌍으로 저장
+            conversations: [
+                {
+                    studentMessage: emotion.memo || null,
+                    studentAt: now,
+                    teacherReply: null,
+                    replyAt: null,
+                    read: false
+                }
+            ],
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp()
         };
 
         const docRef = await addDoc(emotionsRef, emotionData);
@@ -777,10 +839,11 @@ export async function saveEmotion(teacherUid, classId, emotion) {
 }
 
 /**
- * 감정 기록에 답장 추가 (계층 구조)
+ * 감정 기록에 교사 답장 추가 (conversations 배열의 특정 항목에)
+ * @param {number} conversationIndex - conversations 배열 내 인덱스 (기본: 마지막 항목)
  */
-export async function addReplyToEmotion(teacherUid, classId, emotionId, message) {
-    if (!db || !emotionId) return null;
+export async function addReplyToEmotion(teacherUid, classId, studentId, emotionId, message, conversationIndex = -1) {
+    if (!db || !emotionId || !studentId) return null;
 
     const uid = teacherUid || getCurrentTeacherUid();
     const cId = classId || getCurrentClassId();
@@ -788,19 +851,86 @@ export async function addReplyToEmotion(teacherUid, classId, emotionId, message)
     if (!uid || !cId) return null;
 
     try {
-        const emotionRef = doc(db, 'teachers', uid, 'classes', cId, 'emotions', emotionId);
+        const emotionRef = studentSubDoc(uid, cId, studentId, 'emotions', emotionId);
+
+        // 먼저 현재 문서 가져오기
+        const emotionDoc = await getDoc(emotionRef);
+        if (!emotionDoc.exists()) {
+            console.error('감정 문서를 찾을 수 없음:', emotionId);
+            return null;
+        }
+
+        const data = emotionDoc.data();
+        const conversations = data.conversations || [];
+
+        // 답장할 대화 인덱스 결정 (기본: 마지막 항목)
+        const targetIndex = conversationIndex === -1 ? conversations.length - 1 : conversationIndex;
+
+        if (targetIndex < 0 || targetIndex >= conversations.length) {
+            console.error('유효하지 않은 대화 인덱스:', targetIndex);
+            return null;
+        }
+
+        // 해당 대화에 답장 추가
+        conversations[targetIndex].teacherReply = message;
+        conversations[targetIndex].replyAt = new Date().toISOString();
+        conversations[targetIndex].read = false;
+
         await updateDoc(emotionRef, {
-            reply: {
-                message: message,
-                timestamp: new Date().toISOString(),
-                read: false
-            },
+            conversations: conversations,
             updatedAt: serverTimestamp()
         });
 
-        return { emotionId, reply: { message, read: false } };
+        return { emotionId, conversationIndex: targetIndex, reply: message };
     } catch (error) {
         console.error('답장 저장 실패:', error);
+        return null;
+    }
+}
+
+/**
+ * 학생 추가 메시지 보내기 (conversations 배열에 새 항목 추가)
+ */
+export async function addStudentMessage(teacherUid, classId, studentId, emotionId, message) {
+    if (!db || !emotionId || !message || !studentId) return null;
+
+    const uid = teacherUid || getCurrentTeacherUid();
+    const cId = classId || getCurrentClassId();
+
+    if (!uid || !cId) return null;
+
+    try {
+        const emotionRef = studentSubDoc(uid, cId, studentId, 'emotions', emotionId);
+
+        // 현재 문서 가져오기
+        const emotionDoc = await getDoc(emotionRef);
+        if (!emotionDoc.exists()) {
+            console.error('감정 문서를 찾을 수 없음:', emotionId);
+            return null;
+        }
+
+        const data = emotionDoc.data();
+        const conversations = data.conversations || [];
+
+        // 새 대화 항목 추가
+        const newConversation = {
+            studentMessage: message,
+            studentAt: new Date().toISOString(),
+            teacherReply: null,
+            replyAt: null,
+            read: false
+        };
+
+        conversations.push(newConversation);
+
+        await updateDoc(emotionRef, {
+            conversations: conversations,
+            updatedAt: serverTimestamp()
+        });
+
+        return { emotionId, conversationIndex: conversations.length - 1, message };
+    } catch (error) {
+        console.error('학생 메시지 추가 실패:', error);
         return null;
     }
 }
@@ -818,9 +948,11 @@ export async function getTodayEmotions(teacherUid, classId) {
 
     try {
         const today = new Date().toISOString().split('T')[0];
-        const emotionsRef = collection(db, 'teachers', uid, 'classes', cId, 'emotions');
+        const emotionsGroup = collectionGroup(db, 'emotions');
         const q = query(
-            emotionsRef,
+            emotionsGroup,
+            where('teacherUid', '==', uid),
+            where('classId', '==', cId),
             where('date', '==', today),
             orderBy('createdAt', 'desc')
         );
@@ -850,10 +982,9 @@ export async function getStudentEmotions(teacherUid, classId, studentId, limitCo
     if (!uid || !cId) return [];
 
     try {
-        const emotionsRef = collection(db, 'teachers', uid, 'classes', cId, 'emotions');
+        const emotionsRef = studentSubRef(uid, cId, studentId, 'emotions');
         const q = query(
             emotionsRef,
-            where('studentId', '==', studentId),
             orderBy('createdAt', 'desc'),
             limit(limitCount)
         );
@@ -883,9 +1014,11 @@ export async function getEmotionsByDate(teacherUid, classId, date) {
     if (!uid || !cId) return [];
 
     try {
-        const emotionsRef = collection(db, 'teachers', uid, 'classes', cId, 'emotions');
+        const emotionsGroup = collectionGroup(db, 'emotions');
         const q = query(
-            emotionsRef,
+            emotionsGroup,
+            where('teacherUid', '==', uid),
+            where('classId', '==', cId),
             where('date', '==', date),
             orderBy('createdAt', 'desc')
         );
@@ -916,9 +1049,11 @@ export function subscribeToTodayEmotions(teacherUid, classId, callback) {
 
     try {
         const today = new Date().toISOString().split('T')[0];
-        const emotionsRef = collection(db, 'teachers', uid, 'classes', cId, 'emotions');
+        const emotionsGroup = collectionGroup(db, 'emotions');
         const q = query(
-            emotionsRef,
+            emotionsGroup,
+            where('teacherUid', '==', uid),
+            where('classId', '==', cId),
             where('date', '==', today),
             orderBy('createdAt', 'desc')
         );
@@ -941,6 +1076,158 @@ export function subscribeToTodayEmotions(teacherUid, classId, callback) {
     }
 }
 
+/**
+ * 감정 타입별 기록 가져오기 (계층 구조)
+ * @param {string} emotionType - 감정 타입 (great|good|soso|bad|terrible)
+ */
+export async function getEmotionsByType(teacherUid, classId, emotionType, limitCount = 100) {
+    if (!db) return [];
+
+    const uid = teacherUid || getCurrentTeacherUid();
+    const cId = classId || getCurrentClassId();
+
+    if (!uid || !cId || !emotionType) return [];
+
+    try {
+        const emotionsGroup = collectionGroup(db, 'emotions');
+        const q = query(
+            emotionsGroup,
+            where('teacherUid', '==', uid),
+            where('classId', '==', cId),
+            where('emotion', '==', emotionType),
+            orderBy('createdAt', 'desc'),
+            limit(limitCount)
+        );
+
+        const snapshot = await getDocs(q);
+        const emotions = [];
+        snapshot.forEach(doc => {
+            emotions.push({ id: doc.id, ...doc.data() });
+        });
+
+        return emotions;
+    } catch (error) {
+        console.error('감정 타입별 조회 실패:', error);
+        return [];
+    }
+}
+
+/**
+ * 날짜 + 감정 타입별 기록 가져오기 (계층 구조)
+ */
+export async function getEmotionsByDateAndType(teacherUid, classId, date, emotionType) {
+    if (!db) return [];
+
+    const uid = teacherUid || getCurrentTeacherUid();
+    const cId = classId || getCurrentClassId();
+
+    if (!uid || !cId || !date || !emotionType) return [];
+
+    try {
+        const emotionsGroup = collectionGroup(db, 'emotions');
+        const q = query(
+            emotionsGroup,
+            where('teacherUid', '==', uid),
+            where('classId', '==', cId),
+            where('date', '==', date),
+            where('emotion', '==', emotionType),
+            orderBy('createdAt', 'desc')
+        );
+
+        const snapshot = await getDocs(q);
+        const emotions = [];
+        snapshot.forEach(doc => {
+            emotions.push({ id: doc.id, ...doc.data() });
+        });
+
+        return emotions;
+    } catch (error) {
+        console.error('날짜+감정 타입별 조회 실패:', error);
+        return [];
+    }
+}
+
+/**
+ * 학생의 미읽은 답장 수 가져오기 (conversations 배열 구조)
+ * conversations 배열 내 teacherReply가 있고 read가 false인 항목 수 카운트
+ */
+export async function getUnreadReplyCount(teacherUid, classId, studentId) {
+    if (!db) return 0;
+
+    const uid = teacherUid || getCurrentTeacherUid();
+    const cId = classId || getCurrentClassId();
+
+    if (!uid || !cId || !studentId) return 0;
+
+    try {
+        const emotionsRef = studentSubRef(uid, cId, studentId, 'emotions');
+        const snapshot = await getDocs(emotionsRef);
+        let unreadCount = 0;
+
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            const conversations = data.conversations || [];
+            conversations.forEach(conv => {
+                // teacherReply가 있고 아직 읽지 않은 경우
+                if (conv.teacherReply && !conv.read) {
+                    unreadCount++;
+                }
+            });
+        });
+
+        return unreadCount;
+    } catch (error) {
+        console.error('미읽은 답장 수 조회 실패:', error);
+        return 0;
+    }
+}
+
+/**
+ * 감정 기록 답장 읽음 처리 (conversations 배열 구조)
+ * @param {number} conversationIndex - 읽음 처리할 대화 인덱스 (-1이면 모든 대화)
+ */
+export async function markEmotionReplyAsRead(teacherUid, classId, studentId, emotionId, conversationIndex = -1) {
+    if (!db || !emotionId || !studentId) return null;
+
+    const uid = teacherUid || getCurrentTeacherUid();
+    const cId = classId || getCurrentClassId();
+
+    if (!uid || !cId) return null;
+
+    try {
+        const emotionRef = studentSubDoc(uid, cId, studentId, 'emotions', emotionId);
+
+        // 현재 문서 가져오기
+        const emotionDoc = await getDoc(emotionRef);
+        if (!emotionDoc.exists()) return null;
+
+        const data = emotionDoc.data();
+        const conversations = data.conversations || [];
+
+        if (conversationIndex === -1) {
+            // 모든 대화의 읽음 처리
+            conversations.forEach(conv => {
+                if (conv.teacherReply) {
+                    conv.read = true;
+                }
+            });
+        } else if (conversationIndex >= 0 && conversationIndex < conversations.length) {
+            // 특정 대화만 읽음 처리
+            conversations[conversationIndex].read = true;
+        }
+
+        await updateDoc(emotionRef, {
+            conversations: conversations,
+            updatedAt: serverTimestamp()
+        });
+
+        return { emotionId, read: true };
+    } catch (error) {
+        console.error('답장 읽음 처리 실패:', error);
+        return null;
+    }
+}
+
 // ==================== 칭찬 기록 (계층 구조) ====================
 
 /**
@@ -955,11 +1242,15 @@ export async function savePraise(teacherUid, classId, praise) {
     if (!uid || !cId) return null;
 
     try {
-        const praisesRef = collection(db, 'teachers', uid, 'classes', cId, 'praises');
+        const studentId = praise.studentId;
+        const praisesRef = studentSubRef(uid, cId, studentId, 'praises');
 
         const praiseData = {
             ...praise,
             date: praise.timestamp?.split('T')[0] || new Date().toISOString().split('T')[0],
+            // collectionGroup 쿼리용 필드
+            teacherUid: uid,
+            classId: cId,
             createdAt: serverTimestamp()
         };
 
@@ -984,9 +1275,11 @@ export async function getTodayPraises(teacherUid, classId) {
 
     try {
         const today = new Date().toISOString().split('T')[0];
-        const praisesRef = collection(db, 'teachers', uid, 'classes', cId, 'praises');
+        const praisesGroup = collectionGroup(db, 'praises');
         const q = query(
-            praisesRef,
+            praisesGroup,
+            where('teacherUid', '==', uid),
+            where('classId', '==', cId),
             where('date', '==', today),
             orderBy('createdAt', 'desc')
         );
@@ -1016,7 +1309,146 @@ export async function getAllPraises(teacherUid, classId, limitCount = 500) {
     if (!uid || !cId) return [];
 
     try {
-        const praisesRef = collection(db, 'teachers', uid, 'classes', cId, 'praises');
+        const praisesGroup = collectionGroup(db, 'praises');
+        const q = query(
+            praisesGroup,
+            where('teacherUid', '==', uid),
+            where('classId', '==', cId),
+            orderBy('createdAt', 'desc'),
+            limit(limitCount)
+        );
+
+        const snapshot = await getDocs(q);
+        const praises = [];
+        snapshot.forEach(doc => {
+            praises.push({ id: doc.id, ...doc.data() });
+        });
+
+        return praises;
+    } catch (error) {
+        console.error('칭찬 목록 가져오기 실패:', error);
+        return [];
+    }
+}
+
+/**
+ * 카테고리별 칭찬 기록 가져오기 (계층 구조)
+ * @param {string} category - 칭찬 카테고리 (selfManagement|knowledge|creative|aesthetic|cooperation|community)
+ */
+export async function getPraisesByCategory(teacherUid, classId, category, limitCount = 100) {
+    if (!db) return [];
+
+    const uid = teacherUid || getCurrentTeacherUid();
+    const cId = classId || getCurrentClassId();
+
+    if (!uid || !cId || !category) return [];
+
+    try {
+        const praisesGroup = collectionGroup(db, 'praises');
+        const q = query(
+            praisesGroup,
+            where('teacherUid', '==', uid),
+            where('classId', '==', cId),
+            where('category', '==', category),
+            orderBy('createdAt', 'desc'),
+            limit(limitCount)
+        );
+
+        const snapshot = await getDocs(q);
+        const praises = [];
+        snapshot.forEach(doc => {
+            praises.push({ id: doc.id, ...doc.data() });
+        });
+
+        return praises;
+    } catch (error) {
+        console.error('카테고리별 칭찬 조회 실패:', error);
+        return [];
+    }
+}
+
+/**
+ * 날짜별 칭찬 기록 가져오기 (계층 구조)
+ */
+export async function getPraisesByDate(teacherUid, classId, date) {
+    if (!db) return [];
+
+    const uid = teacherUid || getCurrentTeacherUid();
+    const cId = classId || getCurrentClassId();
+
+    if (!uid || !cId || !date) return [];
+
+    try {
+        const praisesGroup = collectionGroup(db, 'praises');
+        const q = query(
+            praisesGroup,
+            where('teacherUid', '==', uid),
+            where('classId', '==', cId),
+            where('date', '==', date),
+            orderBy('createdAt', 'desc')
+        );
+
+        const snapshot = await getDocs(q);
+        const praises = [];
+        snapshot.forEach(doc => {
+            praises.push({ id: doc.id, ...doc.data() });
+        });
+
+        return praises;
+    } catch (error) {
+        console.error('날짜별 칭찬 조회 실패:', error);
+        return [];
+    }
+}
+
+/**
+ * 날짜 + 카테고리별 칭찬 기록 가져오기 (계층 구조)
+ */
+export async function getPraisesByDateAndCategory(teacherUid, classId, date, category) {
+    if (!db) return [];
+
+    const uid = teacherUid || getCurrentTeacherUid();
+    const cId = classId || getCurrentClassId();
+
+    if (!uid || !cId || !date || !category) return [];
+
+    try {
+        const praisesGroup = collectionGroup(db, 'praises');
+        const q = query(
+            praisesGroup,
+            where('teacherUid', '==', uid),
+            where('classId', '==', cId),
+            where('date', '==', date),
+            where('category', '==', category),
+            orderBy('createdAt', 'desc')
+        );
+
+        const snapshot = await getDocs(q);
+        const praises = [];
+        snapshot.forEach(doc => {
+            praises.push({ id: doc.id, ...doc.data() });
+        });
+
+        return praises;
+    } catch (error) {
+        console.error('날짜+카테고리별 칭찬 조회 실패:', error);
+        return [];
+    }
+}
+
+/**
+ * 특정 학생이 받은 칭찬 기록 가져오기 (계층 구조)
+ */
+export async function getStudentPraises(teacherUid, classId, studentId, limitCount = 100) {
+    if (!db) return [];
+
+    const uid = teacherUid || getCurrentTeacherUid();
+    const cId = classId || getCurrentClassId();
+
+    if (!uid || !cId || !studentId) return [];
+
+    try {
+        const praisesRef = studentSubRef(uid, cId, studentId, 'praises');
         const q = query(
             praisesRef,
             orderBy('createdAt', 'desc'),
@@ -1031,7 +1463,39 @@ export async function getAllPraises(teacherUid, classId, limitCount = 500) {
 
         return praises;
     } catch (error) {
-        console.error('칭찬 목록 가져오기 실패:', error);
+        console.error('학생별 칭찬 조회 실패:', error);
+        return [];
+    }
+}
+
+/**
+ * 특정 학생의 카테고리별 칭찬 기록 가져오기 (계층 구조)
+ */
+export async function getStudentPraisesByCategory(teacherUid, classId, studentId, category) {
+    if (!db) return [];
+
+    const uid = teacherUid || getCurrentTeacherUid();
+    const cId = classId || getCurrentClassId();
+
+    if (!uid || !cId || !studentId || !category) return [];
+
+    try {
+        const praisesRef = studentSubRef(uid, cId, studentId, 'praises');
+        const q = query(
+            praisesRef,
+            where('category', '==', category),
+            orderBy('createdAt', 'desc')
+        );
+
+        const snapshot = await getDocs(q);
+        const praises = [];
+        snapshot.forEach(doc => {
+            praises.push({ id: doc.id, ...doc.data() });
+        });
+
+        return praises;
+    } catch (error) {
+        console.error('학생+카테고리별 칭찬 조회 실패:', error);
         return [];
     }
 }
@@ -1278,6 +1742,272 @@ export async function deleteNote(teacherUid, classId, noteId) {
     } catch (error) {
         console.error('메모 삭제 실패:', error);
         return false;
+    }
+}
+
+// ==================== 펫 관리 (계층 구조) ====================
+
+/**
+ * 펫 저장/생성 (계층 구조: /teachers/{uid}/classes/{classId}/pets/{petId})
+ * @param {string} teacherUid - 교사 UID
+ * @param {string} classId - 학급 ID
+ * @param {object} pet - 펫 데이터
+ */
+export async function savePet(teacherUid, classId, pet) {
+    if (!db) return null;
+
+    const uid = teacherUid || getCurrentTeacherUid();
+    const cId = classId || getCurrentClassId();
+
+    if (!uid || !cId) return null;
+
+    try {
+        const studentId = pet.studentId;
+        const petsRef = studentSubRef(uid, cId, studentId, 'pets');
+
+        const petData = {
+            ...pet,
+            // collectionGroup 쿼리용 필드
+            teacherUid: uid,
+            classId: cId,
+            createdAt: pet.createdAt || serverTimestamp(),
+            updatedAt: serverTimestamp()
+        };
+
+        if (pet.id) {
+            // 기존 펫 업데이트
+            const petRef = studentSubDoc(uid, cId, studentId, 'pets', pet.id);
+            await setDoc(petRef, petData, { merge: true });
+            return { id: pet.id, ...petData };
+        } else {
+            // 새 펫 생성
+            const docRef = await addDoc(petsRef, petData);
+            return { id: docRef.id, ...petData };
+        }
+    } catch (error) {
+        console.error('펫 저장 실패:', error);
+        return null;
+    }
+}
+
+/**
+ * 학생의 현재 활성 펫 가져오기
+ * @param {string} teacherUid - 교사 UID
+ * @param {string} classId - 학급 ID
+ * @param {string} studentId - 학생 ID
+ */
+export async function getActivePet(teacherUid, classId, studentId) {
+    if (!db) return null;
+
+    const uid = teacherUid || getCurrentTeacherUid();
+    const cId = classId || getCurrentClassId();
+
+    if (!uid || !cId || !studentId) return null;
+
+    try {
+        const petsRef = studentSubRef(uid, cId, studentId, 'pets');
+        const q = query(
+            petsRef,
+            where('status', '==', 'active'),
+            limit(1)
+        );
+
+        const snapshot = await getDocs(q);
+        if (!snapshot.empty) {
+            const doc = snapshot.docs[0];
+            return { id: doc.id, ...doc.data() };
+        }
+        return null;
+    } catch (error) {
+        console.error('활성 펫 조회 실패:', error);
+        return null;
+    }
+}
+
+/**
+ * 학생의 완성된 펫 도감 가져오기
+ * @param {string} teacherUid - 교사 UID
+ * @param {string} classId - 학급 ID
+ * @param {string} studentId - 학생 ID
+ */
+export async function getCompletedPets(teacherUid, classId, studentId) {
+    if (!db) return [];
+
+    const uid = teacherUid || getCurrentTeacherUid();
+    const cId = classId || getCurrentClassId();
+
+    if (!uid || !cId || !studentId) return [];
+
+    try {
+        const petsRef = studentSubRef(uid, cId, studentId, 'pets');
+        const q = query(
+            petsRef,
+            where('status', '==', 'completed'),
+            orderBy('completedAt', 'desc')
+        );
+
+        const snapshot = await getDocs(q);
+        const pets = [];
+        snapshot.forEach(doc => {
+            pets.push({ id: doc.id, ...doc.data() });
+        });
+        return pets;
+    } catch (error) {
+        console.error('완성 펫 조회 실패:', error);
+        return [];
+    }
+}
+
+/**
+ * 학생의 모든 펫 가져오기 (현재 + 완성)
+ * @param {string} teacherUid - 교사 UID
+ * @param {string} classId - 학급 ID
+ * @param {string} studentId - 학생 ID
+ */
+export async function getStudentPets(teacherUid, classId, studentId) {
+    if (!db) return [];
+
+    const uid = teacherUid || getCurrentTeacherUid();
+    const cId = classId || getCurrentClassId();
+
+    if (!uid || !cId || !studentId) return [];
+
+    try {
+        const petsRef = studentSubRef(uid, cId, studentId, 'pets');
+        const q = query(
+            petsRef,
+            orderBy('createdAt', 'desc')
+        );
+
+        const snapshot = await getDocs(q);
+        const pets = [];
+        snapshot.forEach(doc => {
+            pets.push({ id: doc.id, ...doc.data() });
+        });
+        return pets;
+    } catch (error) {
+        console.error('학생 펫 목록 조회 실패:', error);
+        return [];
+    }
+}
+
+/**
+ * 특정 종류 펫 완성 여부 확인
+ * @param {string} teacherUid - 교사 UID
+ * @param {string} classId - 학급 ID
+ * @param {string} studentId - 학생 ID
+ * @param {string} petType - 펫 종류
+ */
+export async function hasCompletedPetType(teacherUid, classId, studentId, petType) {
+    if (!db) return false;
+
+    const uid = teacherUid || getCurrentTeacherUid();
+    const cId = classId || getCurrentClassId();
+
+    if (!uid || !cId || !studentId || !petType) return false;
+
+    try {
+        const petsRef = studentSubRef(uid, cId, studentId, 'pets');
+        const q = query(
+            petsRef,
+            where('petType', '==', petType),
+            where('status', '==', 'completed'),
+            limit(1)
+        );
+
+        const snapshot = await getDocs(q);
+        return !snapshot.empty;
+    } catch (error) {
+        console.error('펫 완성 여부 확인 실패:', error);
+        return false;
+    }
+}
+
+/**
+ * 펫 경험치/레벨 업데이트
+ * @param {string} teacherUid - 교사 UID
+ * @param {string} classId - 학급 ID
+ * @param {string} petId - 펫 ID
+ * @param {object} updates - { exp, level, status?, completedAt? }
+ */
+export async function updatePet(teacherUid, classId, studentId, petId, updates) {
+    if (!db || !petId || !studentId) return null;
+
+    const uid = teacherUid || getCurrentTeacherUid();
+    const cId = classId || getCurrentClassId();
+
+    if (!uid || !cId) return null;
+
+    try {
+        const petRef = studentSubDoc(uid, cId, studentId, 'pets', petId);
+        await updateDoc(petRef, {
+            ...updates,
+            updatedAt: serverTimestamp()
+        });
+
+        return { id: petId, ...updates };
+    } catch (error) {
+        console.error('펫 업데이트 실패:', error);
+        return null;
+    }
+}
+
+/**
+ * 펫 삭제
+ * @param {string} teacherUid - 교사 UID
+ * @param {string} classId - 학급 ID
+ * @param {string} petId - 펫 ID
+ */
+export async function deletePet(teacherUid, classId, studentId, petId) {
+    if (!db || !petId || !studentId) return false;
+
+    const uid = teacherUid || getCurrentTeacherUid();
+    const cId = classId || getCurrentClassId();
+
+    if (!uid || !cId) return false;
+
+    try {
+        await deleteDoc(studentSubDoc(uid, cId, studentId, 'pets', petId));
+        return true;
+    } catch (error) {
+        console.error('펫 삭제 실패:', error);
+        return false;
+    }
+}
+
+/**
+ * 펫 데이터 실시간 구독 (특정 학생)
+ */
+export function subscribeToStudentPets(teacherUid, classId, studentId, callback) {
+    if (!db) return null;
+
+    const uid = teacherUid || getCurrentTeacherUid();
+    const cId = classId || getCurrentClassId();
+
+    if (!uid || !cId || !studentId) return null;
+
+    try {
+        const petsRef = studentSubRef(uid, cId, studentId, 'pets');
+        const q = query(
+            petsRef,
+            orderBy('createdAt', 'desc')
+        );
+
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const pets = [];
+            snapshot.forEach(doc => {
+                pets.push({ id: doc.id, ...doc.data() });
+            });
+            callback(pets);
+        }, (error) => {
+            console.error('펫 구독 오류:', error);
+        });
+
+        unsubscribeFunctions.push(unsubscribe);
+        return unsubscribe;
+    } catch (error) {
+        console.error('펫 구독 실패:', error);
+        return null;
     }
 }
 

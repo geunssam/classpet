@@ -38,24 +38,35 @@ service cloud.firestore {
 
           // 학생 (익명 인증): 읽기만 가능 (PIN 검증은 앱 레벨)
           allow read: if isAuthenticated();
-        }
 
-        // 감정 기록: /teachers/{uid}/classes/{classId}/emotions/{emotionId}
-        match /emotions/{emotionId} {
-          // 교사: 모든 권한
-          allow read, write: if isOwner(uid);
+          // ====== 학생 서브컬렉션 ======
 
-          // 학생 (익명 인증): 생성 및 읽기 가능
-          allow create, read: if isAuthenticated();
-        }
+          // 감정 기록: /teachers/{uid}/classes/{classId}/students/{studentId}/emotions/{emotionId}
+          match /emotions/{emotionId} {
+            // 교사: 모든 권한
+            allow read, write: if isOwner(uid);
 
-        // 칭찬 기록: /teachers/{uid}/classes/{classId}/praises/{praiseId}
-        match /praises/{praiseId} {
-          // 교사: 모든 권한
-          allow read, write: if isOwner(uid);
+            // 학생 (익명 인증): 생성 및 읽기 가능
+            allow create, read: if isAuthenticated();
+          }
 
-          // 학생 (익명 인증): 읽기만 가능
-          allow read: if isAuthenticated();
+          // 칭찬 기록: /teachers/{uid}/classes/{classId}/students/{studentId}/praises/{praiseId}
+          match /praises/{praiseId} {
+            // 교사: 모든 권한
+            allow read, write: if isOwner(uid);
+
+            // 학생 (익명 인증): 읽기만 가능
+            allow read: if isAuthenticated();
+          }
+
+          // 펫 데이터: /teachers/{uid}/classes/{classId}/students/{studentId}/pets/{petId}
+          match /pets/{petId} {
+            // 교사: 모든 권한
+            allow read, write: if isOwner(uid);
+
+            // 학생 (익명 인증): 생성 및 읽기 가능 (자기 펫 등록)
+            allow create, read: if isAuthenticated();
+          }
         }
 
         // 시간표: /teachers/{uid}/classes/{classId}/timetable/{docId}
@@ -73,6 +84,19 @@ service cloud.firestore {
           allow read, write: if isOwner(uid);
         }
       }
+    }
+
+    // ==================== collectionGroup 쿼리용 규칙 ====================
+    // cross-student 쿼리 시 교사 소유권 확인 (teacherUid 필드 기반)
+
+    match /{path=**}/emotions/{emotionId} {
+      allow read: if request.auth != null &&
+                     resource.data.teacherUid == request.auth.uid;
+    }
+
+    match /{path=**}/praises/{praiseId} {
+      allow read: if request.auth != null &&
+                     resource.data.teacherUid == request.auth.uid;
     }
 
     // ==================== 학급 코드 매핑 ====================
