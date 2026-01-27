@@ -822,13 +822,100 @@ class Store {
         if (!teacherUid || !classId || !this.firebaseEnabled) return false;
 
         try {
-            // 학생 목록 로드 (계층 구조)
-            // 학생이 없어도 빈 배열로 저장하여 기존 로컬 데이터(목업) 덮어쓰기
+            // 1. 학생 목록 로드 (계층 구조)
             const students = await firebase.getAllStudents(teacherUid, classId);
-            this.saveStudents(students || []);
-            console.log(`Firebase에서 ${(students || []).length}명의 학생 로드 완료`);
+            const studentList = students || [];
+            console.log(`Firebase에서 ${studentList.length}명의 학생 로드 완료`);
 
-            // 설정 정보 로드 (classData에서) - 계층 구조
+            // 2. 칭찬 로그 로드 (학생 데이터 복구에 필요하므로 먼저 로드)
+            let praiseLog = [];
+            try {
+                const praises = await firebase.getAllPraises(teacherUid, classId);
+                if (praises && praises.length > 0) {
+                    praiseLog = praises.map(p => ({
+                        id: p.id || Date.now(),
+                        timestamp: p.timestamp || p.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
+                        studentId: p.studentId,
+                        studentName: p.studentName,
+                        studentNumber: p.studentNumber,
+                        category: p.category,
+                        expGain: p.expGain
+                    }));
+                    console.log(`Firebase에서 ${praiseLog.length}개의 칭찬 로드 완료`);
+                }
+            } catch (praiseError) {
+                console.error('Firebase 칭찬 로드 실패:', praiseError);
+            }
+
+            // 3. 감정 로그 로드
+            let emotionLog = [];
+            try {
+                const emotions = await firebase.getAllEmotions(teacherUid, classId);
+                if (emotions && emotions.length > 0) {
+                    emotionLog = emotions.map(e => ({
+                        id: e.id || Date.now(),
+                        timestamp: e.timestamp || e.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
+                        studentId: e.studentId,
+                        studentName: e.studentName,
+                        studentNumber: e.studentNumber,
+                        emotion: e.emotion,
+                        note: e.note || e.memo || '',
+                        memo: e.memo || e.note || '',
+                        source: e.source || 'student',
+                        conversations: (e.conversations || []).map(c => ({
+                            ...c,
+                            studentAt: c.studentAt?.toDate?.()?.toISOString() || c.studentAt,
+                            replyAt: c.replyAt?.toDate?.()?.toISOString() || c.replyAt
+                        })),
+                        reply: e.reply || null
+                    }));
+                    console.log(`Firebase에서 ${emotionLog.length}개의 감정 로드 완료`);
+                }
+            } catch (emotionError) {
+                console.error('Firebase 감정 로드 실패:', emotionError);
+            }
+
+            // 4. 학생 데이터 병합/복구: exp/level/totalPraises가 없으면 칭찬 로그로 재계산
+            let needsFirebaseSync = false;
+            const mergedStudents = studentList.map(student => {
+                const hasExpLevel = student.exp !== undefined && student.level !== undefined;
+                if (hasExpLevel) return student;
+
+                // 해당 학생의 칭찬에서 경험치 합산
+                const studentPraises = praiseLog.filter(p => p.studentId === student.id);
+                let totalExp = studentPraises.reduce((sum, p) => sum + (p.expGain || 10), 0);
+                let level = 1;
+
+                // 레벨 계산 (100 exp = 1 level, 최대 5)
+                while (totalExp >= 100 && level < 5) {
+                    totalExp -= 100;
+                    level++;
+                }
+                if (level >= 5) {
+                    totalExp = 100;
+                    level = 5;
+                }
+
+                needsFirebaseSync = true;
+                console.log(`학생 ${student.name} 데이터 복구: exp=${totalExp}, level=${level}, totalPraises=${studentPraises.length}`);
+
+                return {
+                    ...student,
+                    petType: student.petType ?? null,
+                    petName: student.petName ?? null,
+                    exp: totalExp,
+                    level: level,
+                    totalPraises: studentPraises.length,
+                    completedPets: student.completedPets || []
+                };
+            });
+
+            // 5. localStorage에 완전한 데이터 저장
+            this.saveStudents(mergedStudents);
+            this.savePraiseLog(praiseLog);
+            this.saveEmotionLog(emotionLog);
+
+            // 6. 설정 정보 로드 (classData에서) - 계층 구조
             const classData = await firebase.getClass(teacherUid, classId);
             if (classData) {
                 this.updateSettings({
@@ -841,52 +928,20 @@ class Store {
                 });
             }
 
-            // 칭찬 로그 로드 (Firebase → localStorage)
-            try {
-                const praises = await firebase.getAllPraises(teacherUid, classId);
-                if (praises && praises.length > 0) {
-                    // Firebase 데이터를 localStorage 형식으로 변환
-                    const praiseLog = praises.map(p => ({
-                        id: p.id || Date.now(),
-                        timestamp: p.timestamp || p.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
-                        studentId: p.studentId,
-                        studentName: p.studentName,
-                        studentNumber: p.studentNumber,
-                        category: p.category,
-                        expGain: p.expGain
-                    }));
-                    this.savePraiseLog(praiseLog);
-                    console.log(`Firebase에서 ${praiseLog.length}개의 칭찬 로드 완료`);
+            // 7. 복구된 학생 데이터를 Firebase에 다시 저장 (1회성, 향후 재로그인 시 정상 로드되도록)
+            if (needsFirebaseSync) {
+                console.log('복구된 학생 데이터를 Firebase에 동기화 중...');
+                for (const student of mergedStudents) {
+                    try {
+                        await this.syncStudentToFirebase(student);
+                    } catch (syncError) {
+                        console.warn(`학생 ${student.name} Firebase 재동기화 실패:`, syncError);
+                    }
                 }
-            } catch (praiseError) {
-                console.error('Firebase 칭찬 로드 실패:', praiseError);
+                console.log('Firebase 학생 데이터 복구 동기화 완료');
             }
 
-            // 감정 로그 로드 (Firebase → localStorage)
-            try {
-                const emotions = await firebase.getAllEmotions(teacherUid, classId);
-                if (emotions && emotions.length > 0) {
-                    const emotionLog = emotions.map(e => ({
-                        id: e.id || Date.now(),
-                        timestamp: e.timestamp || e.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
-                        studentId: e.studentId,
-                        studentName: e.studentName,
-                        studentNumber: e.studentNumber,
-                        emotion: e.emotion,
-                        note: e.note || e.memo || '',
-                        memo: e.memo || e.note || '',
-                        source: e.source || 'student',
-                        conversations: e.conversations || [],
-                        reply: e.reply || null
-                    }));
-                    this.saveEmotionLog(emotionLog);
-                    console.log(`Firebase에서 ${emotionLog.length}개의 감정 로드 완료`);
-                }
-            } catch (emotionError) {
-                console.error('Firebase 감정 로드 실패:', emotionError);
-            }
-
-            // 데이터 로드 완료 알림 (화면 갱신용)
+            // 8. 데이터 로드 완료 알림 (화면 갱신용)
             this.notify('dataLoaded', { students: true, praises: true, emotions: true });
 
             return true;
@@ -993,8 +1048,10 @@ class Store {
         const classId = this.getCurrentClassId();
         if (!teacherUid || !classId || !this.firebaseEnabled) return;
 
-        // 펫/칭찬 관련 필드는 별도 컬렉션(pets, praises)에서 관리하므로 students 문서에서 제외
-        const { petType, petName, exp, level, completedPets, totalPraises, ...studentData } = student;
+        // completedPets 배열은 별도 pets 컬렉션에서 관리하므로 제외
+        // petType, petName, exp, level, totalPraises는 학생 문서에 보존 (재로그인 시 필요)
+        const studentData = { ...student };
+        delete studentData.completedPets;
 
         if (this.isOnline) {
             try {
