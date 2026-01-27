@@ -315,26 +315,34 @@ function renderChatRoom(students) {
     const emotions = store.getEmotionsByStudent(student.id)
         .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 
-    // 미답장 메시지 존재 여부 확인
-    let hasUnreplied = false;
-    let lastUnrepliedEmotionId = null;
-    let lastUnrepliedConvoIndex = -1;
+    // 미답장 메시지 목록 수집
+    const unrepliedList = [];
     emotions.forEach(e => {
         const convos = e.conversations || [];
         convos.forEach((c, ci) => {
             if (c.studentMessage && !c.teacherReply) {
-                hasUnreplied = true;
-                lastUnrepliedEmotionId = e.id || e.firebaseId;
-                lastUnrepliedConvoIndex = ci;
+                const emotionInfo = EMOTION_TYPES[e.emotion];
+                unrepliedList.push({
+                    emotionId: e.id || e.firebaseId,
+                    convoIndex: ci,
+                    preview: `${emotionInfo ? emotionInfo.icon + ' ' + emotionInfo.name : ''} | ${c.studentMessage}`,
+                    studentMessage: c.studentMessage
+                });
             }
         });
         // 구 데이터 호환
         if (!e.conversations?.length && e.source === 'student' && !e.reply) {
-            hasUnreplied = true;
-            lastUnrepliedEmotionId = e.id || e.firebaseId;
-            lastUnrepliedConvoIndex = -1;
+            const emotionInfo = EMOTION_TYPES[e.emotion];
+            unrepliedList.push({
+                emotionId: e.id || e.firebaseId,
+                convoIndex: -1,
+                preview: `${emotionInfo ? emotionInfo.icon + ' ' + emotionInfo.name : ''} | ${e.note || e.memo || ''}`,
+                studentMessage: e.note || e.memo || ''
+            });
         }
     });
+    const hasUnreplied = unrepliedList.length > 0;
+    const isSingleUnreplied = unrepliedList.length === 1;
 
     return `
         <div class="flex flex-col" style="min-height: 300px;">
@@ -349,17 +357,25 @@ function renderChatRoom(students) {
 
             <!-- 타임라인 -->
             <div id="chatTimeline" class="flex-1 overflow-y-auto space-y-2 px-2 pb-2" style="max-height: 55vh;">
-                ${renderTimeline(emotions, student)}
+                ${renderTimeline(emotions, student, unrepliedList)}
             </div>
 
             <!-- 답장 입력창 -->
             ${hasUnreplied ? `
-                <div class="bg-white rounded-xl p-3 mt-2 flex items-center gap-2">
+                <!-- 인용 프리뷰 (기본 숨김, 답장 버튼 클릭 시 표시) -->
+                <div id="chatReplyPreview" class="${isSingleUnreplied ? 'hidden' : 'hidden'} bg-primary/10 rounded-t-xl px-3 py-2 flex items-center justify-between mt-2">
+                    <span id="chatReplyPreviewText" class="text-xs text-gray-600 truncate flex-1"></span>
+                    <button id="chatReplyCancelBtn" class="text-gray-400 hover:text-gray-600 ml-2 flex-shrink-0">✕</button>
+                </div>
+                <div class="bg-white rounded-xl mt-2 p-3 flex items-center gap-2"
+                     id="chatReplyInputWrap">
                     <input type="text" id="chatReplyInput" class="flex-1 border border-gray-200 rounded-full px-4 py-2 text-sm focus:outline-none focus:border-primary"
-                           placeholder="답장을 입력하세요..."
-                           data-emotion-id="${lastUnrepliedEmotionId}"
-                           data-convo-index="${lastUnrepliedConvoIndex}" />
-                    <button id="chatSendBtn" class="w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center hover:bg-primary/90 flex-shrink-0">
+                           placeholder="${isSingleUnreplied ? '답장을 입력하세요...' : '말풍선을 눌러 답장할 메시지를 선택하세요'}"
+                           data-emotion-id="${isSingleUnreplied ? unrepliedList[0].emotionId : ''}"
+                           data-convo-index="${isSingleUnreplied ? unrepliedList[0].convoIndex : ''}"
+                           ${isSingleUnreplied ? '' : 'disabled'} />
+                    <button id="chatSendBtn" class="w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center hover:bg-primary/90 flex-shrink-0 ${isSingleUnreplied ? '' : 'opacity-50'}"
+                            ${isSingleUnreplied ? '' : 'disabled'}>
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <line x1="22" y1="2" x2="11" y2="13"></line>
                             <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
@@ -378,7 +394,8 @@ function renderChatRoom(students) {
 /**
  * 타임라인 렌더링 (날짜 구분선 + 감정 태그 + 말풍선)
  */
-function renderTimeline(emotions, student) {
+function renderTimeline(emotions, student, unrepliedList = []) {
+    const multipleUnreplied = unrepliedList.length > 1;
     if (emotions.length === 0) {
         return `
             <div class="text-center py-8 text-gray-400">
@@ -424,13 +441,25 @@ function renderTimeline(emotions, student) {
                     const time = formatChatTime(c.studentAt || e.timestamp, true);
                     const showTag = isFirstStudentMsg && emotionTag;
                     isFirstStudentMsg = false;
+                    const isUnreplied = !c.teacherReply;
+                    const eId = e.id || e.firebaseId;
+                    const previewText = `${emotionInfo ? emotionInfo.icon + ' ' + emotionInfo.name : ''} | ${c.studentMessage}`;
                     html += `
                         <div class="flex items-end gap-2 mb-2">
                             <div class="max-w-[75%] bg-yellow-100 rounded-2xl rounded-tl-sm px-3 py-2">
                                 ${showTag ? `<div>${emotionTag}</div>` : ''}
                                 <p class="text-sm">${escapeHtml(c.studentMessage)}</p>
                             </div>
-                            <span class="text-xs text-gray-400 flex-shrink-0">${time}</span>
+                            <div class="flex flex-col items-start gap-1">
+                                <span class="text-xs text-gray-400 flex-shrink-0">${time}</span>
+                                ${isUnreplied && multipleUnreplied ? `
+                                    <button class="chat-reply-btn text-xs text-primary font-medium hover:underline"
+                                            data-emotion-id="${eId}" data-convo-index="${ci}"
+                                            data-preview="${escapeHtml(previewText)}">
+                                        답장
+                                    </button>
+                                ` : ''}
+                            </div>
                         </div>
                     `;
                 }
@@ -460,15 +489,27 @@ function renderTimeline(emotions, student) {
         } else {
             // 구 데이터 호환: conversations가 없는 경우
             const msg = e.note || e.memo;
+            const isOldUnreplied = e.source === 'student' && !e.reply;
+            const oldEId = e.id || e.firebaseId;
             if (msg) {
                 const time = formatChatTime(e.timestamp, true);
+                const oldPreviewText = `${emotionInfo ? emotionInfo.icon + ' ' + emotionInfo.name : ''} | ${msg}`;
                 html += `
                     <div class="flex items-end gap-2 mb-2">
                         <div class="max-w-[75%] bg-yellow-100 rounded-2xl rounded-tl-sm px-3 py-2">
                             ${emotionTag ? `<div>${emotionTag}</div>` : ''}
                             <p class="text-sm">${escapeHtml(msg)}</p>
                         </div>
-                        <span class="text-xs text-gray-400 flex-shrink-0">${time}</span>
+                        <div class="flex flex-col items-start gap-1">
+                            <span class="text-xs text-gray-400 flex-shrink-0">${time}</span>
+                            ${isOldUnreplied && multipleUnreplied ? `
+                                <button class="chat-reply-btn text-xs text-primary font-medium hover:underline"
+                                        data-emotion-id="${oldEId}" data-convo-index="-1"
+                                        data-preview="${escapeHtml(oldPreviewText)}">
+                                    답장
+                                </button>
+                            ` : ''}
+                        </div>
                     </div>
                 `;
             } else if (emotionTag) {
@@ -570,6 +611,102 @@ function backToChatList() {
     afterRender();
 }
 
+/**
+ * 채팅방 답장 관련 이벤트 바인딩
+ * (afterRender + Firebase 실시간 콜백에서 공통 사용)
+ */
+function bindChatReplyEvents() {
+    const sendBtn = document.getElementById('chatSendBtn');
+    const replyInput = document.getElementById('chatReplyInput');
+    const replyPreview = document.getElementById('chatReplyPreview');
+    const replyPreviewText = document.getElementById('chatReplyPreviewText');
+    const replyCancelBtn = document.getElementById('chatReplyCancelBtn');
+    const replyInputWrap = document.getElementById('chatReplyInputWrap');
+
+    if (!sendBtn || !replyInput) return;
+
+    // 답장 버튼 클릭 → 인용 프리뷰 표시 + 입력 활성화
+    document.querySelectorAll('.chat-reply-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const emotionId = btn.dataset.emotionId;
+            const convoIndex = btn.dataset.convoIndex;
+            const preview = btn.dataset.preview;
+
+            // 입력창에 대상 정보 설정
+            replyInput.dataset.emotionId = emotionId;
+            replyInput.dataset.convoIndex = convoIndex;
+            replyInput.disabled = false;
+            replyInput.placeholder = '답장을 입력하세요...';
+            sendBtn.disabled = false;
+            sendBtn.classList.remove('opacity-50');
+
+            // 인용 프리뷰 표시
+            if (replyPreview && replyPreviewText) {
+                replyPreviewText.textContent = preview;
+                replyPreview.classList.remove('hidden');
+                if (replyInputWrap) {
+                    replyInputWrap.classList.remove('rounded-xl', 'mt-2');
+                    replyInputWrap.classList.add('rounded-b-xl');
+                }
+            }
+
+            replyInput.focus();
+        });
+    });
+
+    // 인용 프리뷰 취소 버튼
+    if (replyCancelBtn) {
+        replyCancelBtn.addEventListener('click', () => {
+            if (replyPreview) replyPreview.classList.add('hidden');
+            replyInput.value = '';
+            replyInput.dataset.emotionId = '';
+            replyInput.dataset.convoIndex = '';
+            replyInput.disabled = true;
+            replyInput.placeholder = '말풍선을 눌러 답장할 메시지를 선택하세요';
+            sendBtn.disabled = true;
+            sendBtn.classList.add('opacity-50');
+            if (replyInputWrap) {
+                replyInputWrap.classList.add('rounded-xl', 'mt-2');
+                replyInputWrap.classList.remove('rounded-b-xl');
+            }
+        });
+    }
+
+    const sendReply = () => {
+        const message = replyInput.value.trim();
+        if (!message) return;
+
+        const emotionId = replyInput.dataset.emotionId;
+        const convoIndex = parseInt(replyInput.dataset.convoIndex);
+
+        if (!emotionId) return;
+
+        store.addReplyToEmotion(emotionId, message, convoIndex);
+
+        const students = store.getStudents() || [];
+        const student = students.find(s => String(s.id) === String(selectedChatStudentId));
+        showToast(`${student?.name || '학생'}에게 답장을 보냈어요! 💌`, 'success');
+
+        // 리렌더
+        const content = document.getElementById('content');
+        content.innerHTML = render();
+        afterRender();
+        // 스크롤 맨 아래
+        setTimeout(() => {
+            const timeline = document.getElementById('chatTimeline');
+            if (timeline) timeline.scrollTop = timeline.scrollHeight;
+        }, 50);
+    };
+
+    sendBtn.addEventListener('click', sendReply);
+    replyInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendReply();
+        }
+    });
+}
+
 export function afterRender() {
     // 탭 전환
     document.querySelectorAll('.tab-item').forEach(tab => {
@@ -592,42 +729,8 @@ export function afterRender() {
         backBtn.addEventListener('click', backToChatList);
     }
 
-    // 채팅방 답장 전송
-    const sendBtn = document.getElementById('chatSendBtn');
-    const replyInput = document.getElementById('chatReplyInput');
-    if (sendBtn && replyInput) {
-        const sendReply = () => {
-            const message = replyInput.value.trim();
-            if (!message) return;
-
-            const emotionId = replyInput.dataset.emotionId;
-            const convoIndex = parseInt(replyInput.dataset.convoIndex);
-
-            store.addReplyToEmotion(emotionId, message, convoIndex);
-
-            const students = store.getStudents() || [];
-            const student = students.find(s => String(s.id) === String(selectedChatStudentId));
-            showToast(`${student?.name || '학생'}에게 답장을 보냈어요! 💌`, 'success');
-
-            // 리렌더
-            const content = document.getElementById('content');
-            content.innerHTML = render();
-            afterRender();
-            // 스크롤 맨 아래
-            setTimeout(() => {
-                const timeline = document.getElementById('chatTimeline');
-                if (timeline) timeline.scrollTop = timeline.scrollHeight;
-            }, 50);
-        };
-
-        sendBtn.addEventListener('click', sendReply);
-        replyInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendReply();
-            }
-        });
-    }
+    // 채팅방 답장 이벤트 바인딩
+    bindChatReplyEvents();
 
     // 채팅방 타임라인 스크롤 맨 아래
     if (historySubView === 'chatRoom') {
@@ -675,8 +778,9 @@ function setupFirebaseSubscription() {
                 // 채팅방 뒤로가기
                 const backBtn = document.getElementById('backToChatListBtn');
                 if (backBtn) backBtn.addEventListener('click', backToChatList);
-                // 채팅방 스크롤 유지
+                // 채팅방 답장 이벤트 재바인딩
                 if (historySubView === 'chatRoom') {
+                    bindChatReplyEvents();
                     const timeline = document.getElementById('chatTimeline');
                     if (timeline) timeline.scrollTop = timeline.scrollHeight;
                 }
