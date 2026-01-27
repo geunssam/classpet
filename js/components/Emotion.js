@@ -407,8 +407,10 @@ function renderTimeline(emotions, student) {
         }
 
         // 감정 태그 HTML (말풍선 안에 삽입용)
+        // 밝은 색상(soso 등)은 텍스트가 안 보이므로 진하게 보정
+        const tagColor = emotionInfo ? darkenColor(emotionInfo.color, 0.35) : '';
         const emotionTag = emotionInfo
-            ? `<span class="inline-block text-xs font-medium px-2 py-0.5 rounded-full mb-1 bg-white/80 border" style="border-color: ${emotionInfo.color}50; color: ${emotionInfo.color}">${emotionInfo.icon} ${emotionInfo.name}</span>`
+            ? `<span class="inline-block text-xs font-semibold px-2 py-0.5 rounded-full mb-1 bg-white/90 border" style="border-color: ${emotionInfo.color}; color: ${tagColor}">${emotionInfo.icon} ${emotionInfo.name}</span>`
             : '';
 
         // conversations 기반 말풍선
@@ -526,6 +528,19 @@ function formatChatTime(timestamp, timeOnly = false) {
 function escapeHtml(str) {
     if (!str) return '';
     return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+/**
+ * HEX 색상을 어둡게 보정
+ * @param {string} hex - #RRGGBB
+ * @param {number} amount - 0~1 (클수록 더 어두움)
+ */
+function darkenColor(hex, amount) {
+    const num = parseInt(hex.replace('#', ''), 16);
+    const r = Math.max(0, Math.floor(((num >> 16) & 0xFF) * (1 - amount)));
+    const g = Math.max(0, Math.floor(((num >> 8) & 0xFF) * (1 - amount)));
+    const b = Math.max(0, Math.floor((num & 0xFF) * (1 - amount)));
+    return `#${(r << 16 | g << 8 | b).toString(16).padStart(6, '0')}`;
 }
 
 /**
