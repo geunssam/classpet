@@ -435,8 +435,9 @@ export function showEmotionCheck(studentId, emotionId = null) {
                 `).join('')}
             </div>
 
-            ${isStudentInput && studentNote ? `
+            ${isStudentInput ? `
             <!-- 학생이 작성한 메모 표시 -->
+            ${studentNote ? `
             <div class="bg-blue-50 rounded-xl p-3">
                 <div class="flex items-center gap-2 mb-2">
                     <span class="text-sm">💬</span>
@@ -444,6 +445,7 @@ export function showEmotionCheck(studentId, emotionId = null) {
                 </div>
                 <p class="text-sm text-gray-700">"${studentNote}"</p>
             </div>
+            ` : ''}
 
             <!-- 선생님 답장 섹션 -->
             <div class="bg-green-50 rounded-xl p-3">
@@ -483,7 +485,7 @@ export function showEmotionCheck(studentId, emotionId = null) {
     openModal();
 
     // 학생이 입력한 감정에 답장하는 경우
-    if (isStudentInput && studentNote) {
+    if (isStudentInput) {
         const sendReplyBtn = document.getElementById('sendReplyBtn');
         const replyTextarea = document.getElementById('teacherReply');
 
