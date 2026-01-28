@@ -863,7 +863,6 @@ class Store {
                         // 학생 메시지: conversations[0].studentMessage 최우선 (Firestore 정본)
                         const firstMessage = conversations[0]?.studentMessage || '';
                         const noteText = firstMessage || e.note || e.memo || '';
-                        console.log(`감정 로드 [${e.studentName}] sid=${e.studentId}: msg="${firstMessage}", reply=${!!replyData}, convos=${conversations.length}`);
 
                         // 교사 답장: 최상위 reply 또는 conversations의 마지막 teacherReply
                         const lastReply = [...conversations].reverse().find(c => c.teacherReply);
@@ -2235,8 +2234,13 @@ class Store {
 
     getTodayEmotions() {
         const log = this.getEmotionLog() || [];
-        const today = new Date().toISOString().split('T')[0];
-        return log.filter(e => e.timestamp.startsWith(today));
+        const now = new Date();
+        const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        return log.filter(e => {
+            const d = new Date(e.timestamp);
+            const localDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+            return localDate === today;
+        });
     }
 
     getStudentsNeedingAttention() {

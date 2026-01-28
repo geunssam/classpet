@@ -861,20 +861,24 @@ function showNewPetSelectionModal() {
  * 기록 보기 탭 렌더링 (카톡 스타일)
  */
 function renderHistoryTab(student, petEmoji, petName) {
-    const dateStr = historyDate.toISOString().split('T')[0];
+    // 로컬 시간대 기준 날짜 문자열 (UTC가 아닌 사용자 시간대)
     const month = historyDate.getMonth() + 1;
     const date = historyDate.getDate();
+    const dateStr = `${historyDate.getFullYear()}-${String(month).padStart(2, '0')}-${String(date).padStart(2, '0')}`;
     const days = ['일', '월', '화', '수', '목', '금', '토'];
     const day = days[historyDate.getDay()];
 
-    const isToday = dateStr === new Date().toISOString().split('T')[0];
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const isToday = dateStr === todayStr;
 
-    // 해당 날짜 감정 기록 필터
+    // 해당 날짜 감정 기록 필터 (로컬 시간대 기준)
     const allEmotions = store.getEmotionsByStudent(student.id);
     const dayEmotions = allEmotions.filter(e => {
-        // timestamp가 Firestore Timestamp 객체일 수 있으므로 안전하게 변환
-        const ts = e.timestamp?.toDate ? e.timestamp.toDate().toISOString() : (e.timestamp || '');
-        return ts.startsWith(dateStr);
+        // timestamp를 로컬 Date 객체로 변환 후 로컬 날짜 비교
+        const d = e.timestamp?.toDate ? e.timestamp.toDate() : new Date(e.timestamp);
+        const localDateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        return localDateStr === dateStr;
     }).sort((a, b) => {
         const tA = a.timestamp?.toDate ? a.timestamp.toDate() : new Date(a.timestamp);
         const tB = b.timestamp?.toDate ? b.timestamp.toDate() : new Date(b.timestamp);
