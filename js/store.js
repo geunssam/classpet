@@ -827,9 +827,13 @@ class Store {
             const studentList = students || [];
             console.log(`Firebase에서 ${studentList.length}명의 학생 로드 완료`);
 
-            // 2. 칭찬 로그 로드 (학생 데이터 복구에 필요하므로 먼저 로드)
+            // 학생 세션이면 collectionGroup 쿼리(감정/칭찬) 스킵
+            // (학생은 StudentMode.js에서 직접 경로로 자기 데이터를 별도 조회)
+            const isStudentSession = !!sessionStorage.getItem('classpet_student_session');
+
+            // 2. 칭찬 로그 로드 (교사만 - collectionGroup 쿼리 사용)
             let praiseLog = [];
-            try {
+            if (!isStudentSession) try {
                 const praises = await firebase.getAllPraises(teacherUid, classId);
                 if (praises && praises.length > 0) {
                     praiseLog = praises.map(p => ({
@@ -847,9 +851,9 @@ class Store {
                 console.error('Firebase 칭찬 로드 실패:', praiseError);
             }
 
-            // 3. 감정 로그 로드
+            // 3. 감정 로그 로드 (교사만 - collectionGroup 쿼리 사용)
             let emotionLog = [];
-            try {
+            if (!isStudentSession) try {
                 const emotions = await firebase.getAllEmotions(teacherUid, classId);
                 if (emotions && emotions.length > 0) {
                     emotionLog = emotions.filter(e => e.studentId != null).map(e => {
