@@ -812,12 +812,13 @@ export async function saveEmotion(teacherUid, classId, emotion) {
             studentName: emotion.studentName || '',
             studentNumber: emotion.studentNumber || 0,
             emotion: emotion.emotion,
+            source: emotion.source || 'teacher',
             date: emotion.timestamp?.split('T')[0] || now.split('T')[0],
             // collectionGroup 쿼리용 필드
             teacherUid: uid,
             classId: cId,
             // conversations 배열: 메모-답장 쌍으로 저장
-            conversations: [
+            conversations: emotion.source === 'student' ? [
                 {
                     studentMessage: emotion.memo || null,
                     studentAt: now,
@@ -825,7 +826,16 @@ export async function saveEmotion(teacherUid, classId, emotion) {
                     replyAt: null,
                     read: false
                 }
-            ],
+            ] : (emotion.memo ? [
+                {
+                    studentMessage: null,
+                    teacherNote: emotion.memo,
+                    studentAt: now,
+                    teacherReply: null,
+                    replyAt: null,
+                    read: false
+                }
+            ] : []),
             createdAt: serverTimestamp(),
             updatedAt: serverTimestamp()
         };

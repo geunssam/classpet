@@ -223,17 +223,19 @@ function renderChatRoomList(students) {
         if (!studentMap[sid]) {
             studentMap[sid] = { lastEmotion: e, unreadCount: 0 };
         }
-        // 최신 기록이 먼저 (emotionLog는 unshift로 추가되므로 첫 번째가 최신)
-        // 미답장 카운트: conversations에서 teacherReply가 없는 항목
-        const convos = e.conversations || [];
-        convos.forEach(c => {
-            if (c.studentMessage && !c.teacherReply) {
+        // 미답장 카운트: 학생이 보낸 감정(source=student)의 conversations에서 teacherReply가 없는 항목만
+        // 교사가 메모한 감정(source=teacher)은 답장 대상이 아니므로 카운트하지 않음
+        if (e.source === 'student') {
+            const convos = e.conversations || [];
+            convos.forEach(c => {
+                if (c.studentMessage && !c.teacherReply) {
+                    studentMap[sid].unreadCount++;
+                }
+            });
+            // reply 기반 호환 (conversations가 없는 옛 데이터)
+            if (!convos.length && !e.reply) {
                 studentMap[sid].unreadCount++;
             }
-        });
-        // reply 기반 호환 (conversations가 없는 옛 데이터)
-        if (!e.conversations?.length && e.source === 'student' && !e.reply) {
-            studentMap[sid].unreadCount++;
         }
     });
 
@@ -315,9 +317,10 @@ function renderChatRoom(students) {
     const emotions = store.getEmotionsByStudent(student.id)
         .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 
-    // 미답장 메시지 목록 수집
+    // 미답장 메시지 목록 수집 (학생이 보낸 감정만)
     const unrepliedList = [];
     emotions.forEach(e => {
+        if (e.source !== 'student') return; // 교사 메모는 답장 대상 아님
         const convos = e.conversations || [];
         convos.forEach((c, ci) => {
             if (c.studentMessage && !c.teacherReply) {
@@ -331,7 +334,7 @@ function renderChatRoom(students) {
             }
         });
         // 구 데이터 호환
-        if (!e.conversations?.length && e.source === 'student' && !e.reply) {
+        if (!convos.length && !e.reply) {
             const emotionInfo = EMOTION_TYPES[e.emotion];
             unrepliedList.push({
                 emotionId: e.firebaseId || e.id,
