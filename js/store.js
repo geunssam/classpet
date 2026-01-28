@@ -2223,13 +2223,13 @@ class Store {
             });
 
             this.saveEmotionLog(localLog);
-            if (callback) callback(localLog.filter(e => e.studentId === studentId));
+            if (callback) callback(localLog.filter(e => String(e.studentId) === String(studentId)));
         });
     }
 
     getEmotionsByStudent(studentId) {
         const log = this.getEmotionLog() || [];
-        return log.filter(e => e.studentId === studentId);
+        return log.filter(e => String(e.studentId) === String(studentId));
     }
 
     getTodayEmotions() {

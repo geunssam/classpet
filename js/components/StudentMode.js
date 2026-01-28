@@ -894,7 +894,16 @@ function renderHistoryTab(student, petEmoji, petName) {
 
     // 해당 날짜 감정 기록 필터
     const allEmotions = store.getEmotionsByStudent(student.id);
-    const dayEmotions = allEmotions.filter(e => e.timestamp.startsWith(dateStr));
+    console.log('📊 학생 기록보기 디버그:', { studentId: student.id, dateStr, allEmotionsCount: allEmotions.length, allEmotions: allEmotions.map(e => ({ id: e.id, fid: e.firebaseId, sid: e.studentId, ts: e.timestamp, emotion: e.emotion, convos: e.conversations?.length })) });
+    const dayEmotions = allEmotions.filter(e => {
+        // timestamp가 Firestore Timestamp 객체일 수 있으므로 안전하게 변환
+        const ts = e.timestamp?.toDate ? e.timestamp.toDate().toISOString() : (e.timestamp || '');
+        return ts.startsWith(dateStr);
+    }).sort((a, b) => {
+        const tA = a.timestamp?.toDate ? a.timestamp.toDate() : new Date(a.timestamp);
+        const tB = b.timestamp?.toDate ? b.timestamp.toDate() : new Date(b.timestamp);
+        return tA - tB;
+    });
 
     return `
         <div class="px-4">
