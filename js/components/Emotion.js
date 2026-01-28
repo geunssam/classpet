@@ -323,7 +323,7 @@ function renderChatRoom(students) {
             if (c.studentMessage && !c.teacherReply) {
                 const emotionInfo = EMOTION_TYPES[e.emotion];
                 unrepliedList.push({
-                    emotionId: e.id || e.firebaseId,
+                    emotionId: e.firebaseId || e.id,
                     convoIndex: ci,
                     preview: `${emotionInfo ? emotionInfo.icon + ' ' + emotionInfo.name : ''} | ${c.studentMessage}`,
                     studentMessage: c.studentMessage
@@ -334,7 +334,7 @@ function renderChatRoom(students) {
         if (!e.conversations?.length && e.source === 'student' && !e.reply) {
             const emotionInfo = EMOTION_TYPES[e.emotion];
             unrepliedList.push({
-                emotionId: e.id || e.firebaseId,
+                emotionId: e.firebaseId || e.id,
                 convoIndex: -1,
                 preview: `${emotionInfo ? emotionInfo.icon + ' ' + emotionInfo.name : ''} | ${e.note || e.memo || ''}`,
                 studentMessage: e.note || e.memo || ''
@@ -442,7 +442,7 @@ function renderTimeline(emotions, student, unrepliedList = []) {
                     const showTag = isFirstStudentMsg && emotionTag;
                     isFirstStudentMsg = false;
                     const isUnreplied = !c.teacherReply;
-                    const eId = e.id || e.firebaseId;
+                    const eId = e.firebaseId || e.id;
                     const previewText = `${emotionInfo ? emotionInfo.icon + ' ' + emotionInfo.name : ''} | ${c.studentMessage}`;
                     html += `
                         <div class="flex items-end gap-2 mb-2">
@@ -490,7 +490,7 @@ function renderTimeline(emotions, student, unrepliedList = []) {
             // 구 데이터 호환: conversations가 없는 경우
             const msg = e.note || e.memo;
             const isOldUnreplied = e.source === 'student' && !e.reply;
-            const oldEId = e.id || e.firebaseId;
+            const oldEId = e.firebaseId || e.id;
             if (msg) {
                 const time = formatChatTime(e.timestamp, true);
                 const oldPreviewText = `${emotionInfo ? emotionInfo.icon + ' ' + emotionInfo.name : ''} | ${msg}`;

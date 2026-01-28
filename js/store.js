@@ -2120,6 +2120,14 @@ class Store {
                         localLog[idx].memo = noteText;
                         localLog[idx].emotion = fe.emotion;
                         localLog[idx].source = fe.source || localLog[idx].source;
+                        // reply 객체도 Firebase 데이터로 동기화
+                        if (fe.reply) {
+                            localLog[idx].reply = {
+                                message: fe.reply.message,
+                                timestamp: fe.reply.timestamp?.toDate?.()?.toISOString() || fe.reply.timestamp,
+                                read: fe.reply.read ?? false
+                            };
+                        }
                     }
                 } else {
                     // 새 데이터 추가
@@ -2263,7 +2271,8 @@ class Store {
      */
     addReplyToEmotion(emotionId, message, conversationIndex = -1) {
         const log = this.getEmotionLog() || [];
-        const index = log.findIndex(e => e.id === emotionId || e.firebaseId === emotionId);
+        const eid = String(emotionId);
+        const index = log.findIndex(e => String(e.id) === eid || String(e.firebaseId) === eid);
 
         if (index !== -1) {
             const conversations = log[index].conversations || [];
