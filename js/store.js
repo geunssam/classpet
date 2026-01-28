@@ -852,7 +852,7 @@ class Store {
             try {
                 const emotions = await firebase.getAllEmotions(teacherUid, classId);
                 if (emotions && emotions.length > 0) {
-                    emotionLog = emotions.map(e => {
+                    emotionLog = emotions.filter(e => e.studentId != null).map(e => {
                         // conversations에서 Timestamp 변환
                         const conversations = (e.conversations || []).map(c => ({
                             ...c,
@@ -863,7 +863,7 @@ class Store {
                         // 학생 메시지: conversations[0].studentMessage 최우선 (Firestore 정본)
                         const firstMessage = conversations[0]?.studentMessage || '';
                         const noteText = firstMessage || e.note || e.memo || '';
-                        console.log(`감정 로드 [${e.studentName}]: studentMessage="${firstMessage}", note="${e.note}", memo="${e.memo}" → noteText="${noteText}"`);
+                        console.log(`감정 로드 [${e.studentName}] sid=${e.studentId}: msg="${firstMessage}", reply=${!!replyData}, convos=${conversations.length}`);
 
                         // 교사 답장: 최상위 reply 또는 conversations의 마지막 teacherReply
                         const lastReply = [...conversations].reverse().find(c => c.teacherReply);
@@ -874,7 +874,8 @@ class Store {
                         } : null);
 
                         return {
-                            id: e.id || Date.now(),
+                            id: Date.now() + Math.random(),
+                            firebaseId: e.id,
                             timestamp: e.timestamp || e.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
                             studentId: e.studentId,
                             studentName: e.studentName,
