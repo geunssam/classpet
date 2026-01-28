@@ -12,6 +12,7 @@ import { getNameWithSuffix } from '../utils/nameUtils.js';
 let currentStudentTab = 'send'; // 'send' | 'history'
 let historyDate = new Date();
 let studentEmotionsUnsubscribe = null; // Firebase 실시간 구독 해제 함수
+let lastEmotionsSnapshot = ''; // 데이터 변경 감지용
 
 /**
  * 렌더링
@@ -467,64 +468,40 @@ function setupStudentEmotionSubscription() {
     if (!student || !store.isFirebaseEnabled() || !store.getClassCode()) return;
 
     studentEmotionsUnsubscribe = store.subscribeToStudentEmotions(student.id, (emotions) => {
+        // 데이터 변경 여부 체크 (불필요한 리렌더링 방지 → 플리커링 해결)
+        const snapshot = JSON.stringify(emotions.map(e => ({
+            id: e.firebaseId || e.id,
+            convos: e.conversations,
+            reply: e.reply
+        })));
+        if (snapshot === lastEmotionsSnapshot) return;
+        lastEmotionsSnapshot = snapshot;
+
         console.log('학생 감정 실시간 업데이트:', emotions.length, '개');
-        // 화면 갱신 (현재 탭 유지)
-        const content = document.getElementById('content');
-        if (content) {
-            content.innerHTML = render();
-            // 무한 루프 방지: 구독 재설정 없이 이벤트만 바인딩
-            afterRenderWithoutSubscription();
-        }
-    });
-}
-
-/**
- * Firebase 구독 없이 이벤트만 바인딩 (실시간 업데이트 콜백용)
- */
-function afterRenderWithoutSubscription() {
-    const student = store.getCurrentStudent();
-    if (student) {
-        const todayEmotions = store.getStudentTodayEmotions(student.id);
-        todayEmotions.forEach(emotion => {
-            if (emotion.reply && !emotion.reply.read) {
-                store.markReplyAsRead(emotion.id);
+        // 기록 보기 탭일 때만 해당 영역만 갱신
+        if (currentStudentTab === 'history') {
+            const historyContent = document.getElementById('historyContent');
+            if (historyContent) {
+                const student = store.getCurrentStudent();
+                const petEmoji = getPetEmoji(student.petType, student.level);
+                const petName = student.petName || PET_TYPES[student.petType]?.name || '펫';
+                historyContent.innerHTML = renderHistoryTab(student, petEmoji, petName);
+                // 날짜 네비게이션 이벤트만 재바인딩
+                document.getElementById('historyPrevDay')?.addEventListener('click', () => {
+                    historyDate.setDate(historyDate.getDate() - 1);
+                    router.handleRoute();
+                });
+                document.getElementById('historyNextDay')?.addEventListener('click', () => {
+                    const tomorrow = new Date(historyDate);
+                    tomorrow.setDate(tomorrow.getDate() + 1);
+                    if (tomorrow <= new Date()) {
+                        historyDate = tomorrow;
+                        router.handleRoute();
+                    }
+                });
             }
-        });
-    }
-
-    document.getElementById('tabSendEmotion')?.addEventListener('click', () => {
-        currentStudentTab = 'send';
-        router.handleRoute();
-    });
-    document.getElementById('tabHistory')?.addEventListener('click', () => {
-        currentStudentTab = 'history';
-        router.handleRoute();
-    });
-    document.getElementById('historyPrevDay')?.addEventListener('click', () => {
-        historyDate.setDate(historyDate.getDate() - 1);
-        router.handleRoute();
-    });
-    document.getElementById('historyNextDay')?.addEventListener('click', () => {
-        const tomorrow = new Date(historyDate);
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        if (tomorrow <= new Date()) {
-            historyDate = tomorrow;
-            router.handleRoute();
         }
     });
-
-    const logoutBtn = document.getElementById('studentLogoutBtn');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', () => {
-            store.studentLogout();
-            router.navigate('login');
-        });
-    }
-
-    // 감정/전송 이벤트 재바인딩
-    bindEmotionSendEvents();
-
-    setupPinChangeModal();
 }
 
 /**
@@ -894,7 +871,6 @@ function renderHistoryTab(student, petEmoji, petName) {
 
     // 해당 날짜 감정 기록 필터
     const allEmotions = store.getEmotionsByStudent(student.id);
-    console.log('📊 학생 기록보기 디버그:', { studentId: student.id, dateStr, allEmotionsCount: allEmotions.length, allEmotions: allEmotions.map(e => ({ id: e.id, fid: e.firebaseId, sid: e.studentId, ts: e.timestamp, emotion: e.emotion, convos: e.conversations?.length })) });
     const dayEmotions = allEmotions.filter(e => {
         // timestamp가 Firestore Timestamp 객체일 수 있으므로 안전하게 변환
         const ts = e.timestamp?.toDate ? e.timestamp.toDate().toISOString() : (e.timestamp || '');

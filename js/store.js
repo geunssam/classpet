@@ -3073,8 +3073,10 @@ function convertToPetSpeech(message, petType, petName) {
 
     const lastChar = petMessage.slice(-1);
     if (!['!', '?', '.', '~'].includes(lastChar)) {
-        const randomEnding = style.endings[Math.floor(Math.random() * style.endings.length)];
-        petMessage = `${petMessage} ${randomEnding}`;
+        // 메시지 내용 기반 고정 인덱스 (랜덤 대신 결정적 선택 → 플리커링 방지)
+        const hash = message.split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+        const endingIndex = hash % style.endings.length;
+        petMessage = `${petMessage} ${style.endings[endingIndex]}`;
     }
 
     petMessage = petMessage + trailingEmoji;
