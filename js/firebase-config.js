@@ -618,7 +618,7 @@ export async function updateClass(teacherUid, classId, updates) {
 }
 
 /**
- * 학급 삭제 (계층 구조)
+ * 학급 삭제 (계층 구조 - 하위 컬렉션 포함 재귀 삭제)
  * @param {string} teacherUid - 교사 UID (null이면 현재 저장된 값 사용)
  * @param {string} classId - 학급 ID
  */
@@ -634,15 +634,37 @@ export async function deleteClass(teacherUid, classId) {
         // 학급 정보 가져오기 (학급코드 확인용)
         const classData = await getClass(uid, cId);
 
-        // 학급 삭제
+        // 1. 모든 학생의 하위 컬렉션 삭제 (emotions, pets)
+        const studentsRef = collection(db, 'teachers', uid, 'classes', cId, 'students');
+        const studentsSnap = await getDocs(studentsRef);
+
+        for (const studentDoc of studentsSnap.docs) {
+            const sid = studentDoc.id;
+            // 학생의 emotions 하위 컬렉션 삭제
+            const emotionsRef = collection(db, 'teachers', uid, 'classes', cId, 'students', sid, 'emotions');
+            const emotionsSnap = await getDocs(emotionsRef);
+            for (const emotionDoc of emotionsSnap.docs) {
+                await deleteDoc(emotionDoc.ref);
+            }
+            // 학생의 pets 하위 컬렉션 삭제
+            const petsRef = collection(db, 'teachers', uid, 'classes', cId, 'students', sid, 'pets');
+            const petsSnap = await getDocs(petsRef);
+            for (const petDoc of petsSnap.docs) {
+                await deleteDoc(petDoc.ref);
+            }
+            // 학생 문서 삭제
+            await deleteDoc(studentDoc.ref);
+        }
+
+        // 2. 학급 문서 삭제
         await deleteDoc(doc(db, 'teachers', uid, 'classes', cId));
 
-        // 학급코드 매핑 삭제
+        // 3. 학급코드 매핑 삭제
         if (classData?.classCode) {
             await deleteDoc(doc(db, 'classCodes', classData.classCode));
         }
 
-        console.log('학급 삭제 완료:', uid, cId);
+        console.log('학급 삭제 완료 (하위 데이터 포함):', uid, cId);
         return true;
     } catch (error) {
         console.error('학급 삭제 실패:', error);
