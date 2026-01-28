@@ -827,7 +827,9 @@ export async function saveEmotion(teacherUid, classId, emotion) {
     try {
         const studentId = emotion.studentId;
         const emotionsRef = studentSubRef(uid, cId, studentId, 'emotions');
-        const now = new Date().toISOString();
+        const now = new Date();
+        const nowISO = now.toISOString();
+        const localDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
         const emotionData = {
             studentId: emotion.studentId,
@@ -835,29 +837,20 @@ export async function saveEmotion(teacherUid, classId, emotion) {
             studentNumber: emotion.studentNumber || 0,
             emotion: emotion.emotion,
             source: emotion.source || 'teacher',
-            date: emotion.timestamp?.split('T')[0] || now.split('T')[0],
+            date: localDate,
             // collectionGroup 쿼리용 필드
             teacherUid: uid,
             classId: cId,
-            // conversations 배열: 메모-답장 쌍으로 저장
+            // conversations 배열: 학생이 보낸 경우만 studentMessage로 저장
             conversations: emotion.source === 'student' ? [
                 {
                     studentMessage: emotion.memo || null,
-                    studentAt: now,
+                    studentAt: nowISO,
                     teacherReply: null,
                     replyAt: null,
                     read: false
                 }
-            ] : (emotion.memo ? [
-                {
-                    studentMessage: null,
-                    teacherNote: emotion.memo,
-                    studentAt: now,
-                    teacherReply: null,
-                    replyAt: null,
-                    read: false
-                }
-            ] : []),
+            ] : [],
             createdAt: serverTimestamp(),
             updatedAt: serverTimestamp()
         };
@@ -986,7 +979,8 @@ export async function getTodayEmotions(teacherUid, classId) {
     if (!uid || !cId) return [];
 
     try {
-        const today = new Date().toISOString().split('T')[0];
+        const now = new Date();
+        const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
         const emotionsGroup = collectionGroup(db, 'emotions');
         const q = query(
             emotionsGroup,
@@ -1087,7 +1081,8 @@ export function subscribeToTodayEmotions(teacherUid, classId, callback) {
     if (!uid || !cId) return null;
 
     try {
-        const today = new Date().toISOString().split('T')[0];
+        const now = new Date();
+        const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
         const emotionsGroup = collectionGroup(db, 'emotions');
         const q = query(
             emotionsGroup,
@@ -1354,7 +1349,7 @@ export async function savePraise(teacherUid, classId, praise) {
 
         const praiseData = {
             ...praise,
-            date: praise.timestamp?.split('T')[0] || new Date().toISOString().split('T')[0],
+            date: (() => { const d = praise.timestamp ? new Date(praise.timestamp) : new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; })(),
             // collectionGroup 쿼리용 필드
             teacherUid: uid,
             classId: cId,
@@ -1381,7 +1376,8 @@ export async function getTodayPraises(teacherUid, classId) {
     if (!uid || !cId) return [];
 
     try {
-        const today = new Date().toISOString().split('T')[0];
+        const now = new Date();
+        const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
         const praisesGroup = collectionGroup(db, 'praises');
         const q = query(
             praisesGroup,

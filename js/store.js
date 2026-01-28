@@ -1962,7 +1962,8 @@ class Store {
 
     getTodayPraises() {
         const log = this.getPraiseLog() || [];
-        const today = new Date().toISOString().split('T')[0];
+        const now = new Date();
+        const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
         return log.filter(p => p.timestamp.startsWith(today));
     }
 
@@ -2029,6 +2030,7 @@ class Store {
         const log = this.getEmotionLog() || [];
         const now = new Date().toISOString();
 
+        const isStudent = emotion.source === 'student';
         const newEmotion = {
             id: Date.now(),
             timestamp: now,
@@ -2037,8 +2039,9 @@ class Store {
             studentNumber: emotion.studentNumber,
             emotion: emotion.emotion,
             memo: emotion.memo || null,
-            // conversations 배열 구조
-            conversations: [
+            source: emotion.source || 'teacher',
+            // conversations: 학생이 보낸 경우만 studentMessage로 저장
+            conversations: isStudent ? [
                 {
                     studentMessage: emotion.memo || null,
                     studentAt: now,
@@ -2046,7 +2049,7 @@ class Store {
                     replyAt: null,
                     read: false
                 }
-            ]
+            ] : []
         };
         log.unshift(newEmotion);
 
@@ -2830,7 +2833,8 @@ class Store {
 
     getTodayUnreadNotifications() {
         const notifications = this.getNotifications() || [];
-        const today = new Date().toISOString().split('T')[0];
+        const now = new Date();
+        const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
         return notifications.filter(n => !n.read && n.timestamp.startsWith(today));
     }
 

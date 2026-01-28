@@ -12,7 +12,7 @@ import { showToast, setModalContent, openModal, closeModal } from '../utils/anim
 let viewMode = 'checkin'; // 'checkin', 'history', 'attention'
 let emotionsUnsubscribe = null; // 실시간 구독 해제 함수
 let isFirebaseMode = false; // Firebase 모드 여부
-let selectedDate = new Date().toISOString().split('T')[0]; // 선택된 날짜 (기본: 오늘)
+let selectedDate = (() => { const n = new Date(); return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`; })(); // 선택된 날짜 (기본: 오늘)
 let historySubView = 'chatList'; // 'chatList' | 'chatRoom'
 let selectedChatStudentId = null;
 

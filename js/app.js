@@ -788,7 +788,8 @@ function bindDateHistoryButton() {
 
     if (dateHistoryBtn && historyDatePicker) {
         // 오늘 날짜를 기본값으로 설정
-        const today = new Date().toISOString().split('T')[0];
+        const now = new Date();
+        const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
         historyDatePicker.value = today;
         historyDatePicker.max = today; // 미래 날짜 선택 불가
 
