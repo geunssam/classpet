@@ -1,5 +1,5 @@
 // 클래스펫 Service Worker
-const CACHE_NAME = 'classpet-v1769616100000';
+const CACHE_NAME = 'classpet-v1769616200000';
 const OFFLINE_URL = '/offline.html';
 
 // 캐시할 정적 파일들 (앱 셸)
@@ -44,6 +44,12 @@ const STATIC_ASSETS = [
     '/js/store/emotionMixin.js',
     '/js/store/settingsMixin.js',
     '/js/store/notificationMixin.js',
+    '/js/app/init.js',
+    '/js/app/routes.js',
+    '/js/app/navigation.js',
+    '/js/app/header.js',
+    '/js/app/modals.js',
+    '/js/app/globalFunctions.js',
     '/js/utils/animations.js',
     '/js/utils/petLogic.js',
     '/js/utils/nameUtils.js',
