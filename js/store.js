@@ -7,222 +7,24 @@
 // Firebase 연동 모듈
 import * as firebase from './firebase-config.js';
 
-// 저장소 키
-const STORAGE_KEYS = {
-    SETTINGS: 'classpet_settings',
-    STUDENTS: 'classpet_students',
-    TIMETABLE: 'classpet_timetable',
-    TIMETABLE_OVERRIDES: 'classpet_timetable_overrides',  // 주간 오버라이드
-    SUBJECT_COLORS: 'classpet_subject_colors',  // 과목별 커스텀 색상
-    SUBJECT_LIST: 'classpet_subject_list',  // 과목 목록
-    PRAISE_LOG: 'classpet_praise_log',
-    EMOTION_LOG: 'classpet_emotion_log',
-    NOTES: 'classpet_notes',
-    NOTIFICATIONS: 'classpet_notifications',
-    OFFLINE_QUEUE: 'classpet_offline_queue',
-    CURRENT_CLASS_ID: 'classpet_current_class_id',
-    CURRENT_TEACHER_UID: 'classpet_current_teacher_uid',
-    PRAISE_CATEGORIES_CUSTOM: 'classpet_praise_categories'
-};
-
-// 기본 과목 목록
-const DEFAULT_SUBJECT_LIST = ['국어', '수학', '사회', '과학', '영어', '체육', '음악', '미술', '도덕', '실과', '창체'];
-
-// 기본 과목 색상 (Timetable.js의 SUBJECT_COLORS와 동일)
-const DEFAULT_SUBJECT_COLORS = {
-    '국어': { bg: '#DBEAFE', text: '#1E40AF' },      // 연한 파랑
-    '수학': { bg: '#FEE2E2', text: '#B91C1C' },      // 연한 빨강
-    '사회': { bg: '#FFEDD5', text: '#C2410C' },      // 연한 주황
-    '과학': { bg: '#D1FAE5', text: '#047857' },      // 연한 초록
-    '영어': { bg: '#EDE9FE', text: '#6D28D9' },      // 연한 보라
-    '체육': { bg: '#FEF9C3', text: '#A16207' },      // 연한 노랑
-    '음악': { bg: '#FCE7F3', text: '#BE185D' },      // 연한 핑크
-    '미술': { bg: '#CCFBF1', text: '#0F766E' },      // 연한 청록
-    '도덕': { bg: '#F3F4F6', text: '#4B5563' },      // 연한 회색
-    '실과': { bg: '#E5E7EB', text: '#374151' },      // 회색
-    '창체': { bg: '#D1D5DB', text: '#1F2937' }       // 진한 회색
-};
-
-// 색상 프리셋 (8개)
-const COLOR_PRESETS = [
-    { name: '파랑', bg: '#DBEAFE', text: '#1E40AF' },
-    { name: '빨강', bg: '#FEE2E2', text: '#B91C1C' },
-    { name: '주황', bg: '#FFEDD5', text: '#C2410C' },
-    { name: '초록', bg: '#D1FAE5', text: '#047857' },
-    { name: '보라', bg: '#EDE9FE', text: '#6D28D9' },
-    { name: '노랑', bg: '#FEF9C3', text: '#A16207' },
-    { name: '핑크', bg: '#FCE7F3', text: '#BE185D' },
-    { name: '청록', bg: '#CCFBF1', text: '#0F766E' }
-];
-
-// 세션 키 (sessionStorage 사용)
-const SESSION_KEYS = {
-    STUDENT_SESSION: 'classpet_student_session',
-    TEACHER_SESSION: 'classpet_teacher_session'
-};
-
-// 기본 설정
-const DEFAULT_SETTINGS = {
-    className: '4학년 2반',
-    teacherName: '담임선생님',
-    schoolYear: 2025,
-    semester: 1,
-    initialized: false
-};
-
-// 기본 시간표 구조
-const DEFAULT_TIMETABLE = {
-    periods: ['1교시', '2교시', '3교시', '4교시', '5교시', '6교시'],
-    days: ['월', '화', '수', '목', '금'],
-    schedule: {}
-};
-
-// 펫 타입 정의 (12종)
-const PET_TYPES = {
-    dog: {
-        name: '강아지',
-        category: 'mammal',
-        stages: { egg: '🎁', baby: '🐕', growing: '🐕', adult: '🦮' }
-    },
-    cat: {
-        name: '고양이',
-        category: 'mammal',
-        stages: { egg: '🎁', baby: '🐱', growing: '🐱', adult: '🐈' }
-    },
-    rabbit: {
-        name: '토끼',
-        category: 'mammal',
-        stages: { egg: '🎁', baby: '🐰', growing: '🐰', adult: '🐇' }
-    },
-    hamster: {
-        name: '햄스터',
-        category: 'mammal',
-        stages: { egg: '🎁', baby: '🐹', growing: '🐹', adult: '🐹' }
-    },
-    fox: {
-        name: '여우',
-        category: 'mammal',
-        stages: { egg: '🎁', baby: '🦊', growing: '🦊', adult: '🦊' }
-    },
-    bear: {
-        name: '곰',
-        category: 'mammal',
-        stages: { egg: '🎁', baby: '🐻', growing: '🐻', adult: '🐻' }
-    },
-    panda: {
-        name: '판다',
-        category: 'mammal',
-        stages: { egg: '🎁', baby: '🐼', growing: '🐼', adult: '🐼' }
-    },
-    lion: {
-        name: '사자',
-        category: 'mammal',
-        stages: { egg: '🎁', baby: '🦁', growing: '🦁', adult: '🦁' }
-    },
-    chick: {
-        name: '병아리',
-        category: 'bird',
-        stages: { egg: '🥚', baby: '🐣', growing: '🐤', adult: '🐓' }
-    },
-    penguin: {
-        name: '펭귄',
-        category: 'bird',
-        stages: { egg: '🥚', baby: '🐧', growing: '🐧', adult: '🐧' }
-    },
-    turtle: {
-        name: '거북이',
-        category: 'reptile',
-        stages: { egg: '🥚', baby: '🐢', growing: '🐢', adult: '🐢' }
-    },
-    dragon: {
-        name: '드래곤',
-        category: 'fantasy',
-        stages: { egg: '✨', baby: '🐉', growing: '🐉', adult: '🐉' }
-    }
-};
-
-// 칭찬 카테고리
-const PRAISE_CATEGORIES = {
-    selfManagement: { icon: '🎯', name: '자기관리', exp: 10 },
-    knowledge: { icon: '📚', name: '지식정보', exp: 10 },
-    creative: { icon: '💡', name: '창의적사고', exp: 10 },
-    aesthetic: { icon: '🎨', name: '심미적감성', exp: 10 },
-    cooperation: { icon: '🤝', name: '협력적소통', exp: 10 },
-    community: { icon: '🏠', name: '공동체', exp: 10 }
-};
-
-// 감정 타입
-const EMOTION_TYPES = {
-    great: { icon: '😄', name: '아주 좋아요', color: '#7CE0A3' },
-    good: { icon: '🙂', name: '좋아요', color: '#7C9EF5' },
-    soso: { icon: '😐', name: '보통이에요', color: '#F5E07C' },
-    bad: { icon: '😢', name: '안 좋아요', color: '#F5A67C' },
-    terrible: { icon: '😭', name: '힘들어요', color: '#F57C7C' }
-};
-
-// 펫 말투 스타일
-const PET_SPEECH_STYLES = {
-    dog: { suffix: '멍', endings: ['멍!', '왈왈!', '멍멍~'], greeting: '꼬리 살랑살랑~' },
-    cat: { suffix: '냥', endings: ['냥~', '야옹~', '냥냥!'], greeting: '그루밍 중~' },
-    rabbit: { suffix: '깡총', endings: ['깡총!', '토토~', '깡깡!'], greeting: '귀 쫑긋~' },
-    hamster: { suffix: '햄', endings: ['햄!', '쪼꼼~', '햄햄!'], greeting: '볼 빵빵~' },
-    fox: { suffix: '콘', endings: ['콘콘!', '여우~', '콘!'], greeting: '꼬리 흔들~' },
-    bear: { suffix: '곰', endings: ['곰곰!', '웅~', '곰!'], greeting: '큰 포옹~' },
-    panda: { suffix: '다', endings: ['빤다!', '대나무~', '판다!'], greeting: '뒹굴뒹굴~' },
-    lion: { suffix: '으르렁', endings: ['어흥!', '으르렁~', '왕!'], greeting: '갈기 휘날리며~' },
-    chick: { suffix: '삐약', endings: ['삐약!', '삐~', '삐삐!'], greeting: '날개 파닥파닥~' },
-    penguin: { suffix: '펭', endings: ['펭펭!', '뒤뚱~', '펭!'], greeting: '배로 슬라이딩~' },
-    turtle: { suffix: '엉금', endings: ['엉금!', '거북~', '느긋~'], greeting: '천천히 다가가며~' },
-    dragon: { suffix: '드라곤', endings: ['드라곤!', '용용~', '푸하~'], greeting: '날개 펼치며~' }
-};
-
-// 펫 반응 메시지
-const PET_REACTIONS = {
-    great: { animation: 'pet-jump', message: '야호! 🎉 나도 기뻐!', emoji: '✨' },
-    good: { animation: 'pet-wiggle', message: '다행이다 🌟', emoji: '💫' },
-    soso: { animation: 'pet-tilt', message: '음... 알겠어 💭', emoji: '🤔' },
-    bad: { animation: 'pet-approach', message: '괜찮아, 내가 옆에 있을게 💕', emoji: '🫂' },
-    terrible: { animation: 'pet-hug', message: '힘들었구나... 🫂 말해줘서 고마워', emoji: '💝' }
-};
-
-// 샘플 학생 데이터
-const SAMPLE_STUDENTS = [
-    { id: 1, name: '김민준', number: 1, pin: '0001', petType: null, exp: 0, level: 1, totalPraises: 0, completedPets: [] },
-    { id: 2, name: '이서연', number: 2, pin: '0002', petType: null, exp: 0, level: 1, totalPraises: 0, completedPets: [] },
-    { id: 3, name: '박지호', number: 3, pin: '0003', petType: null, exp: 0, level: 1, totalPraises: 0, completedPets: [] },
-    { id: 4, name: '최수빈', number: 4, pin: '0004', petType: null, exp: 0, level: 1, totalPraises: 0, completedPets: [] },
-    { id: 5, name: '정예준', number: 5, pin: '0005', petType: null, exp: 0, level: 1, totalPraises: 0, completedPets: [] }
-];
-
-// 샘플 시간표
-const SAMPLE_TIMETABLE = {
-    'mon-1': { subject: '국어', progress: 80 },
-    'mon-2': { subject: '수학', progress: 75 },
-    'mon-3': { subject: '사회', progress: 60 },
-    'mon-4': { subject: '체육', progress: 90 },
-    'mon-5': { subject: '음악', progress: 70 },
-    'tue-1': { subject: '수학', progress: 75 },
-    'tue-2': { subject: '국어', progress: 80 },
-    'tue-3': { subject: '과학', progress: 65 },
-    'tue-4': { subject: '영어', progress: 55 },
-    'tue-5': { subject: '미술', progress: 85 },
-    'wed-1': { subject: '국어', progress: 80 },
-    'wed-2': { subject: '사회', progress: 60 },
-    'wed-3': { subject: '수학', progress: 75 },
-    'wed-4': { subject: '체육', progress: 90 },
-    'wed-5': { subject: '도덕', progress: 70 },
-    'thu-1': { subject: '과학', progress: 65 },
-    'thu-2': { subject: '국어', progress: 80 },
-    'thu-3': { subject: '영어', progress: 55 },
-    'thu-4': { subject: '수학', progress: 75 },
-    'thu-5': { subject: '창체', progress: 50 },
-    'thu-6': { subject: '창체', progress: 50 },
-    'fri-1': { subject: '국어', progress: 80 },
-    'fri-2': { subject: '수학', progress: 75 },
-    'fri-3': { subject: '사회', progress: 60 },
-    'fri-4': { subject: '체육', progress: 90 },
-    'fri-5': { subject: '실과', progress: 45 }
-};
+// 상수 모듈에서 가져오기
+import {
+    STORAGE_KEYS,
+    SESSION_KEYS,
+    DEFAULT_SUBJECT_LIST,
+    DEFAULT_SUBJECT_COLORS,
+    COLOR_PRESETS,
+    DEFAULT_SETTINGS,
+    DEFAULT_TIMETABLE,
+    PET_TYPES,
+    PRAISE_CATEGORIES,
+    EMOTION_TYPES,
+    PET_SPEECH_STYLES,
+    PET_REACTIONS,
+    SAMPLE_STUDENTS,
+    SAMPLE_TIMETABLE,
+    convertToPetSpeech
+} from './constants/index.js';
 
 /**
  * 스토어 클래스
@@ -2029,8 +1831,9 @@ class Store {
 
     /**
      * 감정 체크인 추가 (conversations 배열 구조)
+     * Firebase 먼저 저장 → firebaseId 확보 후 로컬 저장 (중복 방지)
      */
-    addEmotion(emotion) {
+    async addEmotion(emotion) {
         const log = this.getEmotionLog() || [];
         const now = new Date().toISOString();
 
@@ -2055,45 +1858,30 @@ class Store {
                 }
             ] : []
         };
-        log.unshift(newEmotion);
 
+        // Firebase 먼저 저장하여 firebaseId 확보 (실시간 구독 중복 방지)
+        const teacherUid = this.getCurrentTeacherUid();
+        const classId = this.getCurrentClassId();
+        if (teacherUid && classId && this.firebaseEnabled && this.isOnline) {
+            try {
+                const result = await firebase.saveEmotion(teacherUid, classId, newEmotion);
+                if (result && result.id) {
+                    newEmotion.firebaseId = result.id;
+                }
+            } catch (error) {
+                console.error('Firebase 감정 저장 실패, 오프라인 큐에 추가:', error);
+                this.addToOfflineQueue({ type: 'saveEmotion', teacherUid, classId, data: newEmotion });
+            }
+        } else if (teacherUid && classId && this.firebaseEnabled) {
+            this.addToOfflineQueue({ type: 'saveEmotion', teacherUid, classId, data: newEmotion });
+        }
+
+        // 로컬에 저장 (firebaseId 포함)
+        log.unshift(newEmotion);
         if (log.length > 1000) log.pop();
         this.saveEmotionLog(log);
 
-        // Firebase 동기화
-        this.syncEmotionToFirebase(newEmotion);
-
         return newEmotion;
-    }
-
-    async syncEmotionToFirebase(emotion) {
-        const teacherUid = this.getCurrentTeacherUid();
-        const classId = this.getCurrentClassId();
-        console.log('🔍 감정 Firebase 동기화 시도:', { teacherUid, classId, firebaseEnabled: this.firebaseEnabled, isOnline: this.isOnline });
-        if (!teacherUid || !classId || !this.firebaseEnabled) {
-            console.warn('⚠️ 감정 Firebase 동기화 스킵:', { teacherUid: !!teacherUid, classId: !!classId, firebaseEnabled: this.firebaseEnabled });
-            return;
-        }
-
-        if (this.isOnline) {
-            try {
-                const result = await firebase.saveEmotion(teacherUid, classId, emotion);
-                console.log('✅ Firebase 감정 저장 완료:', result);
-                // Firebase에서 생성된 ID로 로컬 데이터 업데이트
-                if (result && result.id) {
-                    const log = this.getEmotionLog() || [];
-                    const index = log.findIndex(e => e.id === emotion.id);
-                    if (index !== -1) {
-                        log[index].firebaseId = result.id;
-                        this.saveEmotionLog(log);
-                    }
-                }
-            } catch (error) {
-                this.addToOfflineQueue({ type: 'saveEmotion', teacherUid, classId, data: emotion });
-            }
-        } else {
-            this.addToOfflineQueue({ type: 'saveEmotion', teacherUid, classId, data: emotion });
-        }
     }
 
     /**
@@ -3066,51 +2854,7 @@ class Store {
 // 싱글톤 인스턴스
 const store = new Store();
 
-/**
- * 선생님 메시지를 펫 말투로 변환
- */
-function convertToPetSpeech(message, petType, petName) {
-    const style = PET_SPEECH_STYLES[petType];
-    if (!style) {
-        return { petMessage: message, greeting: '' };
-    }
-
-    let petMessage = message.trim();
-    petMessage = petMessage.replace(/선생님/g, '나');
-
-    const emojiRegex = /[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]+$/u;
-    const emojiMatch = petMessage.match(emojiRegex);
-    let trailingEmoji = '';
-    if (emojiMatch) {
-        trailingEmoji = ' ' + emojiMatch[0];
-        petMessage = petMessage.slice(0, -emojiMatch[0].length).trim();
-    }
-
-    const suffix = style.suffix;
-    petMessage = petMessage
-        .replace(/([^!?.~]+)([!]+)/g, `$1 ${suffix}$2`)
-        .replace(/([^!?.~]+)([?]+)/g, `$1 ${suffix}$2`)
-        .replace(/([^!?.~]+)(\.)/g, `$1 ${suffix}$2`)
-        .replace(/([^!?.~]+)(~)/g, `$1 ${suffix}$2`);
-
-    const lastChar = petMessage.slice(-1);
-    if (!['!', '?', '.', '~'].includes(lastChar)) {
-        // 메시지 내용 기반 고정 인덱스 (랜덤 대신 결정적 선택 → 플리커링 방지)
-        const hash = message.split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
-        const endingIndex = hash % style.endings.length;
-        petMessage = `${petMessage} ${style.endings[endingIndex]}`;
-    }
-
-    petMessage = petMessage + trailingEmoji;
-
-    return {
-        petMessage: petMessage,
-        greeting: style.greeting,
-        petName: petName
-    };
-}
-
-// 상수 내보내기
+// 상수 및 store 내보내기 (하위 호환성 유지)
 export {
     store,
     PET_TYPES,
