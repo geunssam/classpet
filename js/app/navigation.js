@@ -219,6 +219,48 @@ export function updateNotificationBadge() {
 }
 
 /**
+ * 학생 알림 뱃지 업데이트 (미읽은 답장 + 새 칭찬)
+ */
+export function updateStudentNotificationBadge() {
+    const badge = document.getElementById('studentNotificationBadge');
+    const btn = document.getElementById('studentNotificationBtn');
+
+    // 학생 로그인 상태가 아니면 버튼 숨김
+    if (!store.isStudentLoggedIn()) {
+        if (btn) btn.classList.add('hidden');
+        return;
+    }
+
+    const student = store.getCurrentStudent();
+    if (!student) {
+        if (btn) btn.classList.add('hidden');
+        return;
+    }
+
+    // 학생 로그인 상태면 버튼 표시
+    if (btn) btn.classList.remove('hidden');
+
+    // 1. 미읽은 답장 수
+    const unreadReplies = store.getUnreadReplyCount(student.id);
+
+    // 2. 새 칭찬 수 (마지막 확인 이후)
+    const praises = store.getPraisesByStudent(student.id) || [];
+    const lastSeen = parseInt(sessionStorage.getItem('lastSeenPraiseCount') || '0');
+    const newPraises = Math.max(0, praises.length - lastSeen);
+
+    const total = unreadReplies + newPraises;
+
+    if (badge) {
+        if (total > 0) {
+            badge.textContent = total > 99 ? '99+' : total;
+            badge.classList.remove('hidden');
+        } else {
+            badge.classList.add('hidden');
+        }
+    }
+}
+
+/**
  * 라우트에 따른 UI 가시성 업데이트
  */
 export function updateUIVisibility(route) {

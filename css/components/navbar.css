@@ -37,16 +37,16 @@
     width: 100%;
     gap: 4px;
     padding: 10px 14px;
-    background: linear-gradient(145deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.15) 100%);
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.15) 100%);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255,255,255,0.5);
+    border: 1px solid rgba(255, 255, 255, 0.5);
     border-radius: 24px;
     box-shadow:
-        0 8px 32px rgba(0,0,0,0.12),
-        0 2px 8px rgba(0,0,0,0.06),
-        inset 0 1px 2px rgba(255,255,255,0.6),
-        inset 0 -1px 2px rgba(0,0,0,0.05);
+        0 8px 32px rgba(0, 0, 0, 0.12),
+        0 2px 8px rgba(0, 0, 0, 0.06),
+        inset 0 1px 2px rgba(255, 255, 255, 0.6),
+        inset 0 -1px 2px rgba(0, 0, 0, 0.05);
     position: relative;
     overflow: hidden;
 }
@@ -58,7 +58,7 @@
     left: 0;
     right: 0;
     height: 50%;
-    background: linear-gradient(180deg, rgba(255,255,255,0.35) 0%, transparent 100%);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.35) 0%, transparent 100%);
     border-radius: 28px 28px 0 0;
     pointer-events: none;
 }
@@ -74,15 +74,15 @@
     color: #4B5563;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     border-radius: 18px;
-    background: linear-gradient(145deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.2) 100%);
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0.2) 100%);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255,255,255,0.6);
+    border: 1px solid rgba(255, 255, 255, 0.6);
     box-shadow:
-        0 4px 12px rgba(0,0,0,0.08),
-        0 1px 3px rgba(0,0,0,0.05),
-        inset 0 1px 2px rgba(255,255,255,0.7),
-        inset 0 -1px 1px rgba(0,0,0,0.03);
+        0 4px 12px rgba(0, 0, 0, 0.08),
+        0 1px 3px rgba(0, 0, 0, 0.05),
+        inset 0 1px 2px rgba(255, 255, 255, 0.7),
+        inset 0 -1px 1px rgba(0, 0, 0, 0.03);
     position: relative;
     overflow: hidden;
 }
@@ -94,31 +94,31 @@
     left: 0;
     right: 0;
     height: 50%;
-    background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, transparent 100%);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.4) 0%, transparent 100%);
     border-radius: 18px 18px 0 0;
     pointer-events: none;
 }
 
 .nav-item:hover {
     color: #4F46E5;
-    background: linear-gradient(145deg, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0.3) 100%);
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.65) 0%, rgba(255, 255, 255, 0.3) 100%);
     transform: scale(1.08);
     box-shadow:
-        0 8px 24px rgba(99,102,241,0.15),
-        0 2px 6px rgba(0,0,0,0.08),
-        inset 0 1px 2px rgba(255,255,255,0.8),
-        inset 0 -1px 1px rgba(0,0,0,0.03);
+        0 8px 24px rgba(99, 102, 241, 0.15),
+        0 2px 6px rgba(0, 0, 0, 0.08),
+        inset 0 1px 2px rgba(255, 255, 255, 0.8),
+        inset 0 -1px 1px rgba(0, 0, 0, 0.03);
 }
 
 .nav-item.active {
     color: #4F46E5;
-    background: linear-gradient(145deg, rgba(255,255,255,0.75) 0%, rgba(255,255,255,0.35) 100%);
-    border: 1px solid rgba(79,70,229,0.3);
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.75) 0%, rgba(255, 255, 255, 0.35) 100%);
+    border: 1px solid rgba(79, 70, 229, 0.3);
     box-shadow:
-        0 6px 20px rgba(99,102,241,0.2),
-        0 2px 6px rgba(0,0,0,0.06),
-        inset 0 1px 3px rgba(255,255,255,0.9),
-        inset 0 -1px 1px rgba(0,0,0,0.03);
+        0 6px 20px rgba(99, 102, 241, 0.2),
+        0 2px 6px rgba(0, 0, 0, 0.06),
+        inset 0 1px 3px rgba(255, 255, 255, 0.9),
+        inset 0 -1px 1px rgba(0, 0, 0, 0.03);
 }
 
 .nav-item.active span:first-child {
@@ -126,48 +126,53 @@
 }
 
 .nav-item.nav-blue {
-    background: linear-gradient(145deg, rgba(147,197,253,0.05) 0%, rgba(96,165,250,0.05) 100%);
+    background: linear-gradient(145deg, rgba(147, 197, 253, 0.05) 0%, rgba(96, 165, 250, 0.05) 100%);
 }
+
 .nav-item.nav-blue:hover,
 .nav-item.nav-blue.active {
-    background: linear-gradient(145deg, rgba(147,197,253,0.1) 0%, rgba(96,165,250,0.1) 100%);
-    border-color: rgba(96,165,250,0.3);
+    background: linear-gradient(145deg, rgba(147, 197, 253, 0.1) 0%, rgba(96, 165, 250, 0.1) 100%);
+    border-color: rgba(96, 165, 250, 0.3);
 }
 
 .nav-item.nav-mint {
-    background: linear-gradient(145deg, rgba(110,231,183,0.05) 0%, rgba(52,211,153,0.05) 100%);
+    background: linear-gradient(145deg, rgba(110, 231, 183, 0.05) 0%, rgba(52, 211, 153, 0.05) 100%);
 }
+
 .nav-item.nav-mint:hover,
 .nav-item.nav-mint.active {
-    background: linear-gradient(145deg, rgba(110,231,183,0.1) 0%, rgba(52,211,153,0.1) 100%);
-    border-color: rgba(52,211,153,0.3);
+    background: linear-gradient(145deg, rgba(110, 231, 183, 0.1) 0%, rgba(52, 211, 153, 0.1) 100%);
+    border-color: rgba(52, 211, 153, 0.3);
 }
 
 .nav-item.nav-yellow {
-    background: linear-gradient(145deg, rgba(252,211,77,0.05) 0%, rgba(251,191,36,0.05) 100%);
+    background: linear-gradient(145deg, rgba(252, 211, 77, 0.05) 0%, rgba(251, 191, 36, 0.05) 100%);
 }
+
 .nav-item.nav-yellow:hover,
 .nav-item.nav-yellow.active {
-    background: linear-gradient(145deg, rgba(252,211,77,0.1) 0%, rgba(251,191,36,0.1) 100%);
-    border-color: rgba(251,191,36,0.3);
+    background: linear-gradient(145deg, rgba(252, 211, 77, 0.1) 0%, rgba(251, 191, 36, 0.1) 100%);
+    border-color: rgba(251, 191, 36, 0.3);
 }
 
 .nav-item.nav-pink {
-    background: linear-gradient(145deg, rgba(249,168,212,0.05) 0%, rgba(244,114,182,0.05) 100%);
+    background: linear-gradient(145deg, rgba(249, 168, 212, 0.05) 0%, rgba(244, 114, 182, 0.05) 100%);
 }
+
 .nav-item.nav-pink:hover,
 .nav-item.nav-pink.active {
-    background: linear-gradient(145deg, rgba(249,168,212,0.1) 0%, rgba(244,114,182,0.1) 100%);
-    border-color: rgba(244,114,182,0.3);
+    background: linear-gradient(145deg, rgba(249, 168, 212, 0.1) 0%, rgba(244, 114, 182, 0.1) 100%);
+    border-color: rgba(244, 114, 182, 0.3);
 }
 
 .nav-item.nav-purple {
-    background: linear-gradient(145deg, rgba(192,132,252,0.05) 0%, rgba(168,85,247,0.05) 100%);
+    background: linear-gradient(145deg, rgba(192, 132, 252, 0.05) 0%, rgba(168, 85, 247, 0.05) 100%);
 }
+
 .nav-item.nav-purple:hover,
 .nav-item.nav-purple.active {
-    background: linear-gradient(145deg, rgba(192,132,252,0.1) 0%, rgba(168,85,247,0.1) 100%);
-    border-color: rgba(168,85,247,0.3);
+    background: linear-gradient(145deg, rgba(192, 132, 252, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%);
+    border-color: rgba(168, 85, 247, 0.3);
 }
 
 .nav-item span:first-child {
@@ -209,7 +214,7 @@
     right: 0;
     height: 64px;
     background: white;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -323,4 +328,87 @@
 .hamburger-btn:hover {
     background: rgba(124, 158, 245, 0.1);
     color: #7C9EF5;
+}
+
+/* 학생 알림 뱃지 (타이틀 옆) */
+.navbar-left {
+    position: relative;
+}
+
+.student-noti-badge {
+    background: #FF6B6B;
+    color: white;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 700;
+    min-width: 20px;
+    height: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 6px;
+    padding: 0 5px;
+    animation: pulse-gentle 2s ease-in-out infinite;
+    vertical-align: middle;
+}
+
+.student-noti-badge.hidden {
+    display: none;
+}
+
+@keyframes pulse-gentle {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+/* 학생 알림 버튼 (상단바) */
+.student-noti-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-left: 8px;
+}
+
+.student-noti-btn:hover {
+    background: rgba(124, 158, 245, 0.1);
+    transform: scale(1.05);
+}
+
+.student-noti-btn:active {
+    transform: scale(0.95);
+}
+
+.student-noti-btn svg {
+    width: 20px;
+    height: 20px;
+    stroke: #7C9EF5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.student-noti-btn.hidden {
+    display: none;
+}
+
+/* 버튼 내 뱃지 위치 조정 */
+.student-noti-btn .student-noti-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    margin-left: 0;
 }
