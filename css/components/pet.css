@@ -1,0 +1,223 @@
+/* 펫 카드 스타일 */
+.pet-card {
+    background: linear-gradient(135deg, #FFF9F0 0%, #FFFFFF 100%);
+    border-radius: 20px;
+    padding: 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.pet-card:hover {
+    border-color: #7C9EF5;
+    transform: scale(1.02);
+}
+
+.pet-card:active {
+    transform: scale(0.98);
+}
+
+/* 컴팩트 펫 카드 (그리드 뷰) */
+.pet-card-compact {
+    background: linear-gradient(135deg, #FFF9F0 0%, #FFFFFF 100%);
+    border-radius: 12px;
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.pet-card-compact:hover {
+    border-color: #7C9EF5;
+    transform: scale(1.02);
+}
+
+.pet-card-compact:active {
+    transform: scale(0.98);
+}
+
+/* 원형 프로그레스 펫 카드 */
+.pet-circle-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    border-radius: 16px;
+    padding: 12px 8px 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    position: relative;
+    border: 1px solid transparent;
+}
+
+.pet-circle-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(124, 158, 245, 0.15);
+    border: 1px solid rgba(124, 158, 245, 0.2);
+}
+
+.pet-circle-card:active {
+    transform: scale(0.98);
+}
+
+/* 원형 프로그레스 컨테이너 */
+.circle-progress-container {
+    position: relative;
+    width: 76px;
+    height: 76px;
+}
+
+.circle-progress {
+    transform: rotate(0deg);
+}
+
+.circle-progress-bar {
+    transition: stroke-dashoffset 0.6s ease;
+}
+
+/* 중앙 콘텐츠 */
+.circle-center-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 레벨 배지 (원 안에서 이모지 아래) */
+.level-badge-inside {
+    background: linear-gradient(135deg, #F59E0B 0%, #F97316 100%);
+    color: white;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 8px;
+    margin-top: -2px;
+    box-shadow: 0 1px 3px rgba(245, 158, 11, 0.3);
+}
+
+/* 펫 카드 그리드 */
+.pet-circle-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+@media (min-width: 400px) {
+    .pet-circle-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (min-width: 640px) {
+    .pet-circle-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (min-width: 1024px) {
+    .pet-circle-grid {
+        grid-template-columns: repeat(5, 1fr);
+    }
+}
+
+/* 펫 이모지 크기 (레벨별) */
+.pet-emoji {
+    display: inline-block;
+    transition: all 0.3s ease;
+}
+
+.pet-emoji.level-egg {
+    font-size: 32px;
+}
+
+.pet-emoji.level-baby {
+    font-size: 40px;
+}
+
+.pet-emoji.level-growing {
+    font-size: 52px;
+}
+
+.pet-emoji.level-adult {
+    font-size: 64px;
+}
+
+/* 경험치 바 */
+.exp-bar {
+    height: 8px;
+    background: #E5E7EB;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.exp-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #7CE0A3 0%, #7C9EF5 100%);
+    border-radius: 4px;
+    transition: width 0.5s ease;
+}
+
+/* 레벨 뱃지 */
+.level-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    height: 24px;
+    padding: 0 8px;
+    background: linear-gradient(135deg, #F5A67C 0%, #F5E07C 100%);
+    color: white;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(245, 166, 124, 0.3);
+}
+
+/* 펫 도감 스타일 */
+.pet-collection-container {
+    min-height: calc(100vh - 80px);
+    background: linear-gradient(180deg, #FFF9F0 0%, #FFFFFF 100%);
+}
+
+.pet-collection-card {
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.pet-collection-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.pet-collection-card:active {
+    transform: scale(0.98);
+}
+
+/* 완성된 펫 반짝이는 테두리 (keyframes는 animations.css에 정의) */
+.pet-collection-sparkle-border {
+    animation: sparkle-border 2s ease-in-out infinite;
+}
+
+.pet-collection-completed {
+    background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%);
+}
+
+.pet-collection-current {
+    background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+}
+
+.pet-collection-locked {
+    background: #F9FAFB;
+}
+
+/* 범례 반짝임 (keyframes는 animations.css에 정의) */
+.pet-collection-sparkle {
+    animation: sparkle-dot 1.5s ease-in-out infinite;
+}

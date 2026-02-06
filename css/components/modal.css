@@ -1,0 +1,155 @@
+/* 모달 스타일 */
+#modalContainer .modal-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.95);
+    width: calc(100% - 2rem);
+    max-width: 28rem;
+    max-height: calc(100vh - 4rem);
+    overflow-y: auto;
+    background: white;
+    border-radius: 1rem;
+    padding: 1.5rem;
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+#modalContainer.show {
+    display: block;
+}
+
+#modalContainer.show .modal-content {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+/* 토스트 컨테이너 */
+.toast-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 200;
+    pointer-events: none;
+}
+
+.toast-container > * {
+    pointer-events: auto;
+}
+
+/* 토스트 메시지 */
+.toast {
+    padding: 16px 24px;
+    background: white;
+    color: #1F2937;
+    border-radius: 16px;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.5;
+    text-align: center;
+    white-space: pre-line;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    animation: toastIn 0.3s ease, toastOut 0.3s ease 5.7s forwards;
+    cursor: pointer;
+    max-width: 90vw;
+    min-width: 280px;
+}
+
+/* 클릭으로 닫는 토스트 (자동 사라짐 없음) */
+.toast.toast-persistent {
+    animation: toastIn 0.3s ease forwards;
+}
+
+@keyframes toastIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes toastOut {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+}
+
+/* 교환 모달 스타일 */
+.swap-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s ease;
+}
+
+.swap-modal-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.swap-modal-content {
+    background: white;
+    border-radius: 20px;
+    padding: 24px;
+    max-width: 320px;
+    width: 90%;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    transform: translateY(20px);
+    transition: transform 0.2s ease;
+}
+
+.swap-modal-overlay.show .swap-modal-content {
+    transform: translateY(0);
+}
+
+.swap-preview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 16px;
+    background: #F9FAFB;
+    border-radius: 12px;
+    margin: 16px 0;
+}
+
+.swap-preview-cell {
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 14px;
+    min-width: 60px;
+    text-align: center;
+}
+
+.swap-arrow {
+    font-size: 20px;
+    color: #7C9EF5;
+}
+
+/* 모달 버튼 컨테이너 */
+.modal-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.modal-buttons > button,
+.modal-buttons > .liquid-btn-student,
+.modal-buttons > .liquid-btn-student-secondary {
+    flex: 1;
+}

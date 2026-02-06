@@ -1,0 +1,242 @@
+/* ============================================================
+   학생 페이지 리퀴드 버튼 스타일
+   ============================================================ */
+
+/* 학생용 Primary 큰 버튼 - 리퀴드 글라스 */
+.liquid-btn-student {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 24px;
+    background: linear-gradient(145deg, rgba(124,158,245,0.25) 0%, rgba(167,139,250,0.2) 100%);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(124,158,245,0.3);
+    border-radius: 14px;
+    color: #5B7BD5;
+    font-weight: 600;
+    font-size: 15px;
+    box-shadow:
+        0 4px 16px rgba(124,158,245,0.15),
+        inset 0 1px 0 rgba(255,255,255,0.4);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.liquid-btn-student::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(to bottom, rgba(255,255,255,0.3), transparent);
+    border-radius: 14px 14px 0 0;
+    pointer-events: none;
+}
+
+.liquid-btn-student:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow:
+        0 8px 24px rgba(124,158,245,0.25),
+        inset 0 1px 0 rgba(255,255,255,0.5);
+    background: linear-gradient(145deg, rgba(124,158,245,0.35) 0%, rgba(167,139,250,0.3) 100%);
+    border-color: rgba(124,158,245,0.5);
+}
+
+.liquid-btn-student:active {
+    transform: translateY(0) scale(0.98);
+}
+
+.liquid-btn-student:disabled {
+    background: linear-gradient(145deg, rgba(156,163,175,0.15) 0%, rgba(156,163,175,0.1) 100%);
+    border-color: rgba(156,163,175,0.2);
+    color: #9CA3AF;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.liquid-btn-student:disabled:hover {
+    transform: none;
+}
+
+/* 학생용 Secondary 보조 버튼 - 회색 계열 */
+.liquid-btn-student-secondary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 24px;
+    background: linear-gradient(145deg, rgba(243,244,246,0.9) 0%, rgba(229,231,235,0.7) 100%);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(209,213,219,0.5);
+    border-radius: 14px;
+    color: #4B5563;
+    font-weight: 600;
+    font-size: 15px;
+    box-shadow:
+        0 2px 8px rgba(0,0,0,0.06),
+        inset 0 1px 0 rgba(255,255,255,0.6);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.liquid-btn-student-secondary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(to bottom, rgba(255,255,255,0.5), transparent);
+    border-radius: 14px 14px 0 0;
+    pointer-events: none;
+}
+
+.liquid-btn-student-secondary:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow:
+        0 6px 16px rgba(0,0,0,0.1),
+        inset 0 1px 0 rgba(255,255,255,0.7);
+    background: linear-gradient(145deg, rgba(229,231,235,0.95) 0%, rgba(209,213,219,0.8) 100%);
+    border-color: rgba(156,163,175,0.5);
+}
+
+.liquid-btn-student-secondary:active {
+    transform: translateY(0) scale(0.98);
+}
+
+/* 학생용 Small 버튼 - 돌아가기 등 */
+.liquid-btn-student-sm {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 16px;
+    background: linear-gradient(145deg, rgba(255,255,255,0.7) 0%, rgba(243,244,246,0.5) 100%);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(209,213,219,0.4);
+    border-radius: 12px;
+    color: #6B7280;
+    font-weight: 500;
+    font-size: 14px;
+    box-shadow:
+        0 2px 8px rgba(0,0,0,0.04),
+        inset 0 1px 0 rgba(255,255,255,0.5);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.liquid-btn-student-sm::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(to bottom, rgba(255,255,255,0.4), transparent);
+    border-radius: 12px 12px 0 0;
+    pointer-events: none;
+}
+
+.liquid-btn-student-sm:hover {
+    transform: translateY(-1px) scale(1.02);
+    box-shadow:
+        0 4px 12px rgba(0,0,0,0.08),
+        inset 0 1px 0 rgba(255,255,255,0.6);
+    background: linear-gradient(145deg, rgba(243,244,246,0.9) 0%, rgba(229,231,235,0.7) 100%);
+    border-color: rgba(156,163,175,0.5);
+    color: #374151;
+}
+
+.liquid-btn-student-sm:active {
+    transform: translateY(0) scale(0.98);
+}
+
+/* 학생용 강조 버튼 - 골드 계열 (새 펫 선택 등) */
+.liquid-btn-student-gold {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 24px;
+    background: linear-gradient(145deg, rgba(251,191,36,0.3) 0%, rgba(245,158,11,0.25) 100%);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(251,191,36,0.4);
+    border-radius: 14px;
+    color: #92400E;
+    font-weight: 700;
+    font-size: 15px;
+    box-shadow:
+        0 4px 16px rgba(251,191,36,0.2),
+        inset 0 1px 0 rgba(255,255,255,0.5);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.liquid-btn-student-gold::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(to bottom, rgba(255,255,255,0.4), transparent);
+    border-radius: 14px 14px 0 0;
+    pointer-events: none;
+}
+
+.liquid-btn-student-gold:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow:
+        0 8px 24px rgba(251,191,36,0.3),
+        inset 0 1px 0 rgba(255,255,255,0.6);
+    background: linear-gradient(145deg, rgba(251,191,36,0.4) 0%, rgba(245,158,11,0.35) 100%);
+    border-color: rgba(251,191,36,0.6);
+}
+
+.liquid-btn-student-gold:active {
+    transform: translateY(0) scale(0.98);
+}
+
+/* 모달 버튼 컨테이너 */
+.modal-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.modal-buttons > button,
+.modal-buttons > .liquid-btn-student,
+.modal-buttons > .liquid-btn-student-secondary {
+    flex: 1;
+}
+
+/* 반응형: backdrop-filter 미지원 환경 */
+@supports not (backdrop-filter: blur(12px)) {
+    .liquid-btn-student {
+        background: linear-gradient(145deg, rgba(124,158,245,0.4) 0%, rgba(167,139,250,0.35) 100%);
+    }
+
+    .liquid-btn-student-secondary {
+        background: linear-gradient(145deg, #f3f4f6 0%, #e5e7eb 100%);
+    }
+
+    .liquid-btn-student-sm {
+        background: linear-gradient(145deg, #ffffff 0%, #f3f4f6 100%);
+    }
+
+    .liquid-btn-student-gold {
+        background: linear-gradient(145deg, rgba(251,191,36,0.5) 0%, rgba(245,158,11,0.45) 100%);
+    }
+}

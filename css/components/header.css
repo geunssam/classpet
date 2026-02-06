@@ -1,0 +1,199 @@
+/* ======================================
+   헤더 글라스 버튼 & 정보 스타일
+   ====================================== */
+
+/* 헤더 버튼 - 리퀴드 글라스 */
+.header-glass-btn {
+    background: linear-gradient(145deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.15) 100%);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.6);
+    border-radius: 12px;
+    box-shadow:
+        0 4px 12px rgba(0,0,0,0.06),
+        inset 0 1px 2px rgba(255,255,255,0.7),
+        inset 0 -1px 1px rgba(0,0,0,0.03);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.header-glass-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, transparent 100%);
+    border-radius: 12px 12px 0 0;
+    pointer-events: none;
+}
+
+.header-glass-btn:hover {
+    background: linear-gradient(145deg, rgba(219,234,254,0.8) 0%, rgba(191,219,254,0.5) 100%);
+    transform: translateY(-1px);
+    box-shadow:
+        0 6px 16px rgba(59,130,246,0.15),
+        inset 0 1px 2px rgba(255,255,255,0.8),
+        inset 0 -1px 1px rgba(0,0,0,0.03);
+    color: #3B82F6;
+}
+
+/* 로그아웃 버튼 호버 - 빨간색 */
+#headerLogoutBtn:hover {
+    background: linear-gradient(145deg, rgba(254,226,226,0.8) 0%, rgba(254,202,202,0.5) 100%);
+    box-shadow:
+        0 6px 16px rgba(239,68,68,0.15),
+        inset 0 1px 2px rgba(255,255,255,0.8),
+        inset 0 -1px 1px rgba(0,0,0,0.03);
+    color: #EF4444;
+}
+
+/* 헤더 학급 정보 - 리퀴드 글라스 */
+.header-glass-info {
+    background: linear-gradient(145deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.2) 100%);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.6);
+    border-radius: 12px;
+    box-shadow:
+        0 4px 12px rgba(0,0,0,0.06),
+        inset 0 1px 2px rgba(255,255,255,0.7),
+        inset 0 -1px 1px rgba(0,0,0,0.03);
+    position: relative;
+    overflow: hidden;
+}
+
+.header-glass-info::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.35) 0%, transparent 100%);
+    border-radius: 12px 12px 0 0;
+    pointer-events: none;
+}
+
+/* 헤더 Dock 컨테이너 - 리퀴드 글라스 */
+.header-dock {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    background: linear-gradient(145deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.15) 100%);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.5);
+    border-radius: 20px;
+    box-shadow:
+        0 8px 32px rgba(0,0,0,0.1),
+        0 2px 8px rgba(0,0,0,0.05),
+        inset 0 1px 2px rgba(255,255,255,0.6),
+        inset 0 -1px 2px rgba(0,0,0,0.04);
+    position: relative;
+    overflow: hidden;
+}
+
+.header-dock::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.3) 0%, transparent 100%);
+    border-radius: 20px 20px 0 0;
+    pointer-events: none;
+}
+
+/* 설정 버튼 Dock (리퀴드 글라스) */
+.settings-btn-dock {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px;
+    background: linear-gradient(145deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.2) 100%);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.6);
+    border-radius: 18px;
+    box-shadow:
+        0 4px 12px rgba(0,0,0,0.06),
+        inset 0 1px 2px rgba(255,255,255,0.7),
+        inset 0 -1px 1px rgba(0,0,0,0.03);
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.settings-btn-dock::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.35) 0%, transparent 100%);
+    border-radius: 18px 18px 0 0;
+    pointer-events: none;
+}
+
+/* 설정 헤더 버튼 */
+.settings-header-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    background: linear-gradient(145deg, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.6) 100%);
+    border: 1px solid rgba(255,255,255,0.7);
+    border-radius: 20px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #4B5563;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    position: relative;
+    z-index: 1;
+    white-space: nowrap;
+}
+
+.settings-header-btn:hover {
+    background: linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.7) 100%);
+    transform: scale(1.03);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.settings-header-btn.logout {
+    color: #EF4444;
+}
+
+.settings-header-btn.logout:hover {
+    background: linear-gradient(145deg, rgba(254,226,226,0.9) 0%, rgba(254,202,202,0.7) 100%);
+}
+
+.settings-header-btn.save {
+    color: #3B82F6;
+}
+
+.settings-header-btn.save:hover {
+    background: linear-gradient(145deg, rgba(219,234,254,0.9) 0%, rgba(191,219,254,0.7) 100%);
+}
+
+/* 작은 사이즈 버튼 */
+.settings-btn-dock.small {
+    padding: 4px 6px;
+    gap: 4px;
+    border-radius: 14px;
+}
+
+.settings-header-btn.small {
+    padding: 4px 8px;
+    font-size: 11px;
+    border-radius: 12px;
+    gap: 3px;
+}

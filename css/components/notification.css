@@ -1,0 +1,37 @@
+/* ======================================
+   알림 관련 스타일
+   ====================================== */
+
+/* 알림 버튼 */
+#notificationBtn {
+    position: relative;
+}
+
+/* 알림 배지 */
+#notificationBadge {
+    font-size: 10px;
+    min-width: 18px;
+    height: 18px;
+    line-height: 18px;
+    padding: 0 4px;
+}
+
+/* 알림 아이템 */
+.notification-item {
+    transition: all 0.2s ease;
+}
+
+.notification-item:hover {
+    transform: translateX(4px);
+}
+
+/* 알림 미읽음 표시 dot */
+.notification-item .w-2 {
+    flex-shrink: 0;
+}
+
+/* 알림 모달 스크롤 */
+.max-h-80 {
+    scrollbar-width: thin;
+    scrollbar-color: #D1D5DB transparent;
+}

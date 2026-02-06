@@ -1,0 +1,326 @@
+/* ======================================
+   하단 네비게이션
+   ====================================== */
+.app-nav {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 9999 !important;
+    padding: 8px;
+    padding-bottom: calc(8px + var(--safe-area-inset-bottom));
+    background: transparent;
+}
+
+.app-nav .nav-dock {
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+@media (min-width: 640px) {
+    .app-nav .nav-dock {
+        max-width: 560px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .app-nav .nav-dock {
+        max-width: 656px;
+    }
+}
+
+/* 네비게이션 Dock 컨테이너 - 리퀴드 글라스 */
+.nav-dock {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    gap: 4px;
+    padding: 10px 14px;
+    background: linear-gradient(145deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.15) 100%);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.5);
+    border-radius: 24px;
+    box-shadow:
+        0 8px 32px rgba(0,0,0,0.12),
+        0 2px 8px rgba(0,0,0,0.06),
+        inset 0 1px 2px rgba(255,255,255,0.6),
+        inset 0 -1px 2px rgba(0,0,0,0.05);
+    position: relative;
+    overflow: hidden;
+}
+
+.nav-dock::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.35) 0%, transparent 100%);
+    border-radius: 28px 28px 0 0;
+    pointer-events: none;
+}
+
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 68px;
+    height: 64px;
+    padding: 8px 10px;
+    color: #4B5563;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 18px;
+    background: linear-gradient(145deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.2) 100%);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.6);
+    box-shadow:
+        0 4px 12px rgba(0,0,0,0.08),
+        0 1px 3px rgba(0,0,0,0.05),
+        inset 0 1px 2px rgba(255,255,255,0.7),
+        inset 0 -1px 1px rgba(0,0,0,0.03);
+    position: relative;
+    overflow: hidden;
+}
+
+.nav-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, transparent 100%);
+    border-radius: 18px 18px 0 0;
+    pointer-events: none;
+}
+
+.nav-item:hover {
+    color: #4F46E5;
+    background: linear-gradient(145deg, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0.3) 100%);
+    transform: scale(1.08);
+    box-shadow:
+        0 8px 24px rgba(99,102,241,0.15),
+        0 2px 6px rgba(0,0,0,0.08),
+        inset 0 1px 2px rgba(255,255,255,0.8),
+        inset 0 -1px 1px rgba(0,0,0,0.03);
+}
+
+.nav-item.active {
+    color: #4F46E5;
+    background: linear-gradient(145deg, rgba(255,255,255,0.75) 0%, rgba(255,255,255,0.35) 100%);
+    border: 1px solid rgba(79,70,229,0.3);
+    box-shadow:
+        0 6px 20px rgba(99,102,241,0.2),
+        0 2px 6px rgba(0,0,0,0.06),
+        inset 0 1px 3px rgba(255,255,255,0.9),
+        inset 0 -1px 1px rgba(0,0,0,0.03);
+}
+
+.nav-item.active span:first-child {
+    transform: scale(1.1);
+}
+
+.nav-item.nav-blue {
+    background: linear-gradient(145deg, rgba(147,197,253,0.05) 0%, rgba(96,165,250,0.05) 100%);
+}
+.nav-item.nav-blue:hover,
+.nav-item.nav-blue.active {
+    background: linear-gradient(145deg, rgba(147,197,253,0.1) 0%, rgba(96,165,250,0.1) 100%);
+    border-color: rgba(96,165,250,0.3);
+}
+
+.nav-item.nav-mint {
+    background: linear-gradient(145deg, rgba(110,231,183,0.05) 0%, rgba(52,211,153,0.05) 100%);
+}
+.nav-item.nav-mint:hover,
+.nav-item.nav-mint.active {
+    background: linear-gradient(145deg, rgba(110,231,183,0.1) 0%, rgba(52,211,153,0.1) 100%);
+    border-color: rgba(52,211,153,0.3);
+}
+
+.nav-item.nav-yellow {
+    background: linear-gradient(145deg, rgba(252,211,77,0.05) 0%, rgba(251,191,36,0.05) 100%);
+}
+.nav-item.nav-yellow:hover,
+.nav-item.nav-yellow.active {
+    background: linear-gradient(145deg, rgba(252,211,77,0.1) 0%, rgba(251,191,36,0.1) 100%);
+    border-color: rgba(251,191,36,0.3);
+}
+
+.nav-item.nav-pink {
+    background: linear-gradient(145deg, rgba(249,168,212,0.05) 0%, rgba(244,114,182,0.05) 100%);
+}
+.nav-item.nav-pink:hover,
+.nav-item.nav-pink.active {
+    background: linear-gradient(145deg, rgba(249,168,212,0.1) 0%, rgba(244,114,182,0.1) 100%);
+    border-color: rgba(244,114,182,0.3);
+}
+
+.nav-item.nav-purple {
+    background: linear-gradient(145deg, rgba(192,132,252,0.05) 0%, rgba(168,85,247,0.05) 100%);
+}
+.nav-item.nav-purple:hover,
+.nav-item.nav-purple.active {
+    background: linear-gradient(145deg, rgba(192,132,252,0.1) 0%, rgba(168,85,247,0.1) 100%);
+    border-color: rgba(168,85,247,0.3);
+}
+
+.nav-item span:first-child {
+    font-size: 24px;
+}
+
+.nav-item span:last-child {
+    font-size: 11px;
+    margin-top: 3px;
+    font-weight: 600;
+    color: inherit;
+}
+
+@media (min-width: 640px) {
+    .nav-dock {
+        padding: 12px 20px;
+        gap: 8px;
+    }
+
+    .nav-item {
+        width: 80px;
+        height: 72px;
+    }
+
+    .nav-item span:first-child {
+        font-size: 28px;
+    }
+
+    .nav-item span:last-child {
+        font-size: 12px;
+    }
+}
+
+/* ===== 상단 네비바 ===== */
+.top-navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 64px;
+    background: white;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    z-index: 100;
+}
+
+.navbar-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.navbar-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.navbar-logo svg {
+    stroke: #7C9EF5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.navbar-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.navbar-tabs {
+    display: flex;
+    gap: 4px;
+}
+
+.navbar-tabs.hidden {
+    display: none !important;
+}
+
+.navbar-tab {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 16px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.2s;
+    background: transparent;
+    border: none;
+    color: #6b7280;
+    cursor: pointer;
+}
+
+.navbar-tab:hover {
+    background: rgba(124, 158, 245, 0.1);
+    color: #7C9EF5;
+}
+
+.navbar-tab.active {
+    background: linear-gradient(135deg, #7C9EF5 0%, #A78BFA 100%);
+    color: white;
+}
+
+.navbar-tab .nav-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+}
+
+.navbar-tab .nav-icon svg {
+    width: 20px;
+    height: 20px;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.navbar-tab.active .nav-icon svg {
+    stroke: white;
+}
+
+.navbar-tab.active .nav-icon svg text {
+    fill: white;
+}
+
+.navbar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.navbar-class-info {
+    font-size: 13px;
+    font-weight: 600;
+    color: #6b7280;
+}
+
+.hamburger-btn {
+    display: none;
+    padding: 8px;
+    border-radius: 8px;
+    background: transparent;
+    border: none;
+    color: #6b7280;
+    cursor: pointer;
+}
+
+.hamburger-btn:hover {
+    background: rgba(124, 158, 245, 0.1);
+    color: #7C9EF5;
+}

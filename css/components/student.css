@@ -1,0 +1,218 @@
+/* ======================================
+   학생 모드 & 로그인 스타일
+   ====================================== */
+
+/* 학생 로그인 화면 */
+.student-login-container {
+    background: linear-gradient(180deg, #FFF9F0 0%, #FFFFFF 100%);
+}
+
+.student-number-btn {
+    aspect-ratio: 1;
+    transition: all 0.2s ease;
+}
+
+.student-number-btn:hover {
+    border-color: #7C9EF5 !important;
+    background: linear-gradient(135deg, rgba(124, 158, 245, 0.1) 0%, rgba(167, 139, 250, 0.1) 100%) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(124, 158, 245, 0.2);
+}
+
+.student-number-btn:active {
+    transform: scale(0.95);
+}
+
+/* 학생 모드 메인 화면 */
+.student-mode-container {
+    min-height: calc(100vh - 80px);
+}
+
+/* 펫 표시 영역 */
+.pet-display-area {
+    padding: 32px 16px;
+    background: linear-gradient(180deg, rgba(124, 224, 163, 0.1) 0%, transparent 100%);
+    border-radius: 0 0 32px 32px;
+}
+
+/* 펫 말풍선 (Grownd 스타일) */
+.pet-speech-bubble {
+    position: relative;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+.pet-speech-bubble .speech-arrow {
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-bottom: 10px solid white;
+    filter: drop-shadow(0 -2px 2px rgba(0,0,0,0.03));
+}
+
+/* 감정 아이콘 */
+.emotion-btn {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    background: white;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    border: 3px solid #f3f4f6;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.emotion-btn:hover {
+    transform: scale(1.1);
+    border-color: rgba(124, 158, 245, 0.5);
+    box-shadow: 0 4px 12px rgba(124, 158, 245, 0.2);
+}
+
+.emotion-btn.selected {
+    border-color: #7C9EF5;
+    background: linear-gradient(135deg, rgba(124, 158, 245, 0.15) 0%, rgba(167, 139, 250, 0.15) 100%);
+    box-shadow: 0 4px 12px rgba(124, 158, 245, 0.3);
+}
+
+/* 감정 선택 버튼 (Grownd 스타일) */
+.emotion-select-btn {
+    border: 3px solid #f3f4f6;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.emotion-select-btn:hover {
+    border-color: rgba(124, 158, 245, 0.5);
+    transform: scale(1.05);
+}
+
+.emotion-select-btn.selected {
+    border-color: #A78BFA;
+    background: linear-gradient(135deg, rgba(124, 158, 245, 0.15) 0%, rgba(167, 139, 250, 0.15) 100%);
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(167, 139, 250, 0.25);
+}
+
+/* 대화 말풍선 스타일 */
+.student-bubble {
+    box-shadow: 0 2px 8px rgba(124, 158, 245, 0.2);
+}
+
+.pet-bubble {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* 대화 아이템 */
+.chat-item {
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #F3F4F6;
+}
+
+.chat-item:last-child {
+    border-bottom: none;
+}
+
+/* 학생 모드 반응형 */
+@media (max-width: 380px) {
+    .emotion-select-btn {
+        width: 44px;
+        height: 44px;
+        font-size: 24px;
+    }
+
+    .pet-display-area .text-8xl {
+        font-size: 64px;
+    }
+}
+
+/* ======================================
+   로그인 선택 화면 스타일
+   ====================================== */
+
+.login-select-container {
+    background: linear-gradient(135deg, rgba(216, 180, 254, 0.03) 0%, rgba(147, 197, 253, 0.03) 50%, rgba(251, 207, 232, 0.03) 100%);
+}
+
+.login-select-btn {
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+}
+
+.login-select-btn:active {
+    transform: scale(0.98) translateY(0) !important;
+}
+
+/* 교사 로그인 화면 */
+.teacher-login-container {
+    background: linear-gradient(180deg, #FFF9F0 0%, #FFFFFF 100%);
+}
+
+/* ======================================
+   PIN 입력 스타일
+   ====================================== */
+
+/* PIN 입력 필드 */
+.pin-input {
+    width: 48px;
+    height: 56px;
+    text-align: center;
+    font-size: 24px;
+    font-weight: 700;
+    font-family: 'Noto Sans KR', monospace;
+    border: 2px solid #E5E7EB;
+    border-radius: 12px;
+    background: white;
+    transition: all 0.2s ease;
+    padding: 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.pin-input:focus {
+    outline: none;
+    border-color: #A78BFA;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.2), 0 4px 12px rgba(124, 158, 245, 0.15);
+}
+
+.pin-input.border-red-400 {
+    border-color: #F87171;
+    background: #FEF2F2;
+}
+
+/* PIN 모달 스타일 */
+#pinModal {
+    backdrop-filter: blur(4px);
+}
+
+/* ======================================
+   설정 화면 스타일
+   ====================================== */
+
+.settings-container {
+    max-width: 480px;
+    margin: 0 auto;
+}
+
+/* 섹션 타이틀 (설정 화면용) */
+.settings-container .section-title {
+    color: #374151;
+}
+
+/* 학생 목록 아이템 */
+.settings-container #studentList > div {
+    transition: all 0.2s ease;
+}
+
+.settings-container #studentList > div:hover {
+    background: #F3F4F6;
+}

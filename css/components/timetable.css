@@ -1,0 +1,293 @@
+/* 주간 네비게이터 Dock (리퀴드 글라스) */
+.week-navigator-dock {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: linear-gradient(145deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.2) 100%);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.6);
+    border-radius: 20px;
+    box-shadow:
+        0 4px 16px rgba(0,0,0,0.06),
+        inset 0 1px 2px rgba(255,255,255,0.7),
+        inset 0 -1px 1px rgba(0,0,0,0.03);
+    position: relative;
+    overflow: hidden;
+}
+
+.week-navigator-dock::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, transparent 100%);
+    border-radius: 20px 20px 0 0;
+    pointer-events: none;
+}
+
+.week-nav-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 10px;
+    background: linear-gradient(145deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.3) 100%);
+    border: 1px solid rgba(255,255,255,0.7);
+    color: #4B5563;
+    transition: all 0.2s ease;
+    position: relative;
+    z-index: 1;
+}
+
+.week-nav-btn:hover {
+    background: linear-gradient(145deg, rgba(219,234,254,0.8) 0%, rgba(191,219,254,0.6) 100%);
+    color: #3B82F6;
+    transform: scale(1.05);
+}
+
+.week-nav-btn:active {
+    transform: scale(0.95);
+}
+
+/* 시간표 그리드 Dock (리퀴드 글라스) */
+.timetable-grid-dock {
+    padding: 6px;
+    background: linear-gradient(145deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.15) 100%);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.5);
+    border-radius: 24px;
+    box-shadow:
+        0 6px 24px rgba(0,0,0,0.08),
+        inset 0 1px 2px rgba(255,255,255,0.6),
+        inset 0 -1px 2px rgba(0,0,0,0.04);
+    position: relative;
+    overflow: hidden;
+}
+
+.timetable-grid-dock::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.35) 0%, transparent 100%);
+    border-radius: 24px 24px 0 0;
+    pointer-events: none;
+}
+
+/* 시간표 버튼 Dock (리퀴드 글라스) */
+.timetable-btn-dock {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px;
+    background: linear-gradient(145deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.2) 100%);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.6);
+    border-radius: 18px;
+    box-shadow:
+        0 4px 12px rgba(0,0,0,0.06),
+        inset 0 1px 2px rgba(255,255,255,0.7),
+        inset 0 -1px 1px rgba(0,0,0,0.03);
+    position: relative;
+    overflow: hidden;
+}
+
+.timetable-btn-dock::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.35) 0%, transparent 100%);
+    border-radius: 18px 18px 0 0;
+    pointer-events: none;
+}
+
+/* 시간표 헤더 버튼 */
+.timetable-header-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    background: linear-gradient(145deg, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.6) 100%);
+    border: 1px solid rgba(255,255,255,0.7);
+    border-radius: 20px;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #4B5563;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    position: relative;
+    z-index: 1;
+}
+
+.timetable-header-btn:hover {
+    background: linear-gradient(145deg, rgba(219,234,254,0.9) 0%, rgba(191,219,254,0.7) 100%);
+    transform: scale(1.03);
+    box-shadow: 0 4px 12px rgba(59,130,246,0.15);
+    color: #3B82F6;
+}
+
+.timetable-header-btn.active {
+    background: linear-gradient(135deg, #7C9EF5 0%, #5B7ED9 100%);
+    border-color: rgba(124, 158, 245, 0.5);
+    color: white;
+    box-shadow: 0 2px 8px rgba(124, 158, 245, 0.3);
+}
+
+/* 시간표 셀 (기존 - 호환성 유지) */
+.timetable-cell {
+    min-height: 48px;
+    padding: 8px;
+    background: white;
+    border-radius: 8px;
+    font-size: 14px;
+    text-align: center;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.timetable-cell:hover {
+    background: #FFF9F0;
+}
+
+.timetable-cell.today {
+    background: linear-gradient(135deg, rgba(124, 158, 245, 0.15) 0%, rgba(124, 158, 245, 0.05) 100%);
+    border: 2px solid #7C9EF5;
+}
+
+.timetable-cell.completed {
+    background: linear-gradient(135deg, rgba(124, 224, 163, 0.15) 0%, rgba(124, 224, 163, 0.05) 100%);
+    color: #059669;
+}
+
+/* 시간표 셀 (리퀴드 글라스 스타일) */
+.timetable-cell-new {
+    min-height: 50px;
+    padding: 8px 5px;
+    background: linear-gradient(145deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.2) 100%);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.6);
+    border-radius: 14px;
+    font-size: 14px;
+    text-align: center;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Noto Sans KR', sans-serif;
+    white-space: nowrap;
+    box-shadow:
+        0 2px 8px rgba(0,0,0,0.06),
+        inset 0 1px 2px rgba(255,255,255,0.7),
+        inset 0 -1px 1px rgba(0,0,0,0.03);
+    position: relative;
+    overflow: hidden;
+}
+
+.timetable-cell-new::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, transparent 100%);
+    border-radius: 14px 14px 0 0;
+    pointer-events: none;
+}
+
+.timetable-cell-new:hover {
+    transform: scale(1.03);
+    box-shadow:
+        0 4px 12px rgba(0,0,0,0.1),
+        inset 0 1px 2px rgba(255,255,255,0.8),
+        inset 0 -1px 1px rgba(0,0,0,0.03);
+}
+
+.timetable-cell-new.today-empty {
+    background: linear-gradient(135deg, rgba(124, 158, 245, 0.15) 0%, rgba(124, 158, 245, 0.08) 100%);
+    border: 2px dashed #7C9EF5;
+}
+
+/* 오버라이드된 셀 (임시 변경) */
+.timetable-cell-new.overridden {
+    position: relative;
+    border: 2px solid #F59E0B;
+}
+
+.timetable-cell-new .override-badge {
+    position: absolute;
+    top: 2px;
+    right: 4px;
+    font-size: 10px;
+    color: #F59E0B;
+}
+
+/* 시간표 드래그 앤 드롭 스타일 */
+.timetable-cell-new.dragging {
+    opacity: 0.5;
+    transform: scale(0.95);
+    border: 2px dashed #7C9EF5 !important;
+    z-index: 10;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.timetable-cell-new.drag-over {
+    background-color: rgba(124, 158, 245, 0.2) !important;
+    border: 2px solid #7C9EF5 !important;
+    box-shadow: inset 0 0 0 3px rgba(124, 158, 245, 0.1);
+    transform: scale(1.05);
+}
+
+.timetable-cell-new.drag-ready {
+    transform: scale(0.98);
+    box-shadow: 0 2px 8px rgba(124, 158, 245, 0.3);
+}
+
+/* 편집 모드 힌트 */
+.drag-hint {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, rgba(124, 158, 245, 0.1) 0%, rgba(124, 224, 163, 0.1) 100%);
+    border-radius: 12px;
+    margin-top: 12px;
+}
+
+.drag-hint-icon {
+    font-size: 18px;
+}
+
+.drag-hint-text {
+    font-size: 13px;
+    color: #4B5563;
+}
+
+/* 모바일 터치 최적화 */
+@media (max-width: 640px) {
+    .timetable-cell-new {
+        touch-action: manipulation;
+    }
+
+    .timetable-cell-new.dragging {
+        touch-action: none;
+    }
+}

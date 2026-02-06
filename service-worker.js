@@ -1,5 +1,5 @@
 // 클래스펫 Service Worker
-const CACHE_NAME = 'classpet-v1769616200000';
+const CACHE_NAME = 'classpet-v1770349241218';
 const OFFLINE_URL = '/offline.html';
 
 // 캐시할 정적 파일들 (앱 셸)
@@ -9,6 +9,23 @@ const STATIC_ASSETS = [
     '/offline.html',
     '/css/output.css',
     '/css/style.css',
+    '/css/base/variables.css',
+    '/css/base/layout.css',
+    '/css/base/typography.css',
+    '/css/components/navbar.css',
+    '/css/components/toolbar.css',
+    '/css/components/drawer.css',
+    '/css/components/header.css',
+    '/css/components/cards.css',
+    '/css/components/modal.css',
+    '/css/components/pet.css',
+    '/css/components/timetable.css',
+    '/css/components/praise.css',
+    '/css/components/student.css',
+    '/css/components/notification.css',
+    '/css/utilities/animations.css',
+    '/css/utilities/glass.css',
+    '/css/utilities/responsive.css',
     '/js/app.js',
     '/js/store.js',
     '/js/firebase-config.js',
