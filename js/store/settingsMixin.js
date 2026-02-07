@@ -88,7 +88,7 @@ export const settingsMixin = {
 
     getNotesByStudent(studentId) {
         const notes = this.getNotes() || [];
-        return notes.filter(n => n.studentId === studentId);
+        return notes.filter(n => String(n.studentId) === String(studentId));
     },
 
     // ==================== 통계 관련 ====================

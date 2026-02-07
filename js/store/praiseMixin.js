@@ -67,7 +67,7 @@ export const praiseMixin = {
 
     getPraisesByStudent(studentId) {
         const log = this.getPraiseLog() || [];
-        return log.filter(p => p.studentId === studentId);
+        return log.filter(p => String(p.studentId) === String(studentId));
     },
 
     getPraisesByCategory(category) {

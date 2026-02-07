@@ -60,12 +60,12 @@ function getWeekRange(offset = 0) {
     const friday = new Date(monday);
     friday.setDate(monday.getDate() + 4);
 
-    const formatDate = (date) => `${date.getMonth() + 1}월 ${date.getDate()}일`;
+    const formatDate = (date, dayName) => `${date.getMonth() + 1}월 ${date.getDate()}일 (${dayName})`;
 
     return {
         monday,
         friday,
-        rangeText: `${formatDate(monday)} ~ ${formatDate(friday)}`,
+        rangeText: `${formatDate(monday, '월')} ~ ${formatDate(friday, '금')}`,
         isCurrentWeek: offset === 0
     };
 }
@@ -140,17 +140,17 @@ export function render() {
                                 <tr>
                                     <td class="p-1 text-center text-lg font-bold text-gray-600">${period}</td>
                                     ${DAY_KEYS.map((dayKey, dayIndex) => {
-                                        const cellKey = `${dayKey}-${period}`;
-                                        const cell = timetable[cellKey];
-                                        const isToday = todayIndex === dayIndex;
-                                        const isOverridden = overriddenCells.includes(cellKey);
-                                        const subjectColors = getSubjectColors();
-                                        const colors = cell?.subject ? subjectColors[cell.subject] || { bg: '#F3F4F6', text: '#4B5563' } : null;
+        const cellKey = `${dayKey}-${period}`;
+        const cell = timetable[cellKey];
+        const isToday = todayIndex === dayIndex;
+        const isOverridden = overriddenCells.includes(cellKey);
+        const subjectColors = getSubjectColors();
+        const colors = cell?.subject ? subjectColors[cell.subject] || { bg: '#F3F4F6', text: '#4B5563' } : null;
 
-                                        // 파스텔톤 200 수준의 밝은 배경색 적용 (35% 투명도)
-                                        const bgStyle = colors ? `background: ${hexToRgba(colors.bg, 0.35)} !important; color: ${colors.text};` : '';
+        // 파스텔톤 200 수준의 밝은 배경색 적용 (35% 투명도)
+        const bgStyle = colors ? `background: ${hexToRgba(colors.bg, 0.35)} !important; color: ${colors.text};` : '';
 
-                                        return `
+        return `
                                             <td class="p-1">
                                                 <div class="timetable-cell-new ${isToday && !cell?.subject ? 'today-empty' : ''} ${isOverridden ? 'overridden' : ''}"
                                                      data-cell="${cellKey}"
@@ -169,7 +169,7 @@ export function render() {
                                                 </div>
                                             </td>
                                         `;
-                                    }).join('')}
+    }).join('')}
                                 </tr>
                             `).join('')}
                         </tbody>
@@ -275,16 +275,16 @@ function showEditModal(cellKey) {
                 <label class="block text-sm font-medium text-gray-700 mb-2">과목 선택</label>
                 <div class="grid grid-cols-4 gap-2" id="subjectGrid">
                     ${subjects.map(subject => {
-                        const colors = subjectColors[subject] || { bg: '#F3F4F6', text: '#4B5563' };
-                        const isSelected = currentCell.subject === subject;
-                        return `
+        const colors = subjectColors[subject] || { bg: '#F3F4F6', text: '#4B5563' };
+        const isSelected = currentCell.subject === subject;
+        return `
                         <button type="button" class="subject-option py-3 px-2 rounded-xl text-sm font-semibold transition-all flex items-center justify-center ${isSelected ? 'ring-2 ring-primary ring-offset-2' : ''}"
                                 data-subject="${subject}"
                                 style="background-color: ${colors.bg}; color: ${colors.text}; min-height: 44px;">
                             ${subject}
                         </button>
                         `;
-                    }).join('')}
+    }).join('')}
                     <button type="button" id="quickAddSubjectBtn" class="py-3 px-2 rounded-xl text-sm font-semibold transition-all bg-gray-100 text-gray-500 hover:bg-gray-200 border-2 border-dashed border-gray-300 flex items-center justify-center gap-1" style="min-height: 44px;">
                         <span>+</span><span>추가</span>
                     </button>
