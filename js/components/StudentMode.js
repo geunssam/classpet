@@ -46,14 +46,6 @@ export function render() {
 
     return `
         <div class="student-mode-container pb-8">
-            <!-- 로그아웃 버튼 -->
-            <div class="flex justify-end mb-4">
-                <button id="studentLogoutBtn" class="text-sm text-gray-400 hover:text-gray-600 transition-colors flex items-center gap-1">
-                    <span>👋</span>
-                    <span>나가기</span>
-                </button>
-            </div>
-
             <!-- 펫 영역 -->
             <div class="pet-display-area text-center mb-8">
                 <!-- 펫 이모지 (큰 사이즈) -->
@@ -87,9 +79,9 @@ export function render() {
                 <div class="speech-arrow"></div>
                 <p id="petMessage" class="text-center text-gray-700">
                     ${hasEmotionsToday
-                        ? `또 이야기하고 싶은 거야? ${getNameWithSuffix(student.name)}! 언제든 말해줘! 💕`
-                        : `안녕, ${getNameWithSuffix(student.name)}! 오늘 기분이 어때? 🐾`
-                    }
+            ? `또 이야기하고 싶은 거야? ${getNameWithSuffix(student.name)}! 언제든 말해줘! 💕`
+            : `안녕, ${getNameWithSuffix(student.name)}! 오늘 기분이 어때? 🐾`
+        }
                 </p>
             </div>
 
@@ -112,15 +104,15 @@ export function render() {
                             <p class="text-blue-600 font-medium text-center mb-3">📝 오늘 보낸 마음 (${todayEmotions.length}개)</p>
                             <div class="space-y-3 max-h-64 overflow-y-auto">
                                 ${todayEmotions.map(emotion => {
-                                    const emotionTime = new Date(emotion.timestamp).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
-                                    // conversations에서 답장 찾기 (우선) → 없으면 reply 객체 호환
-                                    const convos = emotion.conversations || [];
-                                    const lastReplyConvo = convos.slice().reverse().find(c => c.teacherReply);
-                                    const replyMessage = lastReplyConvo?.teacherReply || emotion.reply?.message || null;
-                                    const replyRead = lastReplyConvo?.read ?? emotion.reply?.read ?? true;
-                                    const hasReply = !!replyMessage;
-                                    const petSpeech = hasReply ? convertToPetSpeech(replyMessage, student.petType, petName) : null;
-                                    return `
+            const emotionTime = new Date(emotion.timestamp).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+            // conversations에서 답장 찾기 (우선) → 없으면 reply 객체 호환
+            const convos = emotion.conversations || [];
+            const lastReplyConvo = convos.slice().reverse().find(c => c.teacherReply);
+            const replyMessage = lastReplyConvo?.teacherReply || emotion.reply?.message || null;
+            const replyRead = lastReplyConvo?.read ?? emotion.reply?.read ?? true;
+            const hasReply = !!replyMessage;
+            const petSpeech = hasReply ? convertToPetSpeech(replyMessage, student.petType, petName) : null;
+            return `
                                     <div class="bg-white rounded-xl p-3 shadow-sm">
                                         <div class="flex items-center gap-2 mb-1">
                                             <span class="text-xl">${EMOTION_TYPES[emotion.emotion]?.icon || '😊'}</span>
@@ -140,7 +132,8 @@ export function render() {
                                             </div>
                                         ` : ''}
                                     </div>
-                                `;}).join('')}
+                                `;
+        }).join('')}
                             </div>
                         </div>
                     </div>
@@ -230,21 +223,6 @@ export function render() {
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <!-- 하단 버튼 영역 -->
-            <div class="mt-6 px-4 space-y-3">
-                <!-- 펫 도감 버튼 -->
-                <button id="petCollectionBtn" class="w-full liquid-btn-student-gold">
-                    <span>📖</span>
-                    <span>펫 도감</span>
-                </button>
-
-                <!-- PIN 변경 버튼 -->
-                <button id="changePinBtn" class="w-full liquid-btn-student-secondary">
-                    <span>🔐</span>
-                    <span>내 PIN 변경하기</span>
-                </button>
             </div>
         </div>
 
@@ -901,21 +879,21 @@ function renderHistoryTab(student, petEmoji, petName) {
             <!-- 대화 내용 -->
             <div class="space-y-4 pb-4">
                 ${dayEmotions.length > 0 ? dayEmotions.map(emotion => {
-                    const emotionIcon = EMOTION_TYPES[emotion.emotion]?.icon || '😊';
-                    const emotionName = EMOTION_TYPES[emotion.emotion]?.name || '';
-                    const convos = emotion.conversations || [];
+        const emotionIcon = EMOTION_TYPES[emotion.emotion]?.icon || '😊';
+        const emotionName = EMOTION_TYPES[emotion.emotion]?.name || '';
+        const convos = emotion.conversations || [];
 
-                    // conversations 배열 기반 렌더링
-                    if (convos.length > 0) {
-                        let isFirst = true;
-                        return convos.map(c => {
-                            let html = '';
-                            // 학생 메시지 (오른쪽)
-                            if (c.studentMessage) {
-                                const time = new Date(c.studentAt || emotion.timestamp).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
-                                const showTag = isFirst;
-                                isFirst = false;
-                                html += `
+        // conversations 배열 기반 렌더링
+        if (convos.length > 0) {
+            let isFirst = true;
+            return convos.map(c => {
+                let html = '';
+                // 학생 메시지 (오른쪽)
+                if (c.studentMessage) {
+                    const time = new Date(c.studentAt || emotion.timestamp).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+                    const showTag = isFirst;
+                    isFirst = false;
+                    html += `
                                     <div class="flex justify-end gap-2">
                                         <div class="flex flex-col items-end">
                                             <div class="bg-primary/10 rounded-2xl rounded-tr-sm p-3 max-w-[75%]">
@@ -929,12 +907,12 @@ function renderHistoryTab(student, petEmoji, petName) {
                                         </div>
                                     </div>
                                 `;
-                            }
-                            // 선생님 답장 (왼쪽)
-                            if (c.teacherReply) {
-                                const replyTime = new Date(c.replyAt || emotion.timestamp).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
-                                const petSpeech = convertToPetSpeech(c.teacherReply, student.petType, petName);
-                                html += `
+                }
+                // 선생님 답장 (왼쪽)
+                if (c.teacherReply) {
+                    const replyTime = new Date(c.replyAt || emotion.timestamp).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+                    const petSpeech = convertToPetSpeech(c.teacherReply, student.petType, petName);
+                    html += `
                                     <div class="flex justify-start gap-2">
                                         <span class="text-2xl flex-shrink-0 mt-1">${petEmoji}</span>
                                         <div class="flex flex-col">
@@ -945,17 +923,17 @@ function renderHistoryTab(student, petEmoji, petName) {
                                         </div>
                                     </div>
                                 `;
-                            }
-                            return html;
-                        }).join('');
-                    }
+                }
+                return html;
+            }).join('');
+        }
 
-                    // 구 데이터 호환: conversations가 없는 경우
-                    const emotionTime = new Date(emotion.timestamp).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
-                    const hasReply = !!emotion.reply;
-                    const petSpeech = hasReply ? convertToPetSpeech(emotion.reply.message, student.petType, petName) : null;
+        // 구 데이터 호환: conversations가 없는 경우
+        const emotionTime = new Date(emotion.timestamp).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+        const hasReply = !!emotion.reply;
+        const petSpeech = hasReply ? convertToPetSpeech(emotion.reply.message, student.petType, petName) : null;
 
-                    return `
+        return `
                         <div class="flex justify-end gap-2">
                             <div class="flex flex-col items-end">
                                 <div class="bg-primary/10 rounded-2xl rounded-tr-sm p-3 max-w-[75%]">
@@ -982,7 +960,7 @@ function renderHistoryTab(student, petEmoji, petName) {
                             </div>
                         ` : ''}
                     `;
-                }).join('') : `
+    }).join('') : `
                     <div class="text-center py-12">
                         <div class="text-4xl mb-3">📭</div>
                         <p class="text-gray-400">이 날은 기록이 없어요</p>

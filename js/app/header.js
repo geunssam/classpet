@@ -37,6 +37,12 @@ export function bindHeaderButtons() {
         studentNotificationBtn.addEventListener('click', showStudentNotifications);
     }
 
+    // 설정 버튼 (학생용) - PIN 변경
+    const studentSettingsBtn = document.getElementById('studentSettingsBtn');
+    if (studentSettingsBtn) {
+        studentSettingsBtn.addEventListener('click', showStudentPinChangeModal);
+    }
+
     // 로그아웃 버튼 (헤더 + 기존 숨김 버튼)
     const logoutHandler = () => {
         if (confirm('로그아웃 하시겠습니까?')) {
@@ -361,5 +367,186 @@ export function updateCurrentDate() {
         const days = ['일', '월', '화', '수', '목', '금', '토'];
         const day = days[today.getDay()];
         dateEl.textContent = `${month}/${date} (${day})`;
+    }
+}
+
+/**
+ * 학생 PIN 변경 모달 표시
+ */
+function showStudentPinChangeModal() {
+    const modal = document.getElementById('studentPinChangeModal');
+    if (!modal) return;
+
+    // 모달 표시
+    modal.classList.remove('hidden');
+
+    // 입력 필드 초기화
+    const inputs = modal.querySelectorAll('.global-pin-input');
+    inputs.forEach(input => {
+        input.value = '';
+        input.classList.remove('border-red-400');
+    });
+
+    // 에러 메시지 숨기기
+    const errorEl = document.getElementById('globalPinChangeError');
+    if (errorEl) {
+        errorEl.classList.add('hidden');
+        errorEl.textContent = '';
+    }
+
+    // 첫 번째 입력에 포커스
+    const firstInput = modal.querySelector('.global-pin-input[data-group="current"][data-index="0"]');
+    if (firstInput) {
+        setTimeout(() => firstInput.focus(), 100);
+    }
+
+    // PIN 입력 이벤트 바인딩
+    bindGlobalPinInputs(modal);
+
+    // 취소 버튼
+    const cancelBtn = document.getElementById('globalCancelPinBtn');
+    if (cancelBtn) {
+        cancelBtn.onclick = () => modal.classList.add('hidden');
+    }
+
+    // 확인 버튼
+    const confirmBtn = document.getElementById('globalConfirmPinBtn');
+    if (confirmBtn) {
+        confirmBtn.onclick = () => handleGlobalPinChange(modal);
+    }
+
+    // 배경 클릭으로 닫기
+    modal.onclick = (e) => {
+        if (e.target === modal) {
+            modal.classList.add('hidden');
+        }
+    };
+}
+
+/**
+ * 전역 PIN 입력 바인딩
+ */
+function bindGlobalPinInputs(modal) {
+    const inputs = modal.querySelectorAll('.global-pin-input');
+
+    inputs.forEach(input => {
+        // 입력 시 다음 필드로 이동
+        input.oninput = (e) => {
+            const value = e.target.value.replace(/[^0-9]/g, '');
+            e.target.value = value;
+
+            if (value && value.length === 1) {
+                const group = e.target.dataset.group;
+                const index = parseInt(e.target.dataset.index);
+
+                // 같은 그룹의 다음 입력으로 이동
+                let nextInput = modal.querySelector(`.global-pin-input[data-group="${group}"][data-index="${index + 1}"]`);
+
+                // 그룹의 마지막이면 다음 그룹으로
+                if (!nextInput) {
+                    const groups = ['current', 'new', 'confirm'];
+                    const currentGroupIndex = groups.indexOf(group);
+                    if (currentGroupIndex < groups.length - 1) {
+                        nextInput = modal.querySelector(`.global-pin-input[data-group="${groups[currentGroupIndex + 1]}"][data-index="0"]`);
+                    }
+                }
+
+                if (nextInput) nextInput.focus();
+            }
+        };
+
+        // 백스페이스로 이전 필드로 이동
+        input.onkeydown = (e) => {
+            if (e.key === 'Backspace' && !e.target.value) {
+                const group = e.target.dataset.group;
+                const index = parseInt(e.target.dataset.index);
+
+                let prevInput = modal.querySelector(`.global-pin-input[data-group="${group}"][data-index="${index - 1}"]`);
+
+                // 그룹의 첫 번째면 이전 그룹으로
+                if (!prevInput && index === 0) {
+                    const groups = ['current', 'new', 'confirm'];
+                    const currentGroupIndex = groups.indexOf(group);
+                    if (currentGroupIndex > 0) {
+                        prevInput = modal.querySelector(`.global-pin-input[data-group="${groups[currentGroupIndex - 1]}"][data-index="3"]`);
+                    }
+                }
+
+                if (prevInput) {
+                    prevInput.focus();
+                    prevInput.value = '';
+                }
+            }
+        };
+    });
+}
+
+/**
+ * 전역 PIN 변경 처리
+ */
+async function handleGlobalPinChange(modal) {
+    const errorEl = document.getElementById('globalPinChangeError');
+
+    // PIN 값 수집
+    const getPin = (group) => {
+        const inputs = modal.querySelectorAll(`.global-pin-input[data-group="${group}"]`);
+        return Array.from(inputs).map(i => i.value).join('');
+    };
+
+    const currentPin = getPin('current');
+    const newPin = getPin('new');
+    const confirmPin = getPin('confirm');
+
+    // 유효성 검사
+    if (currentPin.length !== 4) {
+        showGlobalPinError(errorEl, '현재 PIN 4자리를 입력해주세요');
+        return;
+    }
+
+    if (newPin.length !== 4) {
+        showGlobalPinError(errorEl, '새 PIN 4자리를 입력해주세요');
+        return;
+    }
+
+    if (newPin !== confirmPin) {
+        showGlobalPinError(errorEl, '새 PIN이 일치하지 않아요');
+        return;
+    }
+
+    // 현재 학생 확인
+    const student = store.getCurrentStudent();
+    if (!student) {
+        showGlobalPinError(errorEl, '학생 정보를 찾을 수 없어요');
+        return;
+    }
+
+    // 현재 PIN 확인
+    if (student.pin !== currentPin) {
+        showGlobalPinError(errorEl, '현재 PIN이 맞지 않아요');
+        return;
+    }
+
+    try {
+        // PIN 변경
+        await store.updateStudentPin(student.id, newPin);
+
+        // 모달 닫기
+        modal.classList.add('hidden');
+
+        // 성공 메시지
+        showToast('PIN이 변경되었어요! 🔐', 'success');
+    } catch (error) {
+        console.error('PIN 변경 실패:', error);
+        showGlobalPinError(errorEl, 'PIN 변경에 실패했어요');
+    }
+}
+
+/**
+ * 전역 PIN 에러 표시
+ */
+function showGlobalPinError(errorEl, message) {
+    if (errorEl) {
+        errorEl.textContent = message;
+        errorEl.classList.remove('hidden');
     }
 }

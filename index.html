@@ -136,6 +136,13 @@
                     </svg>
                     <span id="studentNotificationBadge" class="student-noti-badge hidden">0</span>
                 </button>
+                <button id="studentSettingsBtn" class="student-settings-btn hidden">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <circle cx="12" cy="12" r="3" />
+                        <path
+                            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                    </svg>
+                </button>
                 <button id="studentLogoutBtn" class="student-logout-btn hidden">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                         <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
@@ -484,6 +491,75 @@
     <div id="modalContainer" class="fixed inset-0 z-[100] hidden">
         <div class="modal-backdrop absolute inset-0 bg-black/50"></div>
         <div class="modal-content"></div>
+    </div>
+
+    <!-- 학생 PIN 변경 모달 (전역) -->
+    <div id="studentPinChangeModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-6 w-full max-w-xs shadow-2xl">
+            <div class="text-center mb-6">
+                <div class="text-4xl mb-2">🔐</div>
+                <h3 class="text-lg font-bold text-gray-800">PIN 변경</h3>
+                <p class="text-sm text-gray-500 mt-1">새로운 PIN을 설정해주세요</p>
+            </div>
+
+            <!-- 현재 PIN -->
+            <div class="mb-4">
+                <label class="text-sm font-medium text-gray-700 mb-2 block">현재 PIN</label>
+                <div class="flex justify-center gap-2" id="globalCurrentPinInputs">
+                    <input type="text" maxlength="1" class="pin-input global-pin-input" data-group="current"
+                        data-index="0" inputmode="numeric">
+                    <input type="text" maxlength="1" class="pin-input global-pin-input" data-group="current"
+                        data-index="1" inputmode="numeric">
+                    <input type="text" maxlength="1" class="pin-input global-pin-input" data-group="current"
+                        data-index="2" inputmode="numeric">
+                    <input type="text" maxlength="1" class="pin-input global-pin-input" data-group="current"
+                        data-index="3" inputmode="numeric">
+                </div>
+            </div>
+
+            <!-- 새 PIN -->
+            <div class="mb-4">
+                <label class="text-sm font-medium text-gray-700 mb-2 block">새 PIN</label>
+                <div class="flex justify-center gap-2" id="globalNewPinInputs">
+                    <input type="text" maxlength="1" class="pin-input global-pin-input" data-group="new" data-index="0"
+                        inputmode="numeric">
+                    <input type="text" maxlength="1" class="pin-input global-pin-input" data-group="new" data-index="1"
+                        inputmode="numeric">
+                    <input type="text" maxlength="1" class="pin-input global-pin-input" data-group="new" data-index="2"
+                        inputmode="numeric">
+                    <input type="text" maxlength="1" class="pin-input global-pin-input" data-group="new" data-index="3"
+                        inputmode="numeric">
+                </div>
+            </div>
+
+            <!-- 새 PIN 확인 -->
+            <div class="mb-4">
+                <label class="text-sm font-medium text-gray-700 mb-2 block">새 PIN 확인</label>
+                <div class="flex justify-center gap-2" id="globalConfirmPinInputs">
+                    <input type="text" maxlength="1" class="pin-input global-pin-input" data-group="confirm"
+                        data-index="0" inputmode="numeric">
+                    <input type="text" maxlength="1" class="pin-input global-pin-input" data-group="confirm"
+                        data-index="1" inputmode="numeric">
+                    <input type="text" maxlength="1" class="pin-input global-pin-input" data-group="confirm"
+                        data-index="2" inputmode="numeric">
+                    <input type="text" maxlength="1" class="pin-input global-pin-input" data-group="confirm"
+                        data-index="3" inputmode="numeric">
+                </div>
+            </div>
+
+            <!-- 에러 메시지 -->
+            <p id="globalPinChangeError" class="text-center text-sm text-red-500 mb-4 hidden"></p>
+
+            <!-- 버튼 -->
+            <div class="modal-buttons">
+                <button id="globalCancelPinBtn" class="liquid-btn-student-secondary">
+                    취소
+                </button>
+                <button id="globalConfirmPinBtn" class="liquid-btn-student">
+                    변경하기
+                </button>
+            </div>
+        </div>
     </div>
 
     <!-- 토스트 메시지 -->

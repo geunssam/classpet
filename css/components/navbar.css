@@ -415,6 +415,47 @@
     margin-left: 0;
 }
 
+/* 학생 설정 버튼 (상단바) */
+.student-settings-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-left: 4px;
+}
+
+.student-settings-btn:hover {
+    background: rgba(124, 158, 245, 0.1);
+    transform: scale(1.05);
+}
+
+.student-settings-btn:active {
+    transform: scale(0.95);
+}
+
+.student-settings-btn svg {
+    width: 18px;
+    height: 18px;
+    stroke: #6B7280;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.student-settings-btn:hover svg {
+    stroke: #7C9EF5;
+}
+
+.student-settings-btn.hidden {
+    display: none;
+}
+
 /* 학생 로그아웃 버튼 (상단바) */
 .student-logout-btn {
     position: relative;

@@ -40,7 +40,7 @@
     position: relative;
     background: white;
     border-radius: 20px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
 
 .pet-speech-bubble .speech-arrow {
@@ -53,7 +53,7 @@
     border-left: 10px solid transparent;
     border-right: 10px solid transparent;
     border-bottom: 10px solid white;
-    filter: drop-shadow(0 -2px 2px rgba(0,0,0,0.03));
+    filter: drop-shadow(0 -2px 2px rgba(0, 0, 0, 0.03));
 }
 
 /* 감정 아이콘 */
@@ -68,7 +68,7 @@
     border-radius: 50%;
     transition: all 0.2s ease;
     border: 3px solid #f3f4f6;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .emotion-btn:hover {
@@ -87,7 +87,7 @@
 .emotion-select-btn {
     border: 3px solid #f3f4f6;
     transition: all 0.2s ease;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .emotion-select-btn:hover {
@@ -97,9 +97,9 @@
 
 .emotion-select-btn.selected {
     border-color: #A78BFA;
-    background: linear-gradient(135deg, rgba(124, 158, 245, 0.15) 0%, rgba(167, 139, 250, 0.15) 100%);
+    background: linear-gradient(135deg, rgba(124, 158, 245, 0.4) 0%, rgba(167, 139, 250, 0.4) 100%);
     transform: scale(1.1);
-    box-shadow: 0 4px 12px rgba(167, 139, 250, 0.25);
+    box-shadow: 0 4px 16px rgba(167, 139, 250, 0.4);
 }
 
 /* 대화 말풍선 스타일 */
@@ -174,7 +174,7 @@
     background: white;
     transition: all 0.2s ease;
     padding: 0;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .pin-input:focus {
@@ -209,10 +209,10 @@
 }
 
 /* 학생 목록 아이템 */
-.settings-container #studentList > div {
+.settings-container #studentList>div {
     transition: all 0.2s ease;
 }
 
-.settings-container #studentList > div:hover {
+.settings-container #studentList>div:hover {
     background: #F3F4F6;
 }
