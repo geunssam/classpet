@@ -227,7 +227,8 @@ export function showStudentNotifications() {
     // 2. 새 칭찬 목록
     const praises = store.getPraisesByStudent(student.id) || [];
     const lastSeen = parseInt(sessionStorage.getItem('lastSeenPraiseCount') || '0');
-    const newPraises = praises.slice(lastSeen);
+    const newCount = Math.max(0, praises.length - lastSeen);
+    const newPraises = praises.slice(0, newCount);
 
     const hasAnyNotifications = unreadReplies.length > 0 || newPraises.length > 0;
 
@@ -255,7 +256,7 @@ export function showStudentNotifications() {
                                             <div class="flex items-start gap-3">
                                                 <span class="text-2xl">💬</span>
                                                 <div class="flex-1">
-                                                    <p class="text-sm font-medium text-gray-700">선생님이 답장을 보냈어요</p>
+                                                    <p class="text-sm font-medium text-gray-700">펫이 답장을 보냈어요</p>
                                                     <p class="text-xs text-gray-500 mt-1 italic">"${replyMessage.substring(0, 50)}${replyMessage.length > 50 ? '...' : ''}"</p>
                                                     <p class="text-xs text-gray-400 mt-1">${emotionTime}</p>
                                                 </div>

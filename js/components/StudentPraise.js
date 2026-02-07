@@ -8,6 +8,8 @@ import { router } from '../router.js';
 
 let selectedCategory = 'all';
 let currentMonth = new Date();
+let praiseUnsubscribe = null;
+let lastPraiseSnapshot = '';
 
 /**
  * 렌더링
@@ -154,6 +156,52 @@ export function afterRender() {
             refreshView();
         }
     });
+
+    // 학생 세션이면 칭찬 실시간 구독 설정
+    if (store.isStudentLoggedIn()) {
+        setupPraiseSubscription();
+    }
+}
+
+/**
+ * 학생 칭찬 Firebase 실시간 구독 설정
+ * 교사가 칭찬을 보내면 자동으로 로컬에 반영 + 화면 갱신
+ */
+function setupPraiseSubscription() {
+    // 기존 구독 해제
+    if (praiseUnsubscribe) {
+        praiseUnsubscribe();
+        praiseUnsubscribe = null;
+    }
+
+    const student = store.getCurrentStudent();
+    if (!student || !store.isFirebaseEnabled() || !store.getClassCode()) return;
+
+    praiseUnsubscribe = store.subscribeToStudentPraises(student.id, (praises) => {
+        // 데이터 변경 여부 체크 (플리커링 방지)
+        const snapshot = JSON.stringify(praises.map(p => ({
+            id: p.firebaseId || p.id,
+            category: p.category
+        })));
+        if (snapshot === lastPraiseSnapshot) return;
+        lastPraiseSnapshot = snapshot;
+
+        console.log('학생 칭찬 실시간 업데이트:', praises.length, '개');
+        // 칭찬 탭일 때만 콘텐츠 갱신 (배지는 notify 체인으로 자동 갱신)
+        if (router.getCurrentRoute() === 'student-praise') {
+            refreshView();
+        }
+    });
+}
+
+/**
+ * 컴포넌트 언마운트 시 구독 해제
+ */
+export function unmount() {
+    if (praiseUnsubscribe) {
+        praiseUnsubscribe();
+        praiseUnsubscribe = null;
+    }
 }
 
 function refreshView() {
