@@ -20,7 +20,7 @@ export const studentMixin = {
 
     getStudent(studentId) {
         const students = this.getStudents() || [];
-        return students.find(s => s.id === studentId);
+        return students.find(s => String(s.id) === String(studentId));
     },
 
     addStudent(student) {
@@ -49,7 +49,7 @@ export const studentMixin = {
 
     updateStudent(studentId, updates) {
         const students = this.getStudents() || [];
-        const index = students.findIndex(s => s.id === studentId);
+        const index = students.findIndex(s => String(s.id) === String(studentId));
         if (index !== -1) {
             students[index] = { ...students[index], ...updates };
             this.saveStudents(students);
@@ -64,7 +64,7 @@ export const studentMixin = {
 
     deleteStudent(studentId) {
         let students = this.getStudents() || [];
-        students = students.filter(s => s.id !== studentId);
+        students = students.filter(s => String(s.id) !== String(studentId));
         students.forEach((s, i) => s.number = i + 1);
         this.saveStudents(students);
 
