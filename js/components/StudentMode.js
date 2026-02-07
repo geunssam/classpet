@@ -14,6 +14,11 @@ let currentStudentTab = 'send'; // 'send' | 'history'
 export function setStudentTab(tab) {
     currentStudentTab = tab;
 }
+
+export function setHistoryDate(date) {
+    historyDate = date;
+}
+
 let historyDate = new Date();
 let studentEmotionsUnsubscribe = null; // Firebase 실시간 구독 해제 함수
 let lastEmotionsSnapshot = ''; // 데이터 변경 감지용

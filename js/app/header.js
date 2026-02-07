@@ -12,7 +12,7 @@ import {
     closeModal
 } from '../utils/animations.js';
 import { bindToolbarToggle, bindMobileDrawer, updateNotificationBadge, updateStudentNotificationBadge } from './navigation.js';
-import { setStudentTab } from '../components/StudentMode.js';
+import { setStudentTab, setHistoryDate } from '../components/StudentMode.js';
 
 /**
  * 헤더 버튼 바인딩
@@ -274,7 +274,8 @@ export function showStudentNotifications() {
         const emotionTime = new Date(emotion.timestamp).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
         return `
                                         <div class="notification-item p-3 rounded-xl bg-primary/10 cursor-pointer hover:bg-primary/20 transition-colors"
-                                             data-emotion-id="${emotion.id || emotion.firebaseId}">
+                                             data-emotion-id="${emotion.id || emotion.firebaseId}"
+                                             data-emotion-timestamp="${emotion.timestamp}">
                                             <div class="flex items-start gap-3">
                                                 <span class="text-2xl">💬</span>
                                                 <div class="flex-1">
@@ -331,14 +332,22 @@ export function showStudentNotifications() {
         sessionStorage.setItem('lastSeenPraiseCount', praises.length.toString());
     }
 
-    // 답장 클릭 시 읽음 처리 + 마음 탭으로 이동
+    // 답장 클릭 시 읽음 처리 + 마음 탭 기록보기로 이동
     document.querySelectorAll('[data-emotion-id]').forEach(item => {
         item.addEventListener('click', () => {
             const emotionId = item.dataset.emotionId;
+            const timestamp = item.dataset.emotionTimestamp;
             store.markReplyAsRead(emotionId);
             closeModal();
+            if (timestamp) {
+                setHistoryDate(new Date(timestamp));
+            }
             setStudentTab('history');
-            router.navigate('student-main');
+            if (router.getCurrentRoute() === 'student-main') {
+                router.handleRoute(); // 같은 라우트 → 강제 리렌더
+            } else {
+                router.navigate('student-main');
+            }
         });
     });
 

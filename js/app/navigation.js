@@ -270,6 +270,8 @@ export function updateStudentNotificationBadge() {
 
     // 학급정보 표시 (학생용)
     if (studentClassInfo) {
+        const settings = store.getSettings();
+        studentClassInfo.textContent = settings?.className || '우리반';
         studentClassInfo.classList.remove('hidden');
     }
     if (teacherClassInfo) teacherClassInfo.classList.add('hidden');
