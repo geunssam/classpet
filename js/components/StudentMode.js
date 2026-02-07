@@ -46,30 +46,30 @@ export function render() {
 
     return `
         <div class="student-mode-container pb-8">
-            <!-- 펫 영역 -->
-            <div class="pet-display-area text-center mb-8">
-                <!-- 펫 이모지 (큰 사이즈) -->
-                <div id="petEmojiContainer" class="relative inline-block">
-                    <span id="petEmoji" class="text-8xl inline-block pet-pulse">${petEmoji}</span>
-
-                    <!-- 반응 이모지 (숨김 상태) -->
-                    <span id="reactionEmoji" class="absolute -top-4 -right-4 text-3xl opacity-0 transition-all duration-500"></span>
-                </div>
-
-                <!-- 펫 정보 -->
-                <div class="mt-4">
-                    <h2 class="text-2xl font-bold text-gray-800">${petName}</h2>
-                    <p class="text-sm text-gray-500">${student.name}의 펫</p>
-                </div>
-
-                <!-- 레벨 & 경험치 -->
-                <div class="mt-4 px-8">
-                    <div class="flex items-center justify-center gap-2 mb-2">
-                        <span class="level-badge">Lv.${student.level || 1}</span>
-                        <span class="text-sm text-gray-500">${expPercent}%</span>
+            <!-- 펫 영역 (2열 그리드) -->
+            <div class="pet-display-area px-4 py-6 mb-6">
+                <div class="pet-grid">
+                    <!-- 왼쪽: 펫 이모지 + 이름 -->
+                    <div class="pet-left-column">
+                        <div id="petEmojiContainer" class="relative">
+                            <span id="petEmoji" class="pet-emoji-large inline-block pet-pulse">${petEmoji}</span>
+                            <span id="reactionEmoji" class="absolute -top-3 -right-3 text-2xl opacity-0 transition-all duration-500"></span>
+                        </div>
+                        <h2 class="text-2xl font-bold text-gray-800 mt-3">${petName}</h2>
                     </div>
-                    <div class="exp-bar">
-                        <div class="exp-bar-fill" style="width: ${expPercent}%"></div>
+                    
+                    <!-- 오른쪽: 레벨+단계 (상단) + 경험치바 (하단) -->
+                    <div class="pet-right-column">
+                        <!-- 상단: 레벨 + 단계 -->
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="level-badge-lg">Lv.${student.level || 1}</span>
+                            <span class="pet-stage-text">${petStage === 'adult' ? '최종' : (petStage === 'growing' ? '성장중' : '아기')}</span>
+                        </div>
+                        <!-- 하단: 경험치바 (% 내부 중앙) -->
+                        <div class="exp-bar-xl">
+                            <div class="exp-bar-fill-xl" style="width: ${Math.max(expPercent, 15)}%"></div>
+                            <span class="exp-bar-percent">${expPercent}%</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -215,11 +215,6 @@ export function render() {
                         <div>
                             <div class="text-2xl font-bold text-success">${student.level}</div>
                             <div class="text-xs text-gray-500">현재 레벨</div>
-                        </div>
-                        <div class="w-px bg-gray-200"></div>
-                        <div>
-                            <div class="text-2xl font-bold text-secondary">${petStage === 'adult' ? '최종' : (petStage === 'growing' ? '성장중' : '아기')}</div>
-                            <div class="text-xs text-gray-500">펫 단계</div>
                         </div>
                     </div>
                 </div>
