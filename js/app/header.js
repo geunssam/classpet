@@ -69,23 +69,6 @@ export function bindHeaderButtons() {
         headerLogoutBtn.addEventListener('click', logoutHandler);
     }
 
-    // 모바일 학생용 버튼 바인딩
-    const mobileStudentNotificationBtn = document.getElementById('mobileStudentNotificationBtn');
-    if (mobileStudentNotificationBtn) {
-        mobileStudentNotificationBtn.addEventListener('click', showStudentNotifications);
-    }
-
-    const mobileStudentSettingsBtn = document.getElementById('mobileStudentSettingsBtn');
-    if (mobileStudentSettingsBtn) {
-        mobileStudentSettingsBtn.addEventListener('click', showStudentPinChangeModal);
-    }
-
-    const mobileStudentLogoutBtn = document.getElementById('mobileStudentLogoutBtn');
-    if (mobileStudentLogoutBtn) {
-        mobileStudentLogoutBtn.removeEventListener('click', handleStudentLogout);
-        mobileStudentLogoutBtn.addEventListener('click', handleStudentLogout);
-    }
-
     // 날짜 버튼 → 감정 히스토리로 이동
     bindDateHistoryButton();
 
@@ -407,7 +390,7 @@ export function updateCurrentDate() {
 /**
  * 학생 PIN 변경 모달 표시
  */
-function showStudentPinChangeModal() {
+export function showStudentPinChangeModal() {
     // 다른 모달 닫기
     window.classpet?.closeModal?.();
 
@@ -591,7 +574,7 @@ function showGlobalPinError(errorEl, message) {
 /**
  * 학생 로그아웃 처리 (커스텀 확인 모달 사용)
  */
-function handleStudentLogout() {
+export function handleStudentLogout() {
     // 모든 모달 닫기
     window.classpet?.closeModal?.();
     const pinModal = document.getElementById('studentPinChangeModal');

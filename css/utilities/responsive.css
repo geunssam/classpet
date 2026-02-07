@@ -121,6 +121,10 @@
         display: none !important;
     }
 
+    .navbar-right {
+        grid-column: -1;
+    }
+
     .main-content {
         padding: 16px;
         margin-right: 0 !important;

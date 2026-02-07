@@ -5,6 +5,7 @@
 
 import { store } from '../store.js';
 import { router } from '../router.js';
+import { showStudentNotifications, showStudentPinChangeModal, handleStudentLogout } from './header.js';
 
 /**
  * 네비게이션 이벤트 바인딩 (상단 탭바 + 모바일 드로어)
@@ -129,20 +130,30 @@ export function bindMobileDrawer(showNotificationsFn) {
         mobileDrawerOverlay.addEventListener('click', closeMobileDrawer);
     }
 
-    // 모바일 드로어 버튼들
-    const mobileSettingsBtn = document.getElementById('mobileSettingsBtn');
-    if (mobileSettingsBtn) {
-        mobileSettingsBtn.addEventListener('click', () => {
-            closeMobileDrawer();
-            router.navigate('settings');
-        });
-    }
+    // 모바일 드로어 버튼들 (학생/교사 모드 분기)
+    const isStudentMode = () => router.isStudentMode?.() || false;
 
     const mobileNotificationBtn = document.getElementById('mobileNotificationBtn');
     if (mobileNotificationBtn) {
         mobileNotificationBtn.addEventListener('click', () => {
             closeMobileDrawer();
-            if (showNotificationsFn) showNotificationsFn();
+            if (isStudentMode()) {
+                showStudentNotifications();
+            } else {
+                if (showNotificationsFn) showNotificationsFn();
+            }
+        });
+    }
+
+    const mobileSettingsBtn = document.getElementById('mobileSettingsBtn');
+    if (mobileSettingsBtn) {
+        mobileSettingsBtn.addEventListener('click', () => {
+            closeMobileDrawer();
+            if (isStudentMode()) {
+                showStudentPinChangeModal();
+            } else {
+                router.navigate('settings');
+            }
         });
     }
 
@@ -150,9 +161,13 @@ export function bindMobileDrawer(showNotificationsFn) {
     if (mobileLogoutBtn) {
         mobileLogoutBtn.addEventListener('click', () => {
             closeMobileDrawer();
-            if (confirm('로그아웃 하시겠습니까?')) {
-                store.teacherLogout();
-                router.navigate('login');
+            if (isStudentMode()) {
+                handleStudentLogout();
+            } else {
+                if (confirm('로그아웃 하시겠습니까?')) {
+                    store.teacherLogout();
+                    router.navigate('login');
+                }
             }
         });
     }
