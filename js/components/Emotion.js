@@ -29,6 +29,15 @@ export function render() {
         sessionStorage.removeItem('emotionHistoryDate');
     }
 
+    // sessionStorage에서 외부 학생 ID 파라미터 확인 (알림 클릭 → 채팅방 직접 이동)
+    const externalStudentId = sessionStorage.getItem('emotionHistoryStudentId');
+    if (externalStudentId) {
+        viewMode = 'history';
+        historySubView = 'chatRoom';
+        selectedChatStudentId = parseInt(externalStudentId);
+        sessionStorage.removeItem('emotionHistoryStudentId');
+    }
+
     const students = store.getStudents() || [];
     const todayEmotions = store.getTodayEmotions();
     const needAttention = store.getStudentsNeedingAttention();

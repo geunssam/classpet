@@ -226,12 +226,16 @@ export function updateStudentNotificationBadge() {
     const btn = document.getElementById('studentNotificationBtn');
     const settingsBtn = document.getElementById('studentSettingsBtn');
     const logoutBtn = document.getElementById('studentLogoutBtn');
+    const studentClassInfo = document.getElementById('studentClassInfo');
+    const teacherClassInfo = document.getElementById('classInfo');
 
     // 학생 로그인 상태가 아니면 버튼 숨김
     if (!store.isStudentLoggedIn()) {
         if (btn) btn.classList.add('hidden');
         if (settingsBtn) settingsBtn.classList.add('hidden');
         if (logoutBtn) logoutBtn.classList.add('hidden');
+        if (studentClassInfo) studentClassInfo.classList.add('hidden');
+        if (teacherClassInfo) teacherClassInfo.classList.remove('hidden');
         return;
     }
 
@@ -240,6 +244,7 @@ export function updateStudentNotificationBadge() {
         if (btn) btn.classList.add('hidden');
         if (settingsBtn) settingsBtn.classList.add('hidden');
         if (logoutBtn) logoutBtn.classList.add('hidden');
+        if (studentClassInfo) studentClassInfo.classList.add('hidden');
         return;
     }
 
@@ -247,6 +252,12 @@ export function updateStudentNotificationBadge() {
     if (btn) btn.classList.remove('hidden');
     if (settingsBtn) settingsBtn.classList.remove('hidden');
     if (logoutBtn) logoutBtn.classList.remove('hidden');
+
+    // 학급정보 표시 (학생용)
+    if (studentClassInfo) {
+        studentClassInfo.classList.remove('hidden');
+    }
+    if (teacherClassInfo) teacherClassInfo.classList.add('hidden');
 
     // 1. 미읽은 답장 수
     const unreadReplies = store.getUnreadReplyCount(student.id);

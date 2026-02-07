@@ -12,6 +12,7 @@ import {
     closeModal
 } from '../utils/animations.js';
 import { bindToolbarToggle, bindMobileDrawer, updateNotificationBadge, updateStudentNotificationBadge } from './navigation.js';
+import { setStudentTab } from '../components/StudentMode.js';
 
 /**
  * 헤더 버튼 바인딩
@@ -43,6 +44,12 @@ export function bindHeaderButtons() {
         studentSettingsBtn.addEventListener('click', showStudentPinChangeModal);
     }
 
+    // 학생 로그아웃 버튼
+    const studentLogoutBtn = document.getElementById('studentLogoutBtn');
+    if (studentLogoutBtn) {
+        studentLogoutBtn.addEventListener('click', handleStudentLogout);
+    }
+
     // 로그아웃 버튼 (헤더 + 기존 숨김 버튼)
     const logoutHandler = () => {
         if (confirm('로그아웃 하시겠습니까?')) {
@@ -59,6 +66,22 @@ export function bindHeaderButtons() {
     const headerLogoutBtn = document.getElementById('headerLogoutBtn');
     if (headerLogoutBtn) {
         headerLogoutBtn.addEventListener('click', logoutHandler);
+    }
+
+    // 모바일 학생용 버튼 바인딩
+    const mobileStudentNotificationBtn = document.getElementById('mobileStudentNotificationBtn');
+    if (mobileStudentNotificationBtn) {
+        mobileStudentNotificationBtn.addEventListener('click', showStudentNotifications);
+    }
+
+    const mobileStudentSettingsBtn = document.getElementById('mobileStudentSettingsBtn');
+    if (mobileStudentSettingsBtn) {
+        mobileStudentSettingsBtn.addEventListener('click', showStudentPinChangeModal);
+    }
+
+    const mobileStudentLogoutBtn = document.getElementById('mobileStudentLogoutBtn');
+    if (mobileStudentLogoutBtn) {
+        mobileStudentLogoutBtn.addEventListener('click', handleStudentLogout);
     }
 
     // 날짜 버튼 → 감정 히스토리로 이동
@@ -204,11 +227,15 @@ export function showNotifications() {
             const notificationId = parseInt(item.dataset.notificationId);
             store.markNotificationRead(notificationId);
 
-            // 감정 관련 알림이면 해당 학생 상세로 이동
+            // 감정 관련 알림이면 마음 탭 기록보기 → 해당 학생 채팅방으로 이동
             const notification = notifications.find(n => n.id === notificationId);
+            console.log('🔔 알림 클릭:', { notificationId, notification, type: notification?.type, studentId: notification?.studentId });
+
             if (notification && notification.type === 'emotion' && notification.studentId) {
                 closeModal();
-                router.navigate('student', { id: notification.studentId });
+                sessionStorage.setItem('emotionHistoryStudentId', notification.studentId.toString());
+                console.log('🔔 마음 탭으로 이동, studentId:', notification.studentId);
+                router.navigate('emotion');
             }
         });
     });
@@ -218,6 +245,10 @@ export function showNotifications() {
  * 학생 알림 모달 표시 (미읽은 답장 + 새 칭찬)
  */
 export function showStudentNotifications() {
+    // PIN 모달 닫기
+    const pinModal = document.getElementById('studentPinChangeModal');
+    if (pinModal) pinModal.classList.add('hidden');
+
     const student = store.getCurrentStudent();
     if (!student) return;
 
@@ -321,6 +352,7 @@ export function showStudentNotifications() {
             const emotionId = item.dataset.emotionId;
             store.markReplyAsRead(emotionId);
             closeModal();
+            setStudentTab('history');
             router.navigate('student-main');
         });
     });
@@ -374,6 +406,9 @@ export function updateCurrentDate() {
  * 학생 PIN 변경 모달 표시
  */
 function showStudentPinChangeModal() {
+    // 다른 모달 닫기
+    window.classpet?.closeModal?.();
+
     const modal = document.getElementById('studentPinChangeModal');
     if (!modal) return;
 
@@ -549,4 +584,74 @@ function showGlobalPinError(errorEl, message) {
         errorEl.textContent = message;
         errorEl.classList.remove('hidden');
     }
+}
+
+/**
+ * 학생 로그아웃 처리 (커스텀 확인 모달 사용)
+ */
+function handleStudentLogout() {
+    // 모든 모달 닫기
+    window.classpet?.closeModal?.();
+    const pinModal = document.getElementById('studentPinChangeModal');
+    if (pinModal) pinModal.classList.add('hidden');
+
+    // 커스텀 확인 모달 표시
+    const modalContent = `
+        <div class="text-center">
+            <div class="text-4xl mb-4">🚪</div>
+            <h3 class="text-lg font-bold text-gray-800 mb-2">로그아웃</h3>
+            <p class="text-gray-600 mb-6">정말 로그아웃 하시겠습니까?</p>
+            <div class="flex gap-3 justify-center">
+                <button id="cancelLogoutBtn" class="px-6 py-2.5 rounded-xl bg-gray-100 text-gray-600 font-medium hover:bg-gray-200 transition-colors">
+                    취소
+                </button>
+                <button id="confirmLogoutBtn" class="px-6 py-2.5 rounded-xl bg-red-500 text-white font-medium hover:bg-red-600 transition-colors">
+                    로그아웃
+                </button>
+            </div>
+        </div>
+    `;
+
+    // showModal이 있으면 사용, 없으면 직접 DOM에 모달 생성
+    let closeModalFn;
+    if (window.classpet?.showModal) {
+        window.classpet.showModal(modalContent);
+        closeModalFn = () => window.classpet?.closeModal?.();
+    } else {
+        // fallback: 직접 DOM에 모달 추가
+        let overlay = document.getElementById('logoutModalOverlay');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.id = 'logoutModalOverlay';
+            overlay.className = 'fixed inset-0 bg-black/50 flex items-center justify-center z-50';
+            document.body.appendChild(overlay);
+        }
+        overlay.innerHTML = `<div class="bg-white rounded-2xl p-6 mx-4 max-w-sm w-full shadow-xl">${modalContent}</div>`;
+        overlay.classList.remove('hidden');
+        overlay.style.display = 'flex';
+
+        closeModalFn = () => {
+            overlay.style.display = 'none';
+        };
+    }
+
+    // 버튼 이벤트 바인딩
+    setTimeout(() => {
+        const cancelBtn = document.getElementById('cancelLogoutBtn');
+        const confirmBtn = document.getElementById('confirmLogoutBtn');
+
+        if (cancelBtn) {
+            cancelBtn.onclick = () => {
+                closeModalFn();
+            };
+        }
+
+        if (confirmBtn) {
+            confirmBtn.onclick = () => {
+                closeModalFn();
+                store.studentLogout();
+                router.navigate('student-login');
+            };
+        }
+    }, 50);
 }
