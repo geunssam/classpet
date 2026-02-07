@@ -31,8 +31,16 @@ import {
 let activeTab = 'praise'; // 'praise', 'emotion', 'notes'
 
 export function render(params) {
-    const studentId = parseInt(params.id);
-    const student = store.getStudent(studentId);
+    const rawId = params.id;
+    const studentId = parseInt(rawId);
+    // parseInt 실패 시 원본 문자열로 fallback
+    const student = store.getStudent(isNaN(studentId) ? rawId : studentId);
+
+    console.log('📋 StudentDetail params:', params);
+    console.log('📋 studentId (parsed):', studentId, typeof studentId);
+    const debugStudents = store.getStudents() || [];
+    console.log('📋 students in store:', debugStudents.length, debugStudents.map(s => ({ id: s.id, type: typeof s.id })));
+    console.log('📋 found student:', student);
 
     if (!student) {
         return `

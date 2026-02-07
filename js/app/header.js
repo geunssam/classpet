@@ -44,9 +44,10 @@ export function bindHeaderButtons() {
         studentSettingsBtn.addEventListener('click', showStudentPinChangeModal);
     }
 
-    // 학생 로그아웃 버튼
+    // 학생 로그아웃 버튼 (중복 등록 방지)
     const studentLogoutBtn = document.getElementById('studentLogoutBtn');
     if (studentLogoutBtn) {
+        studentLogoutBtn.removeEventListener('click', handleStudentLogout);
         studentLogoutBtn.addEventListener('click', handleStudentLogout);
     }
 
@@ -81,6 +82,7 @@ export function bindHeaderButtons() {
 
     const mobileStudentLogoutBtn = document.getElementById('mobileStudentLogoutBtn');
     if (mobileStudentLogoutBtn) {
+        mobileStudentLogoutBtn.removeEventListener('click', handleStudentLogout);
         mobileStudentLogoutBtn.addEventListener('click', handleStudentLogout);
     }
 

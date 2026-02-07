@@ -324,14 +324,7 @@ export function afterRender() {
         }
     });
 
-    // 로그아웃 버튼
-    const logoutBtn = document.getElementById('studentLogoutBtn');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', () => {
-            store.studentLogout();
-            router.navigate('login');
-        });
-    }
+    // 로그아웃 버튼은 header.js에서 처리
 
     // 펫 도감 버튼
     const collectionBtn = document.getElementById('petCollectionBtn');
