@@ -32,15 +32,9 @@ let activeTab = 'praise'; // 'praise', 'emotion', 'notes'
 
 export function render(params) {
     const rawId = params.id;
-    const studentId = parseInt(rawId);
-    // parseInt 실패 시 원본 문자열로 fallback
-    const student = store.getStudent(isNaN(studentId) ? rawId : studentId);
-
-    console.log('📋 StudentDetail params:', params);
-    console.log('📋 studentId (parsed):', studentId, typeof studentId);
-    const debugStudents = store.getStudents() || [];
-    console.log('📋 students in store:', debugStudents.length, debugStudents.map(s => ({ id: s.id, type: typeof s.id })));
-    console.log('📋 found student:', student);
+    const parsedId = parseInt(rawId);
+    const studentId = isNaN(parsedId) ? rawId : parsedId;
+    const student = store.getStudent(studentId);
 
     if (!student) {
         return `
@@ -79,11 +73,6 @@ export function render(params) {
 
     return `
         <div class="space-y-4">
-            <!-- 뒤로가기 -->
-            <button onclick="window.classpet.router.back()" class="flex items-center gap-2 text-gray-500 hover:text-gray-700">
-                ← 뒤로
-            </button>
-
             <!-- 펫 프로필 카드 -->
             <div class="card bg-gradient-to-br from-primary/10 to-success/10">
                 <div class="flex items-start justify-between">
@@ -109,8 +98,11 @@ export function render(params) {
                         </div>
                     </div>
 
-                    <button onclick="window.classpet.showEditStudent('${student.id}')" class="text-gray-400 hover:text-gray-600">
-                        ⚙️
+                    <button onclick="window.classpet.showEditStudent('${student.id}')" class="text-gray-400 hover:text-gray-600 w-6 h-6">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <circle cx="12" cy="12" r="3"/>
+                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                        </svg>
                     </button>
                 </div>
 
@@ -173,17 +165,6 @@ export function render(params) {
             </div>
             `}
 
-            <!-- 칭찬하기 버튼 -->
-            <div class="grid grid-cols-3 gap-2">
-                ${Object.entries(PRAISE_CATEGORIES).map(([key, cat]) => `
-                    <button class="category-btn" data-category="${key}" data-student="${student.id}">
-                        <span class="text-xl">${cat.icon}</span>
-                        <span class="text-xs mt-1">${cat.name}</span>
-                        ${categoryCount[key] ? `<span class="text-xs text-gray-400">(${categoryCount[key]})</span>` : ''}
-                    </button>
-                `).join('')}
-            </div>
-
             <!-- 탭 -->
             <div class="tab-group">
                 <button class="tab-item ${activeTab === 'praise' ? 'active' : ''}" data-tab="praise">
@@ -245,7 +226,7 @@ function renderPraiseHistory(praises) {
 }
 
 /**
- * 감정 기록 렌더링
+ * 감정 기록 렌더링 — 채팅 타임라인 UI
  */
 function renderEmotionHistory(emotions) {
     if (emotions.length === 0) {
@@ -257,23 +238,109 @@ function renderEmotionHistory(emotions) {
         `;
     }
 
-    return `
-        <div class="space-y-2">
-            ${emotions.slice(0, 10).map(emotion => {
-                const info = EMOTION_TYPES[emotion.emotion];
-                return `
-                    <div class="praise-item">
-                        <span class="text-xl">${info?.icon || '😐'}</span>
-                        <div class="flex-1">
-                            <div class="font-medium text-sm">${info?.name || ''}</div>
-                            <div class="text-xs text-gray-400">${formatDate(emotion.timestamp)}</div>
+    // 시간순 정렬 (오래된 것 먼저 → 최신이 아래)
+    const sorted = [...emotions].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+    let html = '';
+    let lastDateStr = '';
+
+    for (const emotion of sorted) {
+        const emotionInfo = EMOTION_TYPES[emotion.emotion];
+        const dateObj = new Date(emotion.timestamp);
+        const dateStr = dateObj.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' });
+
+        // 날짜 구분선
+        if (dateStr !== lastDateStr) {
+            html += `
+                <div class="flex items-center justify-center my-3">
+                    <span class="bg-gray-200 text-gray-500 text-xs px-3 py-1 rounded-full">${dateStr}</span>
+                </div>
+            `;
+            lastDateStr = dateStr;
+        }
+
+        const tagColor = emotionInfo ? darkenColor(emotionInfo.color, 0.35) : '';
+        const emotionTag = emotionInfo
+            ? `<span class="inline-block text-xs font-semibold px-2 py-0.5 rounded-full mb-1 bg-white/90 border" style="border-color: ${emotionInfo.color}; color: ${tagColor}">${emotionInfo.icon} ${emotionInfo.name}</span>`
+            : '';
+
+        // conversations 배열이 있는 신규 데이터
+        if (emotion.conversations && emotion.conversations.length > 0) {
+            for (const convo of emotion.conversations) {
+                const time = formatChatTime(convo.timestamp || emotion.timestamp, true);
+
+                // 학생 메시지 (좌측)
+                if (convo.studentMessage) {
+                    const showTag = convo === emotion.conversations[0];
+                    html += `
+                        <div class="flex items-end gap-2 mb-2">
+                            <div class="max-w-[75%] bg-yellow-100 rounded-2xl rounded-tl-sm px-3 py-2">
+                                ${showTag ? `<div>${emotionTag}</div>` : ''}
+                                <p class="text-sm">${escapeHtml(convo.studentMessage)}</p>
+                            </div>
+                            <span class="text-xs text-gray-400 flex-shrink-0">${time}</span>
                         </div>
-                        ${emotion.note ? `
-                            <div class="text-xs text-gray-500 max-w-[120px] truncate">${emotion.note}</div>
-                        ` : ''}
+                    `;
+                }
+
+                // 교사 답장 (우측)
+                if (convo.teacherReply) {
+                    const replyTime = formatChatTime(convo.replyTimestamp || convo.timestamp || emotion.timestamp, true);
+                    html += `
+                        <div class="flex items-end justify-end gap-2 mb-2">
+                            <span class="text-xs text-gray-400 flex-shrink-0">${replyTime}</span>
+                            <div class="max-w-[75%] bg-primary text-white rounded-2xl rounded-tr-sm px-3 py-2">
+                                <p class="text-sm">${escapeHtml(convo.teacherReply)}</p>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+        } else {
+            // 구 데이터 호환: note/memo + reply
+            const time = formatChatTime(emotion.timestamp, true);
+            const message = emotion.note || emotion.memo || '';
+
+            if (message) {
+                html += `
+                    <div class="flex items-end gap-2 mb-2">
+                        <div class="max-w-[75%] bg-yellow-100 rounded-2xl rounded-tl-sm px-3 py-2">
+                            <div>${emotionTag}</div>
+                            <p class="text-sm">${escapeHtml(message)}</p>
+                        </div>
+                        <span class="text-xs text-gray-400 flex-shrink-0">${time}</span>
                     </div>
                 `;
-            }).join('')}
+            } else {
+                // 메시지 없이 감정만 기록된 경우
+                html += `
+                    <div class="flex items-end gap-2 mb-2">
+                        <div class="max-w-[75%] bg-yellow-100 rounded-2xl rounded-tl-sm px-3 py-2">
+                            <div>${emotionTag}</div>
+                        </div>
+                        <span class="text-xs text-gray-400 flex-shrink-0">${time}</span>
+                    </div>
+                `;
+            }
+
+            // 교사 답장이 있는 경우
+            if (emotion.reply) {
+                const replyTime = formatChatTime(emotion.replyTimestamp || emotion.timestamp, true);
+                html += `
+                    <div class="flex items-end justify-end gap-2 mb-2">
+                        <span class="text-xs text-gray-400 flex-shrink-0">${replyTime}</span>
+                        <div class="max-w-[75%] bg-primary text-white rounded-2xl rounded-tr-sm px-3 py-2">
+                            <p class="text-sm">${escapeHtml(emotion.reply)}</p>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+    }
+
+    return `
+        <div id="emotionTimeline" class="px-1 py-2 overflow-y-auto" style="max-height: 50vh">
+            ${html}
         </div>
     `;
 }
@@ -334,8 +401,50 @@ function formatDate(isoString) {
     return `${date.getMonth() + 1}/${date.getDate()}`;
 }
 
+/**
+ * 채팅 시간 포맷
+ */
+function formatChatTime(timestamp, timeOnly = false) {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const target = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const diffDays = Math.floor((today - target) / (1000 * 60 * 60 * 24));
+
+    const timeStr = date.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: true });
+
+    if (timeOnly) return timeStr;
+
+    if (diffDays === 0) return timeStr;
+    if (diffDays === 1) return '어제';
+    if (date.getFullYear() === now.getFullYear()) {
+        return date.toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' });
+    }
+    return `${date.getFullYear()}.${date.getMonth() + 1}.${date.getDate()}`;
+}
+
+/**
+ * HTML 이스케이프
+ */
+function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+/**
+ * HEX 색상을 어둡게 보정
+ */
+function darkenColor(hex, amount) {
+    const num = parseInt(hex.replace('#', ''), 16);
+    const r = Math.max(0, Math.floor(((num >> 16) & 0xFF) * (1 - amount)));
+    const g = Math.max(0, Math.floor(((num >> 8) & 0xFF) * (1 - amount)));
+    const b = Math.max(0, Math.floor((num & 0xFF) * (1 - amount)));
+    return `#${(r << 16 | g << 8 | b).toString(16).padStart(6, '0')}`;
+}
+
 export function afterRender(params) {
-    const studentId = parseInt(params.id);
+    const parsedId = parseInt(params.id);
+    const studentId = isNaN(parsedId) ? params.id : parsedId;
 
     // 펫 클릭 시 바운스
     const petEmoji = document.getElementById('petEmoji');
@@ -343,6 +452,12 @@ export function afterRender(params) {
         petEmoji.addEventListener('click', () => {
             bounceAnimation(petEmoji);
         });
+    }
+
+    // 감정 탭 타임라인 스크롤 → 맨 아래
+    const timeline = document.getElementById('emotionTimeline');
+    if (timeline) {
+        timeline.scrollTop = timeline.scrollHeight;
     }
 
     // 탭 전환
@@ -355,13 +470,6 @@ export function afterRender(params) {
         });
     });
 
-    // 칭찬 버튼
-    document.querySelectorAll('.category-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const category = btn.dataset.category;
-            givePraise(studentId, category);
-        });
-    });
 }
 
 /**
