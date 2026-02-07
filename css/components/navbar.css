@@ -412,3 +412,40 @@
     right: -4px;
     margin-left: 0;
 }
+
+/* 학생 로그아웃 버튼 (상단바) */
+.student-logout-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-left: 4px;
+}
+
+.student-logout-btn:hover {
+    background: rgba(239, 68, 68, 0.1);
+    transform: scale(1.05);
+}
+
+.student-logout-btn:active {
+    transform: scale(0.95);
+}
+
+.student-logout-btn svg {
+    width: 20px;
+    height: 20px;
+    stroke: #EF4444;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.student-logout-btn.hidden {
+    display: none;
+}

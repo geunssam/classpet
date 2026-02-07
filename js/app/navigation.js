@@ -224,21 +224,25 @@ export function updateNotificationBadge() {
 export function updateStudentNotificationBadge() {
     const badge = document.getElementById('studentNotificationBadge');
     const btn = document.getElementById('studentNotificationBtn');
+    const logoutBtn = document.getElementById('studentLogoutBtn');
 
     // 학생 로그인 상태가 아니면 버튼 숨김
     if (!store.isStudentLoggedIn()) {
         if (btn) btn.classList.add('hidden');
+        if (logoutBtn) logoutBtn.classList.add('hidden');
         return;
     }
 
     const student = store.getCurrentStudent();
     if (!student) {
         if (btn) btn.classList.add('hidden');
+        if (logoutBtn) logoutBtn.classList.add('hidden');
         return;
     }
 
     // 학생 로그인 상태면 버튼 표시
     if (btn) btn.classList.remove('hidden');
+    if (logoutBtn) logoutBtn.classList.remove('hidden');
 
     // 1. 미읽은 답장 수
     const unreadReplies = store.getUnreadReplyCount(student.id);
