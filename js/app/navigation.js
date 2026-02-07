@@ -317,6 +317,9 @@ export function updateUIVisibility(route) {
         const mobileStudentNav = document.getElementById('mobileStudentNav');
         if (mobileTeacherNav) mobileTeacherNav.classList.add('hidden');
         if (mobileStudentNav) mobileStudentNav.classList.remove('hidden');
+
+        // 학생 알림/로그아웃 버튼 표시
+        updateStudentNotificationBadge();
     } else {
         // 교사 모드: 모두 표시
         if (header) {

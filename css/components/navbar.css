@@ -215,9 +215,9 @@
     height: 64px;
     background: white;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
     align-items: center;
-    justify-content: space-between;
     padding: 0 24px;
     z-index: 100;
 }
@@ -249,6 +249,7 @@
 .navbar-tabs {
     display: flex;
     gap: 4px;
+    justify-content: center;
 }
 
 .navbar-tabs.hidden {
@@ -307,6 +308,7 @@
     display: flex;
     align-items: center;
     gap: 12px;
+    justify-content: flex-end;
 }
 
 .navbar-class-info {
