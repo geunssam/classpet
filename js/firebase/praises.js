@@ -9,13 +9,15 @@ import {
     where,
     orderBy,
     limit,
-    collectionGroup
+    collectionGroup,
+    onSnapshot
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 import {
     getDb,
     getCurrentTeacherUid,
     getCurrentClassId,
-    serverTimestamp
+    serverTimestamp,
+    getUnsubscribeFunctions
 } from './init.js';
 import { studentSubRef } from './helpers.js';
 
@@ -269,5 +271,36 @@ export async function getStudentPraisesByCategory(teacherUid, classId, studentId
     } catch (error) {
         console.error('학생+카테고리별 칭찬 조회 실패:', error);
         return [];
+    }
+}
+
+export function subscribeToStudentPraises(teacherUid, classId, studentId, callback) {
+    const db = getDb();
+    if (!db) return null;
+
+    const uid = teacherUid || getCurrentTeacherUid();
+    const cId = classId || getCurrentClassId();
+
+    if (!uid || !cId || !studentId) return null;
+
+    try {
+        const praisesRef = studentSubRef(uid, cId, studentId, 'praises');
+        const q = query(praisesRef, orderBy('createdAt', 'desc'));
+
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const praises = [];
+            snapshot.forEach(doc => {
+                praises.push({ id: doc.id, ...doc.data() });
+            });
+            callback(praises);
+        }, (error) => {
+            console.error('학생 칭찬 구독 오류:', error);
+        });
+
+        getUnsubscribeFunctions().push(unsubscribe);
+        return unsubscribe;
+    } catch (error) {
+        console.error('학생 칭찬 구독 실패:', error);
+        return null;
     }
 }

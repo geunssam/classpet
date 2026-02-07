@@ -8,6 +8,7 @@ import { store, EMOTION_TYPES } from '../store.js';
 import { router } from '../router.js';
 import { getPetEmoji } from '../utils/petLogic.js';
 import { showToast, setModalContent, openModal, closeModal } from '../utils/animations.js';
+import { onEmotionUpdate } from '../services/EmotionService.js';
 
 let viewMode = 'checkin'; // 'checkin', 'history', 'attention'
 let emotionsUnsubscribe = null; // 실시간 구독 해제 함수
@@ -748,25 +749,20 @@ export function afterRender() {
 
 /**
  * Firebase 실시간 구독 설정
+ * EmotionService의 중앙 구독에 리스너 등록 (직접 Firebase 구독 없음)
  */
 function setupFirebaseSubscription() {
-    // 기존 구독 해제
     if (emotionsUnsubscribe) {
         emotionsUnsubscribe();
         emotionsUnsubscribe = null;
     }
 
-    // Firebase가 활성화되어 있으면 실시간 구독 시작
     if (isFirebaseMode) {
-        emotionsUnsubscribe = store.subscribeToTodayEmotions((emotions) => {
-            console.log('실시간 감정 업데이트:', emotions.length, '개');
-
-            // 화면 갱신 (현재 탭·채팅방 상태 유지)
+        emotionsUnsubscribe = onEmotionUpdate(() => {
             const content = document.getElementById('content');
             if (content) {
                 content.innerHTML = render();
-                // 실시간 구독 다시 설정하지 않음 (무한 루프 방지)
-                // 탭 전환 + 채팅방 이벤트만 바인딩
+                // 탭 전환 + 채팅방 이벤트만 바인딩 (무한 루프 방지)
                 document.querySelectorAll('.tab-item').forEach(tab => {
                     tab.addEventListener('click', () => {
                         viewMode = tab.dataset.view;
@@ -778,10 +774,8 @@ function setupFirebaseSubscription() {
                         afterRender();
                     });
                 });
-                // 채팅방 뒤로가기
                 const backBtn = document.getElementById('backToChatListBtn');
                 if (backBtn) backBtn.addEventListener('click', backToChatList);
-                // 채팅방 답장 이벤트 재바인딩
                 if (historySubView === 'chatRoom') {
                     bindChatReplyEvents();
                     const timeline = document.getElementById('chatTimeline');

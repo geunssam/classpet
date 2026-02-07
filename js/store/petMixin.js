@@ -253,6 +253,16 @@ export const petMixin = {
     },
 
     /**
+     * 학생의 펫 실시간 구독 (PetService에서 호출)
+     */
+    subscribeToStudentPets(studentId, callback) {
+        const teacherUid = this.getCurrentTeacherUid();
+        const classId = this.getCurrentClassId();
+        if (!teacherUid || !classId || !this.firebaseEnabled) return null;
+        return firebase.subscribeToStudentPets(teacherUid, classId, studentId, callback);
+    },
+
+    /**
      * Firebase에서 학생의 활성 펫 가져오기
      */
     async getActivePetFromFirebase(studentId) {

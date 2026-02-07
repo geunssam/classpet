@@ -179,6 +179,42 @@ export const praiseMixin = {
     /**
      * Firebase에서 학생+카테고리별 칭찬 조회
      */
+    /**
+     * 학생 모드: 특정 학생의 칭찬 실시간 구독
+     * 교사가 칭찬을 보내면 자동으로 로컬에 반영
+     */
+    subscribeToStudentPraises(studentId, callback) {
+        const teacherUid = this.getCurrentTeacherUid();
+        const classId = this.getCurrentClassId();
+        if (!teacherUid || !classId || !this.firebaseEnabled) return null;
+
+        return firebase.subscribeToStudentPraises(teacherUid, classId, studentId, (firebasePraises) => {
+            const localLog = this.getPraiseLog() || [];
+            const existingFirebaseIds = new Set(localLog.map(p => p.firebaseId).filter(Boolean));
+
+            firebasePraises.forEach(fp => {
+                if (!existingFirebaseIds.has(fp.id)) {
+                    // 새 데이터만 추가
+                    const newPraise = {
+                        id: Date.now() + Math.random(),
+                        firebaseId: fp.id,
+                        timestamp: fp.timestamp || fp.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
+                        studentId: fp.studentId,
+                        studentName: fp.studentName,
+                        studentNumber: fp.studentNumber,
+                        category: fp.category,
+                        expGain: fp.expGain,
+                        source: fp.source || 'teacher'
+                    };
+                    localLog.unshift(newPraise);
+                }
+            });
+
+            this.savePraiseLog(localLog);
+            if (callback) callback(localLog.filter(p => String(p.studentId) === String(studentId)));
+        });
+    },
+
     async getStudentPraisesByCategoryFromFirebase(studentId, category) {
         const teacherUid = this.getCurrentTeacherUid();
         const classId = this.getCurrentClassId();

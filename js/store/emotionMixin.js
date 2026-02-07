@@ -14,8 +14,16 @@ export const emotionMixin = {
     },
 
     saveEmotionLog(log) {
-        localStorage.setItem(STORAGE_KEYS.EMOTION_LOG, JSON.stringify(log));
-        this.notify('emotionLog', log);
+        // firebaseId 기반 중복 제거
+        const seen = new Set();
+        const deduped = log.filter(e => {
+            if (!e.firebaseId) return true;
+            if (seen.has(e.firebaseId)) return false;
+            seen.add(e.firebaseId);
+            return true;
+        });
+        localStorage.setItem(STORAGE_KEYS.EMOTION_LOG, JSON.stringify(deduped));
+        this.notify('emotionLog', deduped);
     },
 
     /**

@@ -275,7 +275,21 @@ export const classMixin = {
     async loadClassDataFromFirebase() {
         const teacherUid = this.getCurrentTeacherUid();
         const classId = this.getCurrentClassId();
-        if (!teacherUid || !classId || !this.firebaseEnabled) return false;
+        if (!teacherUid || !classId) return false;
+
+        // Firebase 초기화 대기 (최대 3초) — getTeacherClasses()와 동일 패턴
+        if (!firebase.isFirebaseInitialized()) {
+            for (let i = 0; i < 30; i++) {
+                await new Promise(resolve => setTimeout(resolve, 100));
+                if (firebase.isFirebaseInitialized()) break;
+            }
+        }
+        // Firebase 상태 재확인
+        if (!this.firebaseEnabled && firebase.isFirebaseInitialized()) {
+            this.firebaseEnabled = true;
+            console.log('🔥 Firebase 연동: 활성화 (loadClassDataFromFirebase)');
+        }
+        if (!this.firebaseEnabled) return false;
 
         try {
             // 1. 학생 목록 로드 (계층 구조)
@@ -398,6 +412,7 @@ export const classMixin = {
             this.saveStudents(mergedStudents);
             this.savePraiseLog(praiseLog);
             this.saveEmotionLog(emotionLog);
+            this.saveNotifications([]);  // 학급 전환 시 알림 초기화
 
             // 6. 설정 정보 로드 (classData에서) - 계층 구조
             const classData = await firebase.getClass(teacherUid, classId);

@@ -114,7 +114,9 @@ class Store {
     }
 
     notify(type, data) {
-        this.listeners.forEach(listener => listener(type, data));
+        this.listeners.forEach(listener => {
+            try { listener(type, data); } catch (e) { console.error('Store listener error:', e); }
+        });
     }
 }
 

@@ -9,6 +9,8 @@ import { initRouter } from './routes.js';
 import { bindNavigation, updateClassInfo } from './navigation.js';
 import { bindHeaderButtons, updateCurrentDate } from './header.js';
 import { registerGlobalFunctions, refreshCurrentView } from './globalFunctions.js';
+import { startEmotionSubscription, stopEmotionSubscription } from '../services/EmotionService.js';
+import { startPetSubscription, stopPetSubscription } from '../services/PetService.js';
 
 /**
  * 앱 초기화
@@ -54,6 +56,12 @@ async function initApp() {
             await store.loadClassDataFromFirebase();
             console.log('📦 Firebase 학급 데이터 로드 완료');
         }
+
+        // EmotionService: 백그라운드 감정 구독 시작
+        startEmotionSubscription();
+
+        // PetService: 백그라운드 펫 구독 시작
+        startPetSubscription();
 
         // 로그인된 상태
         if (!currentHash || currentHash === 'login' || currentHash === 'teacher-login') {
@@ -104,6 +112,10 @@ async function initApp() {
         }
         // Firebase 데이터 로드 완료 시 현재 화면 갱신
         if (type === 'dataLoaded') {
+            // 학급 전환 → EmotionService + PetService 재구독
+            startEmotionSubscription();
+            startPetSubscription();
+
             const currentRoute = window.location.hash.slice(1).split('/')[0].split('?')[0];
             const skipRoutes = ['login', 'teacher-login', 'class-select', 'student-login'];
             if (!skipRoutes.includes(currentRoute)) {
@@ -112,6 +124,10 @@ async function initApp() {
             } else {
                 console.log('📦 데이터 로드 완료 (화면 갱신 스킵:', currentRoute + ')');
             }
+        }
+        // 펫 변경 시 화면 갱신
+        if (type === 'petUpdate') {
+            refreshCurrentView();
         }
     });
 

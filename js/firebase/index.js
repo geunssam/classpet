@@ -81,7 +81,8 @@ export {
     getPraisesByDate,
     getPraisesByDateAndCategory,
     getStudentPraises,
-    getStudentPraisesByCategory
+    getStudentPraisesByCategory,
+    subscribeToStudentPraises
 } from './praises.js';
 
 // timetable.js - 시간표
