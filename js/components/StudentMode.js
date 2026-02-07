@@ -101,49 +101,7 @@ export function render() {
 
             <!-- 마음 보내기 탭 -->
             <div id="sendEmotionContent" class="${currentStudentTab !== 'send' ? 'hidden' : ''}">
-                ${hasEmotionsToday ? `
-                    <!-- 오늘 보낸 마음 목록 -->
-                    <div class="px-4 mb-6">
-                        <div class="bg-blue-50 rounded-2xl p-4">
-                            <p class="text-blue-600 font-medium text-center mb-3">📝 오늘 보낸 마음 (${todayEmotions.length}개)</p>
-                            <div class="space-y-3 max-h-64 overflow-y-auto">
-                                ${todayEmotions.map(emotion => {
-            const emotionTime = new Date(emotion.timestamp).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
-            // conversations에서 답장 찾기 (우선) → 없으면 reply 객체 호환
-            const convos = emotion.conversations || [];
-            const lastReplyConvo = convos.slice().reverse().find(c => c.teacherReply);
-            const replyMessage = lastReplyConvo?.teacherReply || emotion.reply?.message || null;
-            const replyRead = lastReplyConvo?.read ?? emotion.reply?.read ?? true;
-            const hasReply = !!replyMessage;
-            const petSpeech = hasReply ? convertToPetSpeech(replyMessage, student.petType, petName) : null;
-            return `
-                                    <div class="bg-white rounded-xl p-3 shadow-sm">
-                                        <div class="flex items-center gap-2 mb-1">
-                                            <span class="text-xl">${EMOTION_TYPES[emotion.emotion]?.icon || '😊'}</span>
-                                            <span class="text-xs text-gray-400">${emotionTime}</span>
-                                            ${hasReply ? `<span class="ml-auto text-xs ${!replyRead ? 'text-red-500 font-bold' : 'text-green-500'}">💌 ${!replyRead ? 'NEW' : '답장 있음'}</span>` : ''}
-                                        </div>
-                                        ${(emotion.note || emotion.memo) ? `
-                                            <p class="text-sm text-gray-600 italic pl-7">"${emotion.note || emotion.memo}"</p>
-                                        ` : ''}
-                                        ${hasReply ? `
-                                            <div class="mt-2 pl-7 pt-2 border-t border-gray-100">
-                                                <div class="flex items-center gap-1 mb-1">
-                                                    <span class="text-sm">${petEmoji}</span>
-                                                    <span class="text-xs text-amber-600 font-medium">${petName}의 답장</span>
-                                                </div>
-                                                <p class="text-sm text-gray-700">"${petSpeech.petMessage}"</p>
-                                            </div>
-                                        ` : ''}
-                                    </div>
-                                `;
-        }).join('')}
-                            </div>
-                        </div>
-                    </div>
-                ` : ''}
-
-                <!-- 감정 선택 (항상 표시) -->
+                <!-- 감정 선택 -->
                 <div class="emotion-check-area px-4">
                     <p class="text-center text-sm text-gray-500 mb-4">
                         ${hasEmotionsToday ? '💭 지금 기분도 알려줘!' : '오늘 기분을 펫에게 알려주세요'}
@@ -207,22 +165,6 @@ export function render() {
                 </div>
             ` : ''}
 
-            <!-- 펫 통계 (간단히) -->
-            <div class="mt-8 px-4">
-                <div class="bg-cream rounded-2xl p-4">
-                    <div class="flex justify-around text-center">
-                        <div>
-                            <div class="text-2xl font-bold text-primary">${student.totalPraises || 0}</div>
-                            <div class="text-xs text-gray-500">받은 칭찬</div>
-                        </div>
-                        <div class="w-px bg-gray-200"></div>
-                        <div>
-                            <div class="text-2xl font-bold text-success">${student.level}</div>
-                            <div class="text-xs text-gray-500">현재 레벨</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
 
         <!-- PIN 변경 모달 -->
@@ -370,11 +312,9 @@ function bindEmotionSendEvents() {
     emotionButtons.forEach(btn => {
         btn.addEventListener('click', () => {
             emotionButtons.forEach(b => {
-                b.classList.remove('border-primary', 'bg-primary/10', 'scale-110');
-                b.classList.add('border-transparent');
+                b.classList.remove('selected', 'scale-110');
             });
-            btn.classList.remove('border-transparent');
-            btn.classList.add('border-primary', 'bg-primary/10', 'scale-110');
+            btn.classList.add('selected', 'scale-110');
             selectedEmotion = btn.dataset.emotion;
             updateSendButtonState();
             previewPetReaction(selectedEmotion);
