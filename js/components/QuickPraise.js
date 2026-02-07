@@ -3,7 +3,7 @@
  * 플로팅 버튼에서 열리는 빠른 칭찬 모달
  */
 
-import { store, PRAISE_CATEGORIES, PET_TYPES } from '../store.js';
+import { store, PET_TYPES } from '../store.js';
 import { getPetEmoji, calculateLevel, getLevelUpMessage, isMaxLevel } from '../utils/petLogic.js';
 import { showToast, setModalContent, openModal, closeModal, createPraiseParticles } from '../utils/animations.js';
 

@@ -3,7 +3,7 @@
  */
 
 import { firebase, STORAGE_KEYS, SESSION_KEYS } from './Store.js';
-import { DEFAULT_SETTINGS, PRAISE_CATEGORIES } from '../constants/index.js';
+import { DEFAULT_SETTINGS } from '../constants/index.js';
 
 export const settingsMixin = {
     // ==================== 설정 관련 ====================
@@ -101,7 +101,8 @@ export const settingsMixin = {
         const needAttention = this.getStudentsNeedingAttention();
 
         const categoryStats = {};
-        Object.keys(PRAISE_CATEGORIES).forEach(cat => {
+        const categories = this.getPraiseCategories();
+        Object.keys(categories).forEach(cat => {
             categoryStats[cat] = allPraises.filter(p => p.category === cat).length;
         });
 

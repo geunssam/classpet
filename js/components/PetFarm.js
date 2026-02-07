@@ -3,7 +3,7 @@
  * 전체 학생 펫 그리드 뷰
  */
 
-import { store, PET_TYPES, PRAISE_CATEGORIES } from '../store.js';
+import { store, PET_TYPES } from '../store.js';
 import { router } from '../router.js';
 import {
     getPetEmoji,
@@ -163,7 +163,7 @@ function showQuickPraiseForStudent(studentId) {
             </div>
 
             <div class="grid grid-cols-3 gap-2">
-                ${Object.entries(PRAISE_CATEGORIES).map(([key, cat]) => `
+                ${Object.entries(store.getPraiseCategories()).map(([key, cat]) => `
                     <button class="category-btn" data-category="${key}">
                         <span class="text-2xl">${cat.icon}</span>
                         <span class="text-xs mt-1">${cat.name}</span>
@@ -192,7 +192,7 @@ function givePraise(studentId, category) {
     const student = store.getStudent(studentId);
     if (!student) return;
 
-    const categoryInfo = PRAISE_CATEGORIES[category];
+    const categoryInfo = store.getPraiseCategories()[category];
     const expGain = categoryInfo.exp;
 
     // 경험치 추가

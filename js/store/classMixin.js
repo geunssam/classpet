@@ -425,6 +425,11 @@ export const classMixin = {
                     classId: classId,
                     teacherUid: teacherUid
                 });
+
+                // 칭찬 카테고리 동기화 (Firestore → localStorage)
+                if (classData.praiseCategories) {
+                    this.savePraiseCategoriesLocal(classData.praiseCategories);
+                }
             }
 
             // 7. 데이터 로드 완료 알림 (화면 갱신용)

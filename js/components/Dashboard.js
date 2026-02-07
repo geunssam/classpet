@@ -222,42 +222,14 @@ export function render() {
                     </button>
                 </div>
                 <div class="grid grid-cols-3 gap-2">
+                    ${Object.entries(store.getPraiseCategories()).map(([key, cat]) => `
                     <span class="flex items-center justify-between bg-cream rounded-lg px-2 py-1">
                         <span class="flex items-center gap-1">
-                            <span class="text-sm">🎯</span><span class="text-xs font-bold text-gray-800">자기관리</span>
+                            <span class="text-sm">${cat.icon}</span><span class="text-xs font-bold text-gray-800">${cat.name}</span>
                         </span>
-                        <span class="font-bold text-sm text-gray-800">${stats.categoryStats.selfManagement || 0}</span>
+                        <span class="font-bold text-sm text-gray-800">${stats.categoryStats[key] || 0}</span>
                     </span>
-                    <span class="flex items-center justify-between bg-cream rounded-lg px-2 py-1">
-                        <span class="flex items-center gap-1">
-                            <span class="text-sm">📚</span><span class="text-xs font-bold text-gray-800">지식정보</span>
-                        </span>
-                        <span class="font-bold text-sm text-gray-800">${stats.categoryStats.knowledge || 0}</span>
-                    </span>
-                    <span class="flex items-center justify-between bg-cream rounded-lg px-2 py-1">
-                        <span class="flex items-center gap-1">
-                            <span class="text-sm">💡</span><span class="text-xs font-bold text-gray-800">창의적사고</span>
-                        </span>
-                        <span class="font-bold text-sm text-gray-800">${stats.categoryStats.creative || 0}</span>
-                    </span>
-                    <span class="flex items-center justify-between bg-cream rounded-lg px-2 py-1">
-                        <span class="flex items-center gap-1">
-                            <span class="text-sm">🎨</span><span class="text-xs font-bold text-gray-800">심미적감성</span>
-                        </span>
-                        <span class="font-bold text-sm text-gray-800">${stats.categoryStats.aesthetic || 0}</span>
-                    </span>
-                    <span class="flex items-center justify-between bg-cream rounded-lg px-2 py-1">
-                        <span class="flex items-center gap-1">
-                            <span class="text-sm">🤝</span><span class="text-xs font-bold text-gray-800">협력적소통</span>
-                        </span>
-                        <span class="font-bold text-sm text-gray-800">${stats.categoryStats.cooperation || 0}</span>
-                    </span>
-                    <span class="flex items-center justify-between bg-cream rounded-lg px-2 py-1">
-                        <span class="flex items-center gap-1">
-                            <span class="text-sm">🏠</span><span class="text-xs font-bold text-gray-800">공동체</span>
-                        </span>
-                        <span class="font-bold text-sm text-gray-800">${stats.categoryStats.community || 0}</span>
-                    </span>
+                    `).join('')}
                 </div>
             </div>
         </div>

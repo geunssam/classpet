@@ -3,7 +3,7 @@
  * 개별 학생의 펫, 칭찬 기록, 감정 기록 등
  */
 
-import { store, PET_TYPES, PRAISE_CATEGORIES, EMOTION_TYPES } from '../store.js';
+import { store, PET_TYPES, EMOTION_TYPES } from '../store.js';
 import { router } from '../router.js';
 import {
     getPetEmoji,
@@ -204,7 +204,7 @@ function renderPraiseHistory(praises) {
     return `
         <div class="space-y-2">
             ${praises.slice(0, 10).map(praise => {
-                const cat = PRAISE_CATEGORIES[praise.category];
+                const cat = store.getPraiseCategories()[praise.category];
                 return `
                     <div class="praise-item">
                         <span class="text-xl">${cat?.icon || '⭐'}</span>
@@ -479,7 +479,7 @@ function givePraise(studentId, category) {
     const student = store.getStudent(studentId);
     if (!student) return;
 
-    const categoryInfo = PRAISE_CATEGORIES[category];
+    const categoryInfo = store.getPraiseCategories()[category];
     const expGain = categoryInfo.exp;
 
     // 경험치 추가

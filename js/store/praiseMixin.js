@@ -95,6 +95,7 @@ export const praiseMixin = {
     savePraiseCategories(categories) {
         localStorage.setItem(STORAGE_KEYS.PRAISE_CATEGORIES_CUSTOM, JSON.stringify(categories));
         this.notify('praiseCategories', categories);
+        this.syncPraiseCategoriesToFirebase(categories);
     },
 
     addPraiseCategory({ icon, name, exp }) {
@@ -124,6 +125,34 @@ export const praiseMixin = {
     resetPraiseCategories() {
         localStorage.removeItem(STORAGE_KEYS.PRAISE_CATEGORIES_CUSTOM);
         this.notify('praiseCategories', PRAISE_CATEGORIES);
+        this.syncPraiseCategoriesToFirebase({ ...PRAISE_CATEGORIES });
+    },
+
+    // ==================== 칭찬 카테고리 Firestore 동기화 ====================
+
+    /**
+     * 칭찬 카테고리를 Firestore에 동기화
+     * teachers/{uid}/classes/{classId} 문서의 praiseCategories 필드에 저장
+     */
+    async syncPraiseCategoriesToFirebase(categories) {
+        const teacherUid = this.getCurrentTeacherUid();
+        const classId = this.getCurrentClassId();
+        if (!teacherUid || !classId || !this.firebaseEnabled) return;
+
+        try {
+            await firebase.updateClass(teacherUid, classId, { praiseCategories: categories });
+            console.log('✅ 칭찬 카테고리 Firestore 동기화 완료');
+        } catch (error) {
+            console.error('❌ 칭찬 카테고리 Firestore 동기화 실패:', error);
+        }
+    },
+
+    /**
+     * 칭찬 카테고리를 localStorage에만 저장 (Firestore 역방향 동기화 방지)
+     */
+    savePraiseCategoriesLocal(categories) {
+        localStorage.setItem(STORAGE_KEYS.PRAISE_CATEGORIES_CUSTOM, JSON.stringify(categories));
+        this.notify('praiseCategories', categories);
     },
 
     // ==================== Firebase 추가 조회 메서드 ====================
