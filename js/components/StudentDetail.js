@@ -103,7 +103,7 @@ export function render(params) {
                     </div>
 
                     <!-- 2열: 레벨 + 경험치바 -->
-                    <div class="flex flex-col justify-center gap-2 py-4 px-3 border-l border-gray-200/50">
+                    <div class="flex flex-col items-center justify-center gap-2 py-4 px-3 border-l border-gray-200/50">
                         <div class="flex items-center gap-2">
                             <span class="level-badge">Lv.${student.level || 1}</span>
                             <span class="text-sm font-bold" style="color: #F59E0B">${stage === 'adult' ? '최종' : (stage === 'growing' ? '성장중' : '아기')}</span>

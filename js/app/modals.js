@@ -17,12 +17,6 @@ import { refreshCurrentView } from './globalFunctions.js';
  * 학생 추가 모달
  */
 export function showAddStudent() {
-    const petTypes = Object.entries(PET_TYPES).map(([key, pet]) => ({
-        key,
-        name: pet.name,
-        emoji: pet.stages.baby
-    }));
-
     const modalContent = `
         <div class="space-y-4">
             <div class="flex items-center justify-between">
@@ -30,25 +24,12 @@ export function showAddStudent() {
                 <button onclick="window.classpet.closeModal()" class="text-gray-400 hover:text-gray-600">✕</button>
             </div>
 
-            <div>
-                <label class="text-sm font-medium text-gray-700 mb-1 block">이름</label>
-                <input type="text" id="studentName" class="w-full" placeholder="학생 이름">
+            <div class="grid grid-cols-2 gap-3">
+                <input type="number" id="studentNumber" class="w-full" placeholder="번호" min="1">
+                <input type="text" id="studentName" class="w-full" placeholder="이름">
             </div>
 
-            <div>
-                <label class="text-sm font-medium text-gray-700 mb-2 block">펫 선택</label>
-                <div class="grid grid-cols-5 gap-2" id="petTypeGrid">
-                    ${petTypes.map((pet, index) => `
-                        <button class="pet-type-btn p-3 rounded-xl border-2 ${index === 0 ? 'border-primary bg-primary/10' : 'border-transparent'} hover:border-primary/50 transition-all"
-                                data-pet="${pet.key}">
-                            <span class="text-2xl">${pet.emoji}</span>
-                            <div class="text-xs mt-1">${pet.name}</div>
-                        </button>
-                    `).join('')}
-                </div>
-            </div>
-
-            <button id="addStudentBtn" class="btn btn-primary w-full">
+            <button id="modalAddStudentBtn" class="btn btn-primary w-full">
                 추가하기
             </button>
         </div>
@@ -57,34 +38,21 @@ export function showAddStudent() {
     setModalContent(modalContent);
     openModal();
 
-    // 이벤트 바인딩
-    let selectedPetType = 'dog';
-
-    document.querySelectorAll('.pet-type-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.pet-type-btn').forEach(b => {
-                b.classList.remove('border-primary', 'bg-primary/10');
-                b.classList.add('border-transparent');
-            });
-            btn.classList.remove('border-transparent');
-            btn.classList.add('border-primary', 'bg-primary/10');
-            selectedPetType = btn.dataset.pet;
-        });
-    });
-
-    document.getElementById('addStudentBtn').addEventListener('click', () => {
+    document.getElementById('modalAddStudentBtn').addEventListener('click', () => {
         const name = document.getElementById('studentName').value.trim();
+        const number = parseInt(document.getElementById('studentNumber').value);
         if (!name) {
             showToast('이름을 입력해주세요', 'warning');
             return;
         }
+        if (!number || number < 1) {
+            showToast('번호를 입력해주세요', 'warning');
+            return;
+        }
 
-        const newStudent = store.addStudent({
-            name,
-            petType: selectedPetType
-        });
+        store.addStudent({ name, number });
 
-        showToast(`${name}의 ${PET_TYPES[selectedPetType].name}가 태어났어요! 🥚`, 'success');
+        showToast(`${name} 학생이 추가되었어요!`, 'success');
         closeModal();
         refreshCurrentView();
     });
