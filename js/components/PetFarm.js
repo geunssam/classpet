@@ -194,20 +194,14 @@ function givePraise(studentId, category) {
 
     const categoryInfo = store.getPraiseCategories()[category];
     const expGain = categoryInfo.exp;
+    const beforeLevel = student.level || 1;
 
-    // 경험치 추가
-    const newExp = student.exp + expGain;
-    const oldLevel = student.level;
-    const newLevel = calculateLevel(newExp);
-
-    // 학생 업데이트
+    // totalPraises만 업데이트 (exp/level은 addPraise→addPetExp에서 처리)
     store.updateStudent(studentId, {
-        exp: newExp,
-        level: newLevel,
-        totalPraises: student.totalPraises + 1
+        totalPraises: (student.totalPraises || 0) + 1
     });
 
-    // 칭찬 로그 추가
+    // 칭찬 로그 추가 (내부에서 addPetExp 호출 → exp/level 업데이트)
     store.addPraise({
         studentId,
         studentName: student.name,
@@ -216,9 +210,13 @@ function givePraise(studentId, category) {
         expGain
     });
 
+    // addPraise 후 업데이트된 학생 데이터 확인
+    const after = store.getStudent(studentId);
+    const afterLevel = after?.level || 1;
+
     // 레벨업 체크
-    if (newLevel > oldLevel) {
-        showToast(getLevelUpMessage(newLevel), 'success');
+    if (afterLevel > beforeLevel) {
+        showToast(getLevelUpMessage(afterLevel), 'success');
     } else {
         showToast(`${student.name}에게 +${expGain} EXP! ${categoryInfo.icon}`, 'success');
     }

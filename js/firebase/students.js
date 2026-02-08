@@ -85,10 +85,18 @@ export async function getAllStudents(teacherUid, classId) {
         const snapshot = await getDocs(studentsRef);
 
         const students = [];
+        const seenNumbers = new Set();
         snapshot.forEach(doc => {
-            const numericId = parseInt(doc.id);
-            const id = isNaN(numericId) ? doc.id : numericId;
-            students.push({ ...doc.data(), id });
+            // 숫자로만 구성된 ID만 숫자로 변환 (parseInt("6BUG...")=6 방지)
+            const id = /^\d+$/.test(doc.id) ? parseInt(doc.id) : doc.id;
+            const data = { ...doc.data(), id };
+
+            // number 기준 중복 제거 (숫자 ID 문서 우선, 자동생성 ID 문서 스킵)
+            const num = data.number;
+            if (num != null && seenNumbers.has(num)) return;
+            if (num != null) seenNumbers.add(num);
+
+            students.push(data);
         });
 
         students.sort((a, b) => a.number - b.number);
@@ -136,10 +144,18 @@ export function subscribeToStudents(teacherUid, classId, callback) {
         const studentsRef = collection(db, 'teachers', uid, 'classes', cId, 'students');
         const unsubscribe = onSnapshot(studentsRef, (snapshot) => {
             const students = [];
+            const seenNumbers = new Set();
             snapshot.forEach(doc => {
-                const numericId = parseInt(doc.id);
-                const id = isNaN(numericId) ? doc.id : numericId;
-                students.push({ ...doc.data(), id });
+                // 숫자로만 구성된 ID만 숫자로 변환 (parseInt("6BUG...")=6 방지)
+                const id = /^\d+$/.test(doc.id) ? parseInt(doc.id) : doc.id;
+                const data = { ...doc.data(), id };
+
+                // number 기준 중복 제거 (숫자 ID 문서 우선, 자동생성 ID 문서 스킵)
+                const num = data.number;
+                if (num != null && seenNumbers.has(num)) return;
+                if (num != null) seenNumbers.add(num);
+
+                students.push(data);
             });
             students.sort((a, b) => a.number - b.number);
             callback(students);

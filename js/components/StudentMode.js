@@ -21,7 +21,10 @@ export function setHistoryDate(date) {
 
 let historyDate = new Date();
 let studentEmotionsUnsubscribe = null; // Firebase 실시간 구독 해제 함수
+let studentPraiseUnsubscribe = null;   // 칭찬 실시간 구독
+let studentPetUnsubscribe = null;      // 펫 경험치 실시간 구독
 let lastEmotionsSnapshot = ''; // 데이터 변경 감지용
+let lastPraiseCount = -1; // -1 = 초기 로드 전
 
 /**
  * 렌더링
@@ -48,6 +51,8 @@ export function render() {
 
     // 경험치 계산
     const expPercent = getExpProgress(student.exp, student.level);
+    const currentExp = getCurrentLevelExp(student.exp, student.level);
+    const neededExp = getExpForNextLevel(student.level);
 
     // 오늘 감정 기록 (복수)
     const todayEmotions = store.getStudentTodayEmotions(student.id);
@@ -77,7 +82,7 @@ export function render() {
                         <!-- 하단: 경험치바 (% 내부 중앙) -->
                         <div class="exp-bar-xl">
                             <div class="exp-bar-fill-xl" style="width: ${Math.max(expPercent, 15)}%"></div>
-                            <span class="exp-bar-percent">${expPercent}%</span>
+                            <span class="exp-bar-percent">${expPercent}% ( ${currentExp} / ${neededExp} )</span>
                         </div>
                     </div>
                 </div>
@@ -297,6 +302,10 @@ export function afterRender() {
 
     // Firebase 실시간 구독 (교사 답장 반영)
     setupStudentEmotionSubscription();
+
+    // Firebase 실시간 구독 (칭찬 알림 + 경험치 반영)
+    setupStudentPraiseSubscription();
+    setupStudentPetSubscription();
 }
 
 /**
@@ -420,6 +429,107 @@ function setupStudentEmotionSubscription() {
 }
 
 /**
+ * 학생 칭찬 Firebase 실시간 구독
+ * 교사가 칭찬을 보내면 알림 토스트 표시
+ */
+function setupStudentPraiseSubscription() {
+    if (studentPraiseUnsubscribe) {
+        studentPraiseUnsubscribe();
+        studentPraiseUnsubscribe = null;
+    }
+
+    const student = store.getCurrentStudent();
+    if (!student || !store.isFirebaseEnabled() || !store.getClassCode()) return;
+
+    studentPraiseUnsubscribe = store.subscribeToStudentPraises(student.id, (praises) => {
+        const currentCount = praises.length;
+
+        // 초기 로드 후에만 알림 표시 (첫 구독 시에는 스킵)
+        if (lastPraiseCount >= 0 && currentCount > lastPraiseCount) {
+            const categories = store.getPraiseCategories();
+            const latest = praises[0]; // 최신이 맨 앞
+            if (latest) {
+                const cat = categories[latest.category];
+                const icon = cat?.icon || '⭐';
+                const name = cat?.name || '칭찬';
+                const exp = latest.expGain || cat?.exp || 10;
+                showToast(`${icon} ${name} 칭찬을 받았어요! +${exp} EXP`, 'success');
+            }
+        }
+
+        lastPraiseCount = currentCount;
+    });
+}
+
+/**
+ * 학생 펫 Firebase 실시간 구독
+ * 경험치/레벨 변경 시 화면 자동 갱신
+ */
+function setupStudentPetSubscription() {
+    if (studentPetUnsubscribe) {
+        studentPetUnsubscribe();
+        studentPetUnsubscribe = null;
+    }
+
+    const student = store.getCurrentStudent();
+    if (!student || !store.isFirebaseEnabled() || !store.getClassCode()) return;
+
+    studentPetUnsubscribe = store.subscribeToStudentPets(student.id, (pets) => {
+        const activePet = pets.find(p => p.status === 'active');
+        if (!activePet) return;
+
+        const currentStudent = store.getCurrentStudent();
+        if (!currentStudent) return;
+
+        // exp/level이 변경된 경우에만 업데이트
+        if (currentStudent.exp !== activePet.exp || currentStudent.level !== activePet.level) {
+            store.updateStudent(currentStudent.id, {
+                exp: activePet.exp || 0,
+                level: activePet.level || 1
+            });
+
+            // 펫 디스플레이 영역만 부분 갱신
+            refreshPetDisplay();
+        }
+    });
+}
+
+/**
+ * 펫 디스플레이 영역 부분 갱신 (전체 리렌더링 없이)
+ */
+function refreshPetDisplay() {
+    const student = store.getCurrentStudent();
+    if (!student) return;
+
+    const expPercent = getExpProgress(student.exp, student.level);
+    const currentExp = getCurrentLevelExp(student.exp, student.level);
+    const neededExp = getExpForNextLevel(student.level);
+    const petStage = getGrowthStage(student.level);
+
+    // 경험치바 업데이트
+    const expFill = document.querySelector('.exp-bar-fill-xl');
+    const expText = document.querySelector('.exp-bar-percent');
+    if (expFill) expFill.style.width = `${Math.max(expPercent, 15)}%`;
+    if (expText) expText.textContent = `${expPercent}% ( ${currentExp} / ${neededExp} )`;
+
+    // 레벨 배지 업데이트
+    const levelBadge = document.querySelector('.level-badge-lg');
+    if (levelBadge) levelBadge.textContent = `Lv.${student.level || 1}`;
+
+    // 성장 단계 텍스트 업데이트
+    const stageText = document.querySelector('.pet-stage-text');
+    if (stageText) stageText.textContent = petStage === 'adult' ? '최종' : (petStage === 'growing' ? '성장중' : '아기');
+
+    // 펫 이모지 업데이트
+    const petEmoji = document.getElementById('petEmoji');
+    if (petEmoji) {
+        const petType = PET_TYPES[student.petType];
+        const newEmoji = petType?.stages[petStage] || '🐾';
+        petEmoji.textContent = newEmoji;
+    }
+}
+
+/**
  * 컴포넌트 언마운트 시 구독 해제
  */
 export function unmount() {
@@ -427,6 +537,15 @@ export function unmount() {
         studentEmotionsUnsubscribe();
         studentEmotionsUnsubscribe = null;
     }
+    if (studentPraiseUnsubscribe) {
+        studentPraiseUnsubscribe();
+        studentPraiseUnsubscribe = null;
+    }
+    if (studentPetUnsubscribe) {
+        studentPetUnsubscribe();
+        studentPetUnsubscribe = null;
+    }
+    lastPraiseCount = -1;
 }
 
 /**

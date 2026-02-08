@@ -5,6 +5,7 @@
 
 import { firebase } from './Store.js';
 import { PET_TYPES } from '../constants/index.js';
+import { calculateLevel, LEVEL_EXP_TABLE } from '../utils/petLogic.js';
 
 export const petMixin = {
     /**
@@ -138,31 +139,23 @@ export const petMixin = {
         const student = this.getStudent(studentId);
         if (!student || !student.petType) return null;
 
-        let newExp = (student.exp || 0) + expAmount;
-        let newLevel = student.level || 1;
-        let levelUp = false;
+        const newExp = (student.exp || 0) + expAmount;
+        const oldLevel = student.level || 1;
+        const newLevel = calculateLevel(newExp);
+        const levelUp = newLevel > oldLevel;
 
-        // 레벨업 체크 (100 exp = 1 level)
-        while (newExp >= 100 && newLevel < 5) {
-            newExp -= 100;
-            newLevel++;
-            levelUp = true;
-        }
-
-        // 레벨 5 도달 시 exp 100으로 고정
-        if (newLevel >= 5) {
-            newExp = 100;
-            newLevel = 5;
-        }
+        // 최대 레벨 경험치 상한
+        const maxExp = LEVEL_EXP_TABLE[LEVEL_EXP_TABLE.length - 1];
+        const finalExp = Math.min(newExp, maxExp);
 
         // 로컬 업데이트
         const updatedStudent = this.updateStudent(studentId, {
-            exp: newExp,
+            exp: finalExp,
             level: newLevel
         });
 
         // Firebase 펫 업데이트
-        await this.updatePetExpInFirebase(studentId, newExp, newLevel);
+        await this.updatePetExpInFirebase(studentId, finalExp, newLevel);
 
         return { student: updatedStudent, levelUp, newLevel };
     },
@@ -181,7 +174,7 @@ export const petMixin = {
                 await firebase.updatePet(teacherUid, classId, studentId, activePet.id, {
                     exp,
                     level,
-                    ...(level >= 5 ? { status: 'completed', completedAt: new Date().toISOString() } : {})
+                    ...(level >= 15 ? { status: 'completed', completedAt: new Date().toISOString() } : {})
                 });
                 console.log('✅ Firebase 펫 경험치 업데이트:', { exp, level });
             }

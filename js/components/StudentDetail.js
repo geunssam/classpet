@@ -148,19 +148,16 @@ export function render(params) {
                         <div class="text-xs text-gray-400">${formatDate(recentEmotion.timestamp)}</div>
                     </div>
                 </div>
-                <button onclick="window.classpet.showEmotionCheck('${student.id}')" class="btn btn-secondary text-sm">
-                    업데이트
+                <button onclick="sessionStorage.setItem('emotionHistoryStudentId', '${student.id}'); window.classpet.router.navigate('emotion')" class="btn btn-secondary text-sm">
+                    대화 보기
                 </button>
             </div>
             ` : `
             <div class="card flex items-center justify-between">
                 <div class="flex items-center gap-3">
                     <span class="text-3xl">💭</span>
-                    <div class="text-gray-500">오늘 감정을 체크해주세요</div>
+                    <div class="text-gray-400 text-sm">아직 보내지 않았어요</div>
                 </div>
-                <button onclick="window.classpet.showEmotionCheck('${student.id}')" class="btn btn-primary text-sm">
-                    체크하기
-                </button>
             </div>
             `}
 
@@ -554,20 +551,14 @@ function givePraise(studentId, category) {
 
     const categoryInfo = store.getPraiseCategories()[category];
     const expGain = categoryInfo.exp;
+    const beforeLevel = student.level || 1;
 
-    // 경험치 추가
-    const newExp = student.exp + expGain;
-    const oldLevel = student.level;
-    const newLevel = calculateLevel(newExp);
-
-    // 학생 업데이트
+    // totalPraises만 업데이트 (exp/level은 addPraise→addPetExp에서 처리)
     store.updateStudent(studentId, {
-        exp: newExp,
-        level: newLevel,
-        totalPraises: student.totalPraises + 1
+        totalPraises: (student.totalPraises || 0) + 1
     });
 
-    // 칭찬 로그 추가
+    // 칭찬 로그 추가 (내부에서 addPetExp 호출 → exp/level 업데이트)
     store.addPraise({
         studentId,
         studentName: student.name,
@@ -576,9 +567,13 @@ function givePraise(studentId, category) {
         expGain
     });
 
+    // addPraise 후 업데이트된 학생 데이터 확인
+    const after = store.getStudent(studentId);
+    const afterLevel = after?.level || 1;
+
     // 레벨업 체크
-    if (newLevel > oldLevel) {
-        showToast(getLevelUpMessage(newLevel), 'success');
+    if (afterLevel > beforeLevel) {
+        showToast(getLevelUpMessage(afterLevel), 'success');
         const petEmoji = document.getElementById('petEmoji');
         if (petEmoji) {
             levelUpAnimation(petEmoji);

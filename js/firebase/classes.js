@@ -87,7 +87,8 @@ export async function createClass(classData) {
             const studentsRef = collection(db, 'teachers', teacherUid, 'classes', classId, 'students');
 
             for (const student of classData.students) {
-                const studentDoc = doc(studentsRef);
+                const studentDocId = String(student.id || student.number);
+                const studentDoc = doc(studentsRef, studentDocId);
                 await setDoc(studentDoc, {
                     number: student.number,
                     name: student.name,
