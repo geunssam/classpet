@@ -71,10 +71,16 @@ export async function render() {
                             <p class="text-sm text-gray-500">${teacherSession?.email || ''}</p>
                         </div>
                     </div>
-                    <button id="classSelectLogoutBtn" class="px-4 py-2 text-sm text-white bg-gradient-to-r from-[#C9A8D3] to-[#9AA8DC] hover:from-[#BA96C6] hover:to-[#8A98CC] rounded-full flex items-center gap-1 transition-all">
-                        <span>로그아웃</span>
-                        <span>→</span>
-                    </button>
+                    <div class="flex items-center gap-2">
+                        <button id="createClassBtn" class="px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-full flex items-center gap-1 transition-all">
+                            <span>➕</span>
+                            <span>새 학급</span>
+                        </button>
+                        <button id="classSelectLogoutBtn" class="px-4 py-2 text-sm font-medium text-red-500 bg-red-50 hover:bg-red-100 border border-red-200 rounded-full flex items-center gap-1 transition-all">
+                            <span>로그아웃</span>
+                            <span>→</span>
+                        </button>
+                    </div>
                 </div>
 
                 <h1 class="text-2xl font-bold text-gray-800 mb-2">📚 학급 선택</h1>
@@ -87,11 +93,6 @@ export async function render() {
                     ${renderClassList()}
                 </div>
 
-                <!-- 새 학급 만들기 버튼 -->
-                <button id="createClassBtn" class="w-full mt-4 p-4 border-2 border-dashed border-gray-300 rounded-xl text-gray-500 hover:border-primary hover:text-primary transition-colors flex items-center justify-center gap-2">
-                    <span class="text-2xl">➕</span>
-                    <span class="font-medium">새 학급 만들기</span>
-                </button>
             </div>
 
             <!-- 새 학급 생성 모달 -->
@@ -100,8 +101,8 @@ export async function render() {
                     <h3 class="text-xl font-bold text-gray-800 mb-6">✨ 새 학급 만들기</h3>
 
                     <div class="space-y-4 flex-1 overflow-hidden flex flex-col">
-                        <!-- 학년도 & 학급 이름 (한 줄) -->
-                        <div class="grid grid-cols-3 gap-4">
+                        <!-- 학년도 & 학급 이름 & 선생님 (한 줄) -->
+                        <div class="grid grid-cols-5 gap-3">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">학년도</label>
                                 <input type="text"
@@ -118,6 +119,14 @@ export async function render() {
                                        class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-primary focus:outline-none"
                                        placeholder="예: 6학년 2반"
                                        maxlength="30">
+                            </div>
+                            <div class="col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">선생님 이름</label>
+                                <input type="text"
+                                       id="newTeacherName"
+                                       class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-primary focus:outline-none"
+                                       placeholder="예: 김선생님"
+                                       maxlength="20">
                             </div>
                         </div>
 
@@ -517,6 +526,7 @@ async function handleCreateClass() {
 
     const className = document.getElementById('newClassName')?.value.trim();
     const schoolYear = document.getElementById('newSchoolYear')?.value.trim();
+    const teacherName = document.getElementById('newTeacherName')?.value.trim();
 
     // 유효성 검사
     if (!className) {
@@ -539,6 +549,7 @@ async function handleCreateClass() {
         // 학급 생성 (학생 데이터 포함)
         const result = await store.createClass({
             className,
+            teacherName: teacherName || '',
             schoolYear: schoolYear || String(new Date().getFullYear()),
             semester: '1', // 학기는 기본값 1로 설정
             students: students
