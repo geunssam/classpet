@@ -112,7 +112,7 @@ export function bindToolbarToggle() {
 /**
  * 모바일 드로어 바인딩
  */
-export function bindMobileDrawer(showNotificationsFn) {
+export function bindMobileDrawer(showNotificationsFn, showQuickPraiseFn) {
     const hamburgerBtn = document.getElementById('hamburgerBtn');
     const mobileDrawer = document.getElementById('mobileDrawer');
     const mobileDrawerOverlay = document.getElementById('mobileDrawerOverlay');
@@ -132,6 +132,14 @@ export function bindMobileDrawer(showNotificationsFn) {
 
     // 모바일 드로어 버튼들 (학생/교사 모드 분기)
     const isStudentMode = () => router.isStudentMode?.() || false;
+
+    const mobileQuickPraiseBtn = document.getElementById('mobileQuickPraiseBtn');
+    if (mobileQuickPraiseBtn) {
+        mobileQuickPraiseBtn.addEventListener('click', () => {
+            closeMobileDrawer();
+            if (showQuickPraiseFn) showQuickPraiseFn();
+        });
+    }
 
     const mobileNotificationBtn = document.getElementById('mobileNotificationBtn');
     if (mobileNotificationBtn) {

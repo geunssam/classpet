@@ -13,6 +13,7 @@ import {
 } from '../utils/animations.js';
 import { bindToolbarToggle, bindMobileDrawer, updateNotificationBadge, updateStudentNotificationBadge } from './navigation.js';
 import { setStudentTab, setHistoryDate } from '../components/StudentMode.js';
+import { showQuickPraise } from '../components/QuickPraise.js';
 
 /**
  * 헤더 버튼 바인딩
@@ -69,14 +70,20 @@ export function bindHeaderButtons() {
         headerLogoutBtn.addEventListener('click', logoutHandler);
     }
 
+    // 빠른 칭찬 버튼 (우측 툴바)
+    const quickPraiseToolbarBtn = document.getElementById('quickPraiseToolbarBtn');
+    if (quickPraiseToolbarBtn) {
+        quickPraiseToolbarBtn.addEventListener('click', showQuickPraise);
+    }
+
     // 날짜 버튼 → 감정 히스토리로 이동
     bindDateHistoryButton();
 
     // 툴바 토글 바인딩
     bindToolbarToggle();
 
-    // 모바일 드로어 바인딩 (알림 표시 함수 전달)
-    bindMobileDrawer(showNotifications);
+    // 모바일 드로어 바인딩 (알림 표시 함수, 빠른 칭찬 함수 전달)
+    bindMobileDrawer(showNotifications, showQuickPraise);
 
     // 알림 배지 업데이트
     updateNotificationBadge();
