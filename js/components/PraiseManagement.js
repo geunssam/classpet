@@ -368,6 +368,9 @@ function renderSendPraiseList(categories) {
         filtered = filtered.filter(p => p.category === sendSelectedCategory);
     }
 
+    // 시간 빠른순 정렬
+    filtered.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
     // 날짜 네비게이션
     const dateNav = `
         <div class="flex items-center justify-center gap-3 mb-4">
@@ -421,7 +424,7 @@ function renderSendPraiseList(categories) {
             const icon = cat?.icon || '⭐';
             const catName = cat?.name || p.category;
             const ts = new Date(p.timestamp);
-            const timeStr = `${String(ts.getHours()).padStart(2, '0')}:${String(ts.getMinutes()).padStart(2, '0')}`;
+            const timeStr = `${ts.getHours()}:${String(ts.getMinutes()).padStart(2, '0')}`;
             // studentId로 학생 목록에서 직접 조회 (가장 신뢰도 높음)
             let studentLabel = '';
             if (p.studentId) {
@@ -432,20 +435,18 @@ function renderSendPraiseList(categories) {
                 studentLabel = (p.studentName && p.studentName.length > 0) ? p.studentName : (p.studentNumber ? p.studentNumber + '번' : '학생');
             }
             return `
-                <div class="grid items-center bg-white rounded-xl px-3 py-2.5 shadow-sm border border-gray-100" style="grid-template-columns: 6.5rem 1fr 3rem;">
-                    <span class="flex items-center gap-1.5 truncate">
-                        <span class="text-base flex-shrink-0">${icon}</span>
-                        <span class="text-sm font-medium text-gray-800 truncate">${catName}</span>
-                    </span>
-                    <span class="text-sm font-semibold text-gray-900 text-center truncate">${studentLabel}</span>
-                    <span class="text-sm text-gray-500 text-right">${timeStr}</span>
-                </div>
+                <span class="flex items-center bg-cream rounded-lg px-1 py-1.5 border border-gray-300">
+                    <span class="flex-1 text-center text-xl">${icon}</span>
+                    <span class="flex-1 text-center text-sm font-bold text-gray-800">${catName}</span>
+                    <span class="flex-1 text-center text-sm font-bold text-gray-800 truncate">${studentLabel}</span>
+                    <span class="flex-1 text-center text-sm font-bold text-gray-800">${timeStr}</span>
+                </span>
             `;
         }).join('');
 
         const needsScroll = filtered.length > 30;
         listHtml = `
-            <div class="${needsScroll ? 'max-h-[480px] overflow-y-auto' : ''} grid grid-cols-2 gap-2">
+            <div class="${needsScroll ? 'max-h-[480px] overflow-y-auto' : ''} grid grid-cols-2 gap-1.5">
                 ${cards}
             </div>
         `;

@@ -227,26 +227,26 @@ function renderPraiseHistory(praises, dateFilter) {
     }
 
     return `
-        <div class="space-y-2">
-            ${praises.slice(0, 10).map(praise => {
+        <div class="grid grid-cols-3 gap-1.5">
+            ${[...praises].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp)).slice(0, 12).map(praise => {
                 const cat = store.getPraiseCategories()[praise.category];
+                const t = new Date(praise.timestamp);
+                const timeStr = `${t.getHours()}:${String(t.getMinutes()).padStart(2, '0')}`;
                 return `
-                    <div class="praise-item">
-                        <span class="text-xl">${cat?.icon || '⭐'}</span>
-                        <div class="flex-1">
-                            <div class="font-medium text-sm">${cat?.name || '칭찬'}</div>
-                            <div class="text-xs text-gray-400">${formatDate(praise.timestamp)}</div>
-                        </div>
-                        <div class="text-sm text-primary font-medium">+${praise.expGain} EXP</div>
-                    </div>
+                    <span class="flex items-center bg-cream rounded-lg px-1 py-1.5">
+                        <span class="flex-1 text-center text-xl">${cat?.icon || '⭐'}</span>
+                        <span class="flex-1 text-center text-sm font-bold text-gray-800">${cat?.name || '칭찬'}</span>
+                        <span class="flex-1 text-center text-sm font-extrabold text-primary">+${praise.expGain}</span>
+                        <span class="flex-1 text-center text-sm font-bold text-gray-800">${timeStr}</span>
+                    </span>
                 `;
             }).join('')}
-            ${praises.length > 10 ? `
-                <div class="text-center text-sm text-gray-400 py-2">
-                    +${praises.length - 10}개 더 있어요
-                </div>
-            ` : ''}
         </div>
+        ${praises.length > 12 ? `
+            <div class="text-center text-sm text-gray-400 py-2">
+                +${praises.length - 12}개 더 있어요
+            </div>
+        ` : ''}
     `;
 }
 

@@ -55,6 +55,8 @@ export function render() {
         if (!grouped[dateKey]) grouped[dateKey] = [];
         grouped[dateKey].push(p);
     });
+    // 각 날짜 내 시간 빠른순 정렬
+    Object.values(grouped).forEach(arr => arr.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp)));
 
     const sortedDates = Object.keys(grouped).sort((a, b) => b.localeCompare(a));
 
@@ -104,20 +106,21 @@ export function render() {
                     return `
                         <div>
                             <div class="text-xs text-gray-400 font-medium mb-2">${dateLabel}</div>
-                            <div class="space-y-2">
+                            <div class="grid grid-cols-3 gap-1.5">
                                 ${grouped[dateKey].map(p => {
                                     const cat = categories[p.category];
                                     const icon = cat?.icon || '⭐';
                                     const name = cat?.name || p.category;
                                     const exp = p.expGain || cat?.exp || 10;
+                                    const t = new Date(p.timestamp);
+                                    const timeStr = `${t.getHours()}:${String(t.getMinutes()).padStart(2, '0')}`;
                                     return `
-                                        <div class="flex items-center justify-between bg-white rounded-xl p-3 shadow-sm border border-gray-100">
-                                            <div class="flex items-center gap-3">
-                                                <span class="text-2xl">${icon}</span>
-                                                <span class="text-sm font-medium text-gray-700">${name}</span>
-                                            </div>
-                                            <span class="text-sm font-bold text-primary">+${exp} EXP</span>
-                                        </div>
+                                        <span class="flex items-center bg-cream rounded-lg px-1 py-1.5">
+                                            <span class="flex-1 text-center text-xl">${icon}</span>
+                                            <span class="flex-1 text-center text-sm font-bold text-gray-800">${name}</span>
+                                            <span class="flex-1 text-center text-sm font-extrabold text-primary">+${exp}</span>
+                                            <span class="flex-1 text-center text-sm font-bold text-gray-800">${timeStr}</span>
+                                        </span>
                                     `;
                                 }).join('')}
                             </div>
