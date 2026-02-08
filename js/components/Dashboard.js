@@ -4,10 +4,13 @@
  */
 
 import { store, PET_TYPES, EMOTION_TYPES } from '../store.js';
+import { PRAISE_CATEGORIES } from '../constants/index.js';
 import { router } from '../router.js';
 import { getPetEmoji, getExpProgress, getGrowthStage } from '../utils/petLogic.js';
 import { fadeInCards } from '../utils/animations.js';
 import { showQuickPraise } from './QuickPraise.js';
+
+const DEFAULT_CAT_ORDER = Object.keys(PRAISE_CATEGORIES);
 
 export function render() {
     const students = store.getStudents() || [];
@@ -172,22 +175,16 @@ export function render() {
                     </button>
                 </div>
 
-                <div class="grid grid-cols-2 gap-2">
-                    ${students.slice(0, 6).map(student => `
-                    <div class="flex items-center bg-cream rounded-xl px-2 py-2 cursor-pointer hover:bg-cream-dark transition-colors"
+                <div class="grid grid-cols-4 gap-1" style="max-height: 95px; overflow-y: auto; overflow-x: hidden;">
+                    ${students.map(student => `
+                    <div class="flex items-center bg-cream rounded-lg px-1 py-1.5 cursor-pointer hover:bg-cream-dark transition-colors"
                          onclick="window.classpet.router.navigate('student', { id: '${student.id}' })">
-                        <span class="text-xl w-8 text-left">${getPetEmoji(student.petType, student.level || 1)}</span>
-                        <span class="text-sm font-semibold flex-1 text-center truncate">${student.name}</span>
-                        <span class="text-xs text-gray-500 w-10 text-right">Lv.${student.level || 1}</span>
+                        <span class="flex-1 text-center text-2xl">${getPetEmoji(student.petType, student.level || 1)}</span>
+                        <span class="flex-1 text-center text-sm font-semibold truncate">${student.name}</span>
+                        <span class="flex-1 text-center text-sm text-gray-400">Lv.${student.level || 1}</span>
                     </div>
                     `).join('')}
                 </div>
-
-                ${students.length > 6 ? `
-                <div class="text-center mt-3 text-sm text-gray-400">
-                    +${students.length - 6}명 더 있어요
-                </div>
-                ` : ''}
             </div>
 
             ${almostLevelUp.length > 0 ? `
@@ -221,13 +218,19 @@ export function render() {
                         칭찬하기
                     </button>
                 </div>
-                <div class="grid grid-cols-3 gap-2">
-                    ${Object.entries(store.getPraiseCategories()).map(([key, cat]) => `
-                    <span class="flex items-center justify-between bg-cream rounded-lg px-2 py-1">
-                        <span class="flex items-center gap-1">
-                            <span class="text-sm">${cat.icon}</span><span class="text-xs font-bold text-gray-800">${cat.name}</span>
-                        </span>
-                        <span class="font-bold text-sm text-gray-800">${stats.categoryStats[key] || 0}</span>
+                <div class="grid grid-cols-4 gap-1">
+                    ${Object.entries(store.getPraiseCategories()).sort(([a], [b]) => {
+                        const ai = DEFAULT_CAT_ORDER.indexOf(a);
+                        const bi = DEFAULT_CAT_ORDER.indexOf(b);
+                        if (ai !== -1 && bi !== -1) return ai - bi;
+                        if (ai !== -1) return -1;
+                        if (bi !== -1) return 1;
+                        return 0;
+                    }).map(([key, cat]) => `
+                    <span class="flex items-center bg-cream rounded-lg px-1 py-1.5">
+                        <span class="flex-1 text-center text-xl">${cat.icon}</span>
+                        <span class="flex-1 text-center text-sm font-bold text-gray-800">${cat.name}</span>
+                        <span class="flex-1 text-center font-extrabold text-sm text-gray-800">${stats.categoryStats[key] || 0}</span>
                     </span>
                     `).join('')}
                 </div>

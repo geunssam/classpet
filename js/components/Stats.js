@@ -4,8 +4,11 @@
  */
 
 import { store, PET_TYPES } from '../store.js';
+import { PRAISE_CATEGORIES } from '../constants/index.js';
 import { getPetEmoji, calculateRank, getRankTier, getGrowthStage } from '../utils/petLogic.js';
 import { showToast, setModalContent, openModal, closeModal, showLoading, hideLoading } from '../utils/animations.js';
+
+const DEFAULT_CAT_ORDER = Object.keys(PRAISE_CATEGORIES);
 
 export function render() {
     const students = store.getStudents() || [];
@@ -32,26 +35,21 @@ export function render() {
             </div>
 
             <!-- 전체 통계 -->
-            <div class="grid grid-cols-4 gap-2">
-                <div class="flex flex-col items-center py-3 bg-indigo-50 border border-indigo-200 rounded-xl">
-                    <span class="text-lg">👥</span>
-                    <span class="text-xl font-bold text-indigo-600">${stats.totalStudents}</span>
-                    <span class="text-xs text-gray-500">학생</span>
+            <div class="grid grid-cols-3 gap-2">
+                <div class="flex items-center justify-center gap-2 bg-indigo-50 border border-indigo-200 rounded-lg px-3 py-4">
+                    <span class="text-xl">👥</span>
+                    <span class="text-base font-bold text-gray-700">학생</span>
+                    <span class="font-extrabold text-lg text-indigo-600">${stats.totalStudents}명</span>
                 </div>
-                <div class="flex flex-col items-center py-3 bg-amber-50 border border-amber-200 rounded-xl">
-                    <span class="text-lg">⭐</span>
-                    <span class="text-xl font-bold text-amber-600">${stats.totalPraises}</span>
-                    <span class="text-xs text-gray-500">누적</span>
+                <div class="flex items-center justify-center gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-4">
+                    <span class="text-xl">⭐</span>
+                    <span class="text-base font-bold text-gray-700">누적 칭찬</span>
+                    <span class="font-extrabold text-lg text-amber-600">${stats.totalPraises}개</span>
                 </div>
-                <div class="flex flex-col items-center py-3 bg-emerald-50 border border-emerald-200 rounded-xl">
-                    <span class="text-lg">📈</span>
-                    <span class="text-xl font-bold text-emerald-600">${isNaN(stats.averageLevel) ? 0 : stats.averageLevel}</span>
-                    <span class="text-xs text-gray-500">평균Lv</span>
-                </div>
-                <div class="flex flex-col items-center py-3 bg-rose-50 border border-rose-200 rounded-xl">
-                    <span class="text-lg">📅</span>
-                    <span class="text-xl font-bold text-rose-600">${stats.todayPraises}</span>
-                    <span class="text-xs text-gray-500">오늘</span>
+                <div class="flex items-center justify-center gap-2 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-4">
+                    <span class="text-xl">📈</span>
+                    <span class="text-base font-bold text-gray-700">평균 레벨</span>
+                    <span class="font-extrabold text-lg text-emerald-600">${isNaN(stats.averageLevel) ? 0 : stats.averageLevel}</span>
                 </div>
             </div>
 
@@ -65,10 +63,11 @@ export function render() {
                     <span class="ranking-col-emoji">펫</span>
                     <span class="ranking-col-number">번호</span>
                     <span class="ranking-col-name">이름</span>
+                    <span class="ranking-col-praise">칭찬</span>
                     <span class="ranking-col-level">레벨</span>
                     <span class="ranking-col-exp">경험치</span>
                 </div>
-                <div class="space-y-2 max-h-[280px] overflow-y-auto overflow-x-hidden">
+                <div class="space-y-2" style="max-height: 310px; overflow-y: auto; overflow-x: hidden;">
                     ${rankedStudents.map((student, index) => {
                         const medals = ['🥇', '🥈', '🥉'];
                         return `
@@ -77,6 +76,7 @@ export function render() {
                             <span class="ranking-col-emoji text-xl">${getPetEmoji(student.petType, student.level)}</span>
                             <span class="ranking-col-number">${student.number}</span>
                             <span class="ranking-col-name">${student.name}</span>
+                            <span class="ranking-col-praise">${store.getPraisesByStudent(student.id).length}</span>
                             <span class="ranking-col-level">Lv.${student.level || 1}</span>
                             <span class="ranking-col-exp">${student.exp || 0}</span>
                         </div>
@@ -91,13 +91,19 @@ export function render() {
             <!-- 칭찬 통계 -->
             <div class="card">
                 <h3 class="section-title">📈 칭찬 통계</h3>
-                <div class="grid grid-cols-3 gap-2">
-                    ${Object.entries(store.getPraiseCategories()).map(([key, cat]) => `
-                    <span class="flex items-center justify-between bg-cream rounded-lg px-2 py-1">
-                        <span class="flex items-center gap-1">
-                            <span class="text-sm">${cat.icon}</span><span class="text-xs font-bold text-gray-800">${cat.name}</span>
-                        </span>
-                        <span class="font-bold text-sm text-gray-800">${stats.categoryStats[key] || 0}</span>
+                <div class="grid grid-cols-4 gap-1">
+                    ${Object.entries(store.getPraiseCategories()).sort(([a], [b]) => {
+                        const ai = DEFAULT_CAT_ORDER.indexOf(a);
+                        const bi = DEFAULT_CAT_ORDER.indexOf(b);
+                        if (ai !== -1 && bi !== -1) return ai - bi;
+                        if (ai !== -1) return -1;
+                        if (bi !== -1) return 1;
+                        return 0;
+                    }).map(([key, cat]) => `
+                    <span class="flex items-center bg-cream rounded-lg px-1 py-1.5">
+                        <span class="flex-1 text-center text-xl">${cat.icon}</span>
+                        <span class="flex-1 text-center text-sm font-bold text-gray-800">${cat.name}</span>
+                        <span class="flex-1 text-center font-extrabold text-sm text-gray-800">${stats.categoryStats[key] || 0}</span>
                     </span>
                     `).join('')}
                 </div>
