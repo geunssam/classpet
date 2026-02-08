@@ -12,6 +12,8 @@ import {
     getPetEmoji,
     getExpProgress,
     getGrowthStage,
+    getCurrentLevelExp,
+    getExpForNextLevel,
     calculateLevel,
     getLevelUpMessage
 } from '../utils/petLogic.js';
@@ -69,9 +71,10 @@ function renderPetHybridCard(student, stats) {
     const exp = student.exp || 0;
     const level = student.level || 1;
     const expProgress = getExpProgress(exp, level);
+    const currentExp = getCurrentLevelExp(exp, level);
+    const neededExp = getExpForNextLevel(level);
     const stage = getGrowthStage(level);
     const isMvp = stats.mvp && stats.mvp.id === student.id;
-    const expNeeded = level * 100;
 
     // SVG 원형 프로그레스 계산
     const radius = 32;
@@ -128,7 +131,7 @@ function renderPetHybridCard(student, stats) {
             <!-- 하단 텍스트 -->
             <div class="text-center mt-1">
                 <p class="text-sm font-bold text-gray-800">${student.number}번 ${student.name}</p>
-                <p class="text-xs text-gray-500">${exp}/${expNeeded} (${expProgress}%)</p>
+                <p class="text-xs text-gray-500">${currentExp}/${neededExp} (${expProgress}%)</p>
             </div>
         </div>
     `;
