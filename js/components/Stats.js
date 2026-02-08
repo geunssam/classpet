@@ -39,12 +39,12 @@ export function render() {
                 <div class="flex items-center justify-center gap-2 bg-indigo-50 border border-indigo-200 rounded-lg px-3 py-4">
                     <span class="text-xl">👥</span>
                     <span class="text-base font-bold text-gray-700">학생</span>
-                    <span class="font-extrabold text-lg text-indigo-600">${stats.totalStudents}명</span>
+                    <span class="text-indigo-600"><span class="font-extrabold text-lg">${stats.totalStudents}</span><span class="text-sm font-medium">명</span></span>
                 </div>
                 <div class="flex items-center justify-center gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-4">
                     <span class="text-xl">⭐</span>
                     <span class="text-base font-bold text-gray-700">누적 칭찬</span>
-                    <span class="font-extrabold text-lg text-amber-600">${stats.totalPraises}개</span>
+                    <span class="text-amber-600"><span class="font-extrabold text-lg">${stats.totalPraises}</span><span class="text-sm font-medium">개</span></span>
                 </div>
                 <div class="flex items-center justify-center gap-2 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-4">
                     <span class="text-xl">📈</span>
