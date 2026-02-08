@@ -4,18 +4,21 @@
  */
 
 import { store, PET_TYPES } from '../store.js';
+import { PRAISE_CATEGORIES } from '../constants/index.js';
 import { getPetEmoji, calculateLevel, getLevelUpMessage, isMaxLevel } from '../utils/petLogic.js';
 import { showToast, setModalContent, openModal, closeModal, createPraiseParticles } from '../utils/animations.js';
 
+const DEFAULT_CAT_ORDER = Object.keys(PRAISE_CATEGORIES);
+
 let selectedStudents = new Set();
-let selectedCategory = null;
+let selectedCategories = new Set();
 
 /**
  * 빠른 칭찬 모달 표시
  */
 export function showQuickPraise() {
     selectedStudents.clear();
-    selectedCategory = null;
+    selectedCategories.clear();
 
     const students = store.getStudents() || [];
 
@@ -32,12 +35,12 @@ export function showQuickPraise() {
                     <label class="text-sm font-medium text-gray-700">1. 학생 선택</label>
                     <button id="selectAllBtn" class="text-xs text-primary font-medium">전체 선택</button>
                 </div>
-                <div class="grid grid-cols-4 gap-2" id="studentGrid">
+                <div class="grid grid-cols-3 gap-1.5" id="studentGrid">
                     ${students.map(student => `
-                        <button class="student-select-btn flex flex-col items-center p-2 rounded-xl border-2 border-transparent hover:border-primary/50 transition-all"
+                        <button class="student-select-btn flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg border border-gray-300 hover:border-primary transition-all bg-white"
                                 data-student-id="${student.id}">
-                            <span class="text-2xl">${getPetEmoji(student.petType, student.level)}</span>
-                            <span class="text-xs mt-1 truncate w-full text-center">${student.name}</span>
+                            <span class="text-lg">${getPetEmoji(student.petType, student.level)}</span>
+                            <span class="text-xs truncate">${student.name}</span>
                         </button>
                     `).join('')}
                 </div>
@@ -49,11 +52,18 @@ export function showQuickPraise() {
             <!-- Step 2: 칭찬 카테고리 선택 -->
             <div>
                 <label class="text-sm font-medium text-gray-700 mb-2 block">2. 칭찬 카테고리</label>
-                <div class="grid grid-cols-3 gap-2" id="categoryGrid">
-                    ${Object.entries(store.getPraiseCategories()).map(([key, cat]) => `
-                        <button class="category-select-btn category-btn" data-category="${key}">
-                            <span class="text-xl">${cat.icon}</span>
-                            <span class="text-xs mt-1">${cat.name}</span>
+                <div class="grid grid-cols-3 gap-1.5" id="categoryGrid">
+                    ${Object.entries(store.getPraiseCategories()).sort(([a], [b]) => {
+                        const ai = DEFAULT_CAT_ORDER.indexOf(a);
+                        const bi = DEFAULT_CAT_ORDER.indexOf(b);
+                        if (ai !== -1 && bi !== -1) return ai - bi;
+                        if (ai !== -1) return -1;
+                        if (bi !== -1) return 1;
+                        return a.localeCompare(b);
+                    }).map(([key, cat]) => `
+                        <button class="category-select-btn flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg border border-gray-300 hover:border-primary transition-all bg-white" data-category="${key}">
+                            <span class="text-lg">${cat.icon}</span>
+                            <span class="text-xs">${cat.name}</span>
                         </button>
                     `).join('')}
                 </div>
@@ -79,6 +89,9 @@ export function showQuickPraise() {
 function bindQuickPraiseEvents() {
     const students = store.getStudents() || [];
 
+    const selectedStyle = ['border-blue-300', 'bg-blue-50'];
+    const defaultStyle = ['border-gray-300', 'bg-white'];
+
     // 학생 선택
     document.querySelectorAll('.student-select-btn').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -86,12 +99,12 @@ function bindQuickPraiseEvents() {
 
             if (selectedStudents.has(studentId)) {
                 selectedStudents.delete(studentId);
-                btn.classList.remove('border-primary', 'bg-primary/10');
-                btn.classList.add('border-transparent');
+                btn.classList.remove(...selectedStyle);
+                btn.classList.add(...defaultStyle);
             } else {
                 selectedStudents.add(studentId);
-                btn.classList.remove('border-transparent');
-                btn.classList.add('border-primary', 'bg-primary/10');
+                btn.classList.remove(...defaultStyle);
+                btn.classList.add(...selectedStyle);
             }
 
             updateSelectedCount();
@@ -106,19 +119,17 @@ function bindQuickPraiseEvents() {
             const allSelected = selectedStudents.size === students.length;
 
             if (allSelected) {
-                // 전체 해제
                 selectedStudents.clear();
                 document.querySelectorAll('.student-select-btn').forEach(btn => {
-                    btn.classList.remove('border-primary', 'bg-primary/10');
-                    btn.classList.add('border-transparent');
+                    btn.classList.remove(...selectedStyle);
+                    btn.classList.add(...defaultStyle);
                 });
                 selectAllBtn.textContent = '전체 선택';
             } else {
-                // 전체 선택
                 students.forEach(s => selectedStudents.add(s.id));
                 document.querySelectorAll('.student-select-btn').forEach(btn => {
-                    btn.classList.remove('border-transparent');
-                    btn.classList.add('border-primary', 'bg-primary/10');
+                    btn.classList.remove(...defaultStyle);
+                    btn.classList.add(...selectedStyle);
                 });
                 selectAllBtn.textContent = '전체 해제';
             }
@@ -128,14 +139,20 @@ function bindQuickPraiseEvents() {
         });
     }
 
-    // 카테고리 선택
+    // 카테고리 복수 선택 (토글)
     document.querySelectorAll('.category-select-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-            document.querySelectorAll('.category-select-btn').forEach(b => {
-                b.classList.remove('selected');
-            });
-            btn.classList.add('selected');
-            selectedCategory = btn.dataset.category;
+            const cat = btn.dataset.category;
+
+            if (selectedCategories.has(cat)) {
+                selectedCategories.delete(cat);
+                btn.classList.remove(...selectedStyle);
+                btn.classList.add(...defaultStyle);
+            } else {
+                selectedCategories.add(cat);
+                btn.classList.remove(...defaultStyle);
+                btn.classList.add(...selectedStyle);
+            }
             updateGivePraiseBtn();
         });
     });
@@ -163,12 +180,13 @@ function updateSelectedCount() {
 function updateGivePraiseBtn() {
     const btn = document.getElementById('givePraiseBtn');
     if (btn) {
-        const isValid = selectedStudents.size > 0 && selectedCategory;
+        const isValid = selectedStudents.size > 0 && selectedCategories.size > 0;
         btn.disabled = !isValid;
 
         if (isValid) {
-            const cat = store.getPraiseCategories()[selectedCategory];
-            btn.innerHTML = `${cat.icon} ${selectedStudents.size}명에게 칭찬하기`;
+            const categories = store.getPraiseCategories();
+            const icons = [...selectedCategories].map(k => categories[k]?.icon || '⭐').join('');
+            btn.innerHTML = `${icons} ${selectedStudents.size}명에게 칭찬하기`;
         } else {
             btn.innerHTML = '칭찬하기';
         }
@@ -179,14 +197,20 @@ function updateGivePraiseBtn() {
  * 빠른 칭찬 실행
  */
 function executeQuickPraise() {
-    if (selectedStudents.size === 0 || !selectedCategory) return;
+    if (selectedStudents.size === 0 || selectedCategories.size === 0) return;
 
-    const categoryInfo = store.getPraiseCategories()[selectedCategory];
-    const expGain = categoryInfo.exp;
+    const categories = store.getPraiseCategories();
+    const catArray = [...selectedCategories];
+
+    // 선택된 카테고리들의 총 경험치
+    let totalExpGain = 0;
+    catArray.forEach(catKey => {
+        totalExpGain += categories[catKey]?.exp || 10;
+    });
 
     let levelUpCount = 0;
     const studentNames = [];
-    const maxLevelReached = []; // 레벨 15 달성한 학생들
+    const maxLevelReached = [];
 
     selectedStudents.forEach(studentId => {
         const student = store.getStudent(studentId);
@@ -196,27 +220,29 @@ function executeQuickPraise() {
 
         const beforeLevel = student.level || 1;
 
-        // totalPraises만 업데이트 (exp/level은 addPraise→addPetExp에서 처리)
-        store.updateStudent(studentId, {
-            totalPraises: (student.totalPraises || 0) + 1
+        // 각 카테고리별로 칭찬 로그 추가
+        catArray.forEach(catKey => {
+            const catInfo = categories[catKey];
+            const expGain = catInfo?.exp || 10;
+
+            store.updateStudent(studentId, {
+                totalPraises: (store.getStudent(studentId)?.totalPraises || 0) + 1
+            });
+
+            store.addPraise({
+                studentId,
+                studentName: student.name,
+                studentNumber: student.number,
+                category: catKey,
+                expGain
+            });
         });
 
-        // 칭찬 로그 추가 (내부에서 addPetExp 호출 → exp/level 업데이트)
-        store.addPraise({
-            studentId,
-            studentName: student.name,
-            studentNumber: student.number,
-            category: selectedCategory,
-            expGain
-        });
-
-        // addPraise 후 업데이트된 학생 데이터 확인
         const after = store.getStudent(studentId);
         const afterLevel = after?.level || 1;
 
         if (afterLevel > beforeLevel) {
             levelUpCount++;
-            // 레벨 15 달성 체크
             if (isMaxLevel(afterLevel) && !isMaxLevel(beforeLevel)) {
                 maxLevelReached.push({
                     id: studentId,
@@ -231,9 +257,9 @@ function executeQuickPraise() {
     // 결과 메시지
     let message = '';
     if (selectedStudents.size === 1) {
-        message = `${studentNames[0]}에게 +${expGain} EXP!`;
+        message = `${studentNames[0]}에게 +${totalExpGain} EXP!`;
     } else {
-        message = `${selectedStudents.size}명에게 각 +${expGain} EXP!`;
+        message = `${selectedStudents.size}명에게 각 +${totalExpGain} EXP!`;
     }
 
     if (levelUpCount > 0) {
@@ -320,4 +346,4 @@ function showMaxLevelCelebration(students) {
     }
 }
 
-export { selectedStudents, selectedCategory };
+export { selectedStudents, selectedCategories };

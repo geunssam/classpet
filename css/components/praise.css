@@ -1,22 +1,19 @@
 /* 카테고리 버튼 (Grownd 스타일) */
 .category-btn {
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 12px;
+    gap: 6px;
+    padding: 6px 8px;
     background: white;
-    border-radius: 16px;
+    border-radius: 8px;
     transition: all 0.2s ease;
-    border: 2px solid #f3f4f6;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    border: 1px solid #d1d5db;
 }
 
 .category-btn:hover {
-    background: linear-gradient(135deg, rgba(124, 158, 245, 0.08) 0%, rgba(167, 139, 250, 0.08) 100%);
-    border-color: rgba(124, 158, 245, 0.5);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(124, 158, 245, 0.15);
+    border-color: #93C5FD;
+    background: #EFF6FF;
 }
 
 .category-btn:active {
@@ -24,9 +21,8 @@
 }
 
 .category-btn.selected {
-    background: linear-gradient(135deg, rgba(124, 158, 245, 0.15) 0%, rgba(167, 139, 250, 0.15) 100%);
-    border-color: #7C9EF5;
-    box-shadow: 0 4px 12px rgba(124, 158, 245, 0.25);
+    background: #DBEAFE;
+    border-color: #93C5FD;
 }
 
 /* 빠른 액션 버튼 (리퀴드 글라스) */

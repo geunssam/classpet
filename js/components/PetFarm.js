@@ -4,7 +4,10 @@
  */
 
 import { store, PET_TYPES } from '../store.js';
+import { PRAISE_CATEGORIES } from '../constants/index.js';
 import { router } from '../router.js';
+
+const DEFAULT_CAT_ORDER = Object.keys(PRAISE_CATEGORIES);
 import {
     getPetEmoji,
     getExpProgress,
@@ -162,11 +165,18 @@ function showQuickPraiseForStudent(studentId) {
                 </div>
             </div>
 
-            <div class="grid grid-cols-3 gap-2">
-                ${Object.entries(store.getPraiseCategories()).map(([key, cat]) => `
-                    <button class="category-btn" data-category="${key}">
-                        <span class="text-2xl">${cat.icon}</span>
-                        <span class="text-xs mt-1">${cat.name}</span>
+            <div class="grid grid-cols-3 gap-1.5">
+                ${Object.entries(store.getPraiseCategories()).sort(([a], [b]) => {
+                    const ai = DEFAULT_CAT_ORDER.indexOf(a);
+                    const bi = DEFAULT_CAT_ORDER.indexOf(b);
+                    if (ai !== -1 && bi !== -1) return ai - bi;
+                    if (ai !== -1) return -1;
+                    if (bi !== -1) return 1;
+                    return a.localeCompare(b);
+                }).map(([key, cat]) => `
+                    <button class="category-btn flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg border border-gray-300 hover:border-primary transition-all bg-white" data-category="${key}">
+                        <span class="text-lg">${cat.icon}</span>
+                        <span class="text-xs">${cat.name}</span>
                     </button>
                 `).join('')}
             </div>
