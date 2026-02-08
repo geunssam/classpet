@@ -7,7 +7,7 @@
 import { store, EMOTION_TYPES } from '../store.js';
 import { router } from '../router.js';
 import { getPetEmoji } from '../utils/petLogic.js';
-import { showToast, setModalContent, openModal, closeModal } from '../utils/animations.js';
+import { showToast } from '../utils/animations.js';
 import { onEmotionUpdate } from '../services/EmotionService.js';
 
 let viewMode = 'checkin'; // 'checkin', 'history', 'attention'
@@ -47,14 +47,16 @@ export function render() {
     // 오늘 감정 체크한 학생 ID 목록
     const checkedIds = new Set(todayEmotions.map(e => e.studentId));
 
-    // 미체크 학생
-    const uncheckedStudents = students.filter(s => !checkedIds.has(s.id));
-
     // 감정별 분포
     const emotionDistribution = {};
     Object.keys(EMOTION_TYPES).forEach(key => {
         emotionDistribution[key] = todayEmotions.filter(e => e.emotion === key).length;
     });
+
+    // 학번 순 정렬 (감정 출석부용)
+    const sortedStudents = [...students].sort((a, b) => (a.number || 0) - (b.number || 0));
+    const sentStudents = sortedStudents.filter(s => checkedIds.has(s.id));
+    const unsentStudents = sortedStudents.filter(s => !checkedIds.has(s.id));
 
     return `
         <div class="space-y-4">
@@ -69,20 +71,59 @@ export function render() {
                 ` : ''}
             </div>
 
-            
-            <!-- 오늘의 감정 요약 -->
-            <div class="card bg-gradient-to-br from-secondary/10 to-danger/10">
-                <h3 class="section-title m-0 mb-3">오늘의 우리 반</h3>
-                <div class="flex items-center justify-around">
-                    ${Object.entries(EMOTION_TYPES).map(([key, info]) => `
-                        <div class="text-center">
-                            <div class="text-2xl mb-1">${info.icon}</div>
-                            <div class="text-lg font-bold" style="color: ${info.color}">${emotionDistribution[key] || 0}</div>
+
+            <!-- 오늘의 우리 반 + 감정 출석부 (2열) -->
+            <div class="card bg-gradient-to-br from-secondary/10 to-danger/10 p-0 overflow-hidden">
+                <div class="grid grid-cols-2" style="min-height: 0;">
+                    <!-- 왼쪽: 감정 분포 -->
+                    <div class="p-4 flex flex-col">
+                        <h3 class="text-sm font-bold text-gray-700 mb-3">오늘의 우리 반</h3>
+                        <div class="flex items-center justify-around flex-1">
+                            ${Object.entries(EMOTION_TYPES).map(([key, info]) => `
+                                <div class="text-center">
+                                    <div class="text-2xl mb-1">${info.icon}</div>
+                                    <div class="text-lg font-bold" style="color: ${info.color}">${emotionDistribution[key] || 0}</div>
+                                </div>
+                            `).join('')}
                         </div>
-                    `).join('')}
-                </div>
-                <div class="mt-3 text-center text-sm text-gray-500">
-                    체크 완료: ${todayEmotions.length}명 / ${students.length}명
+                        <div class="mt-2 text-center text-xs text-gray-500">
+                            ${todayEmotions.length}명 / ${students.length}명
+                        </div>
+                    </div>
+                    <!-- 오른쪽: 감정 출석부 -->
+                    <div class="p-4 border-l border-gray-200/30 flex flex-col" style="min-height: 0;">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="text-sm font-bold text-gray-700">감정 출석부</h3>
+                            <span class="text-[10px] text-gray-400 bg-white/60 px-1.5 py-0.5 rounded-full">${sentStudents.length}/${students.length}</span>
+                        </div>
+                        ${students.length === 0 ? `
+                            <div class="text-xs text-gray-400 text-center py-4">아직 학생이 없어요</div>
+                        ` : `
+                        <div class="grid grid-cols-3 gap-1.5 overflow-y-auto flex-1 -mr-1 pr-1" style="max-height: 200px;">
+                            ${sortedStudents.map(student => {
+                                const isSent = checkedIds.has(student.id);
+                                const emotion = isSent ? todayEmotions.find(e => e.studentId === student.id) : null;
+                                const eInfo = emotion ? EMOTION_TYPES[emotion.emotion] : null;
+                                return isSent ? `
+                                <div class="rounded-lg py-1 flex items-center cursor-pointer transition-colors" style="background-color: rgba(124,158,245,0.18);"
+                                     onmouseenter="this.style.backgroundColor='rgba(124,158,245,0.3)'" onmouseleave="this.style.backgroundColor='rgba(124,158,245,0.18)'"
+                                     onclick="window.classpet.openChatRoom('${student.id}')">
+                                    <span class="text-sm leading-none flex-shrink-0" style="width:24px; text-align:center;">${getPetEmoji(student.petType, student.level)}</span>
+                                    <span class="text-[10px] font-medium truncate flex-1 text-center">${student.number || ''}. ${student.name}</span>
+                                    <span class="text-base leading-none flex-shrink-0" style="width:24px; text-align:center;">${eInfo ? eInfo.icon : ''}</span>
+                                </div>` : `
+                                <div class="rounded-lg py-1 flex items-center opacity-60" style="background-color: rgba(245,124,124,0.18);">
+                                    <span class="text-sm leading-none flex-shrink-0" style="width:24px; text-align:center;">${getPetEmoji(student.petType, student.level)}</span>
+                                    <span class="text-[10px] font-medium truncate flex-1 text-center">${student.number || ''}. ${student.name}</span>
+                                    <span class="flex-shrink-0" style="width:24px;"></span>
+                                </div>`;
+                            }).join('')}
+                        </div>
+                        ${unsentStudents.length === 0 && sentStudents.length > 0 ? `
+                            <div class="text-xs text-green-500 font-medium text-center pt-1.5">모두 보냈어요! 🎉</div>
+                        ` : ''}
+                        `}
+                    </div>
                 </div>
             </div>
 
@@ -119,93 +160,9 @@ export function render() {
             </div>
             ` : ''}
 
-            <!-- 탭 -->
-            <div class="tab-group">
-                <button class="tab-item ${viewMode === 'checkin' ? 'active' : ''}" data-view="checkin">
-                    감정 체크
-                </button>
-                <button class="tab-item ${viewMode === 'history' ? 'active' : ''}" data-view="history">
-                    기록 보기
-                </button>
-            </div>
-
-            <!-- 탭 컨텐츠 -->
-            ${viewMode === 'checkin' ? renderCheckinView(students, checkedIds) : ''}
-            ${viewMode === 'history' ? renderHistoryView(students) : ''}
-        </div>
-    `;
-}
-
-/**
- * 감정 체크 뷰
- */
-function renderCheckinView(students, checkedIds) {
-    const uncheckedStudents = students.filter(s => !checkedIds.has(s.id));
-    const checkedStudents = students.filter(s => checkedIds.has(s.id));
-
-    return `
-        <div class="space-y-4">
-            ${uncheckedStudents.length > 0 ? `
-            <div>
-                <h3 class="text-sm font-medium text-gray-600 mb-2">체크 필요 (${uncheckedStudents.length}명)</h3>
-                <div class="grid grid-cols-4 gap-2">
-                    ${uncheckedStudents.map(student => `
-                        <button class="pet-card py-3" onclick="window.classpet.showEmotionCheck('${student.id}')">
-                            <span class="text-2xl">${getPetEmoji(student.petType, student.level)}</span>
-                            <div class="text-xs mt-1 truncate">${student.name}</div>
-                            <div class="text-xs text-gray-400 mt-0.5">미체크</div>
-                        </button>
-                    `).join('')}
-                </div>
-            </div>
-            ` : ''}
-
-            ${checkedStudents.length > 0 ? `
-            <div>
-                <h3 class="text-sm font-medium text-gray-600 mb-2">체크 완료 (${checkedStudents.length}명)</h3>
-                <div class="space-y-2">
-                    ${checkedStudents.map(student => {
-                        const todayEmotions = store.getTodayEmotions();
-                        const emotion = todayEmotions.find(e => e.studentId === student.id);
-                        const emotionInfo = emotion ? EMOTION_TYPES[emotion.emotion] : null;
-                        return `
-                        <div class="bg-white rounded-xl p-3 flex items-start gap-3 cursor-pointer hover:bg-gray-50"
-                             onclick="window.classpet.showEmotionCheck('${student.id}')">
-                            <div class="relative flex-shrink-0">
-                                <span class="text-2xl">${getPetEmoji(student.petType, student.level)}</span>
-                                ${emotionInfo ? `<span class="absolute -top-1 -right-1 text-lg">${emotionInfo.icon}</span>` : ''}
-                            </div>
-                            <div class="flex-1 min-w-0">
-                                <div class="font-medium text-sm">${student.name}</div>
-                                ${(emotion?.note || emotion?.memo) ? `
-                                    <div class="text-xs text-gray-500 mt-1 bg-gray-50 rounded-lg p-2">"${emotion.note || emotion.memo}"</div>
-                                ` : `
-                                    <div class="text-xs text-gray-400 mt-1">메모 없음</div>
-                                `}
-                            </div>
-                            <div class="text-xs text-gray-400 flex-shrink-0">
-                                ${new Date(emotion?.timestamp).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
-                            </div>
-                        </div>
-                        `;
-                    }).join('')}
-                </div>
-            </div>
-            ` : ''}
-
-            ${students.length === 0 ? `
-            <div class="empty-state py-8">
-                <div class="text-3xl mb-2">🥚</div>
-                <div class="text-gray-500">아직 학생이 없어요</div>
-            </div>
-            ` : ''}
-
-            <!-- 전체 체크 버튼 -->
-            ${uncheckedStudents.length > 0 ? `
-            <button onclick="window.classpet.showBulkEmotionCheck()" class="btn btn-primary w-full">
-                📋 전체 감정 체크하기
-            </button>
-            ` : ''}
+            <!-- 기록 보기 -->
+            <h3 class="text-sm font-semibold text-gray-600 flex items-center gap-1.5">💬 기록 보기</h3>
+            ${renderHistoryView(students)}
         </div>
     `;
 }
@@ -805,271 +762,3 @@ export function unmount() {
     }
 }
 
-/**
- * 감정 체크 모달 표시
- * @param {number} studentId - 학생 ID
- * @param {number|null} emotionId - 특정 감정 기록 ID (기록 보기에서 클릭 시)
- */
-export function showEmotionCheck(studentId, emotionId = null) {
-    const student = store.getStudent(studentId);
-    if (!student) return;
-
-    // emotionId가 있으면 해당 감정 기록을 찾고, 없으면 오늘 감정 중 첫 번째
-    let existingEmotion = null;
-    if (emotionId) {
-        const emotionLog = store.getEmotionLog() || [];
-        existingEmotion = emotionLog.find(e => e.id === emotionId);
-    } else {
-        const todayEmotions = store.getTodayEmotions();
-        existingEmotion = todayEmotions.find(e => e.studentId === studentId);
-    }
-    const studentNote = existingEmotion?.note || existingEmotion?.memo || '';
-    const isStudentInput = existingEmotion?.source === 'student';
-
-    const modalContent = `
-        <div class="space-y-4">
-            <div class="flex items-center justify-between">
-                <h3 class="text-lg font-bold">${student.name}의 오늘 기분</h3>
-                <button onclick="window.classpet.closeModal()" class="text-gray-400 hover:text-gray-600">✕</button>
-            </div>
-
-            <div class="text-center py-4">
-                <span class="text-5xl">${getPetEmoji(student.petType, student.level)}</span>
-            </div>
-
-            <div class="flex justify-center gap-3">
-                ${Object.entries(EMOTION_TYPES).map(([key, info]) => `
-                    <button class="emotion-btn ${existingEmotion?.emotion === key ? 'selected' : ''}"
-                            data-emotion="${key}" style="border-color: ${existingEmotion?.emotion === key ? info.color : 'transparent'}">
-                        ${info.icon}
-                    </button>
-                `).join('')}
-            </div>
-
-            ${isStudentInput ? `
-            <!-- 학생이 작성한 메모 표시 -->
-            ${studentNote ? `
-            <div class="bg-blue-50 rounded-xl p-3">
-                <div class="flex items-center gap-2 mb-2">
-                    <span class="text-sm">💬</span>
-                    <span class="text-sm font-medium text-blue-700">${student.name}의 마음</span>
-                </div>
-                <p class="text-sm text-gray-700">"${studentNote}"</p>
-            </div>
-            ` : ''}
-
-            <!-- 선생님 답장 섹션 -->
-            <div class="bg-green-50 rounded-xl p-3">
-                <div class="flex items-center gap-2 mb-2">
-                    <span class="text-sm">💌</span>
-                    <span class="text-sm font-medium text-green-700">선생님의 답장</span>
-                </div>
-                ${existingEmotion.reply ? `
-                    <p class="text-sm text-gray-700 mb-2">"${existingEmotion.reply.message}"</p>
-                    <p class="text-xs text-gray-400">
-                        ${new Date(existingEmotion.reply.timestamp).toLocaleString('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                        ${existingEmotion.reply.read ? '· 읽음 ✓' : '· 아직 안 읽음'}
-                    </p>
-                ` : ''}
-                <textarea id="teacherReply" class="w-full p-3 border border-green-200 rounded-xl text-sm resize-none mt-2 bg-white" rows="2"
-                          placeholder="${existingEmotion.reply ? '새 답장으로 수정하기...' : '따뜻한 말 한마디를 보내주세요...'}">${existingEmotion.reply?.message || ''}</textarea>
-                <button id="sendReplyBtn" class="btn bg-green-500 hover:bg-green-600 text-white w-full mt-2">
-                    ${existingEmotion.reply ? '답장 수정하기' : '답장 보내기'} 💌
-                </button>
-            </div>
-            ` : `
-            <!-- 교사가 직접 입력하는 경우 -->
-            <div>
-                <label class="text-sm text-gray-600 mb-1 block">메모 (선택)</label>
-                <textarea id="emotionNote" class="w-full p-3 border rounded-xl text-sm resize-none" rows="2"
-                          placeholder="특이사항이 있으면 적어주세요...">${existingEmotion?.note || ''}</textarea>
-            </div>
-
-            <button id="saveEmotionBtn" class="btn btn-primary w-full" disabled>
-                저장하기
-            </button>
-            `}
-        </div>
-    `;
-
-    setModalContent(modalContent);
-    openModal();
-
-    // 학생이 입력한 감정에 답장하는 경우
-    if (isStudentInput) {
-        const sendReplyBtn = document.getElementById('sendReplyBtn');
-        const replyTextarea = document.getElementById('teacherReply');
-
-        if (sendReplyBtn) {
-            sendReplyBtn.addEventListener('click', () => {
-                const replyMessage = replyTextarea.value.trim();
-                if (!replyMessage) {
-                    showToast('답장 내용을 입력해주세요', 'warning');
-                    return;
-                }
-
-                // 답장 저장
-                store.addReplyToEmotion(existingEmotion.id, replyMessage);
-                showToast(`${student.name}에게 답장을 보냈어요! 💌`, 'success');
-                closeModal();
-
-                // 화면 갱신
-                const content = document.getElementById('content');
-                content.innerHTML = render();
-                afterRender();
-            });
-        }
-    } else {
-        // 교사가 직접 감정 입력하는 경우 (기존 로직)
-        let selectedEmotion = existingEmotion?.emotion || null;
-
-        document.querySelectorAll('.emotion-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.emotion-btn').forEach(b => {
-                    b.classList.remove('selected');
-                    b.style.borderColor = 'transparent';
-                });
-                btn.classList.add('selected');
-                const emotionInfo = EMOTION_TYPES[btn.dataset.emotion];
-                btn.style.borderColor = emotionInfo.color;
-                selectedEmotion = btn.dataset.emotion;
-                document.getElementById('saveEmotionBtn').disabled = false;
-            });
-        });
-
-        const saveBtn = document.getElementById('saveEmotionBtn');
-        if (saveBtn) {
-            saveBtn.addEventListener('click', async () => {
-                if (!selectedEmotion) return;
-
-                const note = document.getElementById('emotionNote').value.trim();
-
-                // 버튼 비활성화
-                saveBtn.disabled = true;
-                saveBtn.textContent = '저장 중...';
-
-                try {
-                    // Firebase 동기화 포함 저장
-                    await store.addEmotion({
-                        studentId,
-                        emotion: selectedEmotion,
-                        memo: note,
-                        source: 'teacher'
-                    });
-
-                    const emotionInfo = EMOTION_TYPES[selectedEmotion];
-                    showToast(`${student.name}: ${emotionInfo.name} ${emotionInfo.icon}`, 'info');
-                    closeModal();
-
-                    // 화면 갱신
-                    const content = document.getElementById('content');
-                    content.innerHTML = render();
-                    afterRender();
-                } catch (error) {
-                    console.error('감정 저장 실패:', error);
-                    saveBtn.disabled = false;
-                    saveBtn.textContent = '다시 시도';
-                }
-            });
-        }
-    }
-}
-
-/**
- * 전체 감정 체크 모달
- */
-export function showBulkEmotionCheck() {
-    const students = store.getStudents() || [];
-    const todayEmotions = store.getTodayEmotions();
-    const checkedIds = new Set(todayEmotions.map(e => e.studentId));
-    const uncheckedStudents = students.filter(s => !checkedIds.has(s.id));
-
-    if (uncheckedStudents.length === 0) {
-        showToast('모든 학생의 감정을 체크했어요!', 'success');
-        return;
-    }
-
-    let currentIndex = 0;
-
-    function renderCurrentStudent() {
-        const student = uncheckedStudents[currentIndex];
-
-        const modalContent = `
-            <div class="space-y-4">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-lg font-bold">전체 감정 체크</h3>
-                    <button onclick="window.classpet.closeModal()" class="text-gray-400 hover:text-gray-600">✕</button>
-                </div>
-
-                <div class="text-center text-sm text-gray-500">
-                    ${currentIndex + 1} / ${uncheckedStudents.length}
-                </div>
-
-                <div class="text-center py-4">
-                    <span class="text-5xl">${getPetEmoji(student.petType, student.level)}</span>
-                    <div class="mt-2 font-bold text-lg">${student.name}</div>
-                </div>
-
-                <div class="flex justify-center gap-3">
-                    ${Object.entries(EMOTION_TYPES).map(([key, info]) => `
-                        <button class="bulk-emotion-btn emotion-btn" data-emotion="${key}">
-                            ${info.icon}
-                        </button>
-                    `).join('')}
-                </div>
-
-                <div class="flex gap-2">
-                    <button id="skipBtn" class="btn btn-secondary flex-1">
-                        건너뛰기
-                    </button>
-                </div>
-            </div>
-        `;
-
-        setModalContent(modalContent);
-
-        // 이벤트 바인딩
-        document.querySelectorAll('.bulk-emotion-btn').forEach(btn => {
-            btn.addEventListener('click', async () => {
-                const emotion = btn.dataset.emotion;
-
-                // 버튼들 비활성화
-                document.querySelectorAll('.bulk-emotion-btn').forEach(b => b.disabled = true);
-
-                try {
-                    // Firebase 동기화 포함 저장
-                    await store.addEmotion({
-                        studentId: student.id,
-                        emotion,
-                        memo: '',
-                        source: 'teacher'
-                    });
-                } catch (error) {
-                    console.error('감정 저장 실패:', error);
-                }
-
-                nextStudent();
-            });
-        });
-
-        document.getElementById('skipBtn').addEventListener('click', nextStudent);
-    }
-
-    function nextStudent() {
-        currentIndex++;
-        if (currentIndex < uncheckedStudents.length) {
-            renderCurrentStudent();
-        } else {
-            showToast('모든 학생의 감정을 체크했어요! 🎉', 'success');
-            closeModal();
-
-            // 화면 갱신
-            const content = document.getElementById('content');
-            content.innerHTML = render();
-            afterRender();
-        }
-    }
-
-    openModal();
-    renderCurrentStudent();
-}
