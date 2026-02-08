@@ -5,10 +5,15 @@
 
 import { store } from '../store.js';
 import { router } from '../router.js';
+import { PRAISE_CATEGORIES } from '../constants/index.js';
+
+// 기본 카테고리 키 순서 (교사 페이지와 동일)
+const DEFAULT_CAT_ORDER = Object.keys(PRAISE_CATEGORIES);
 
 let selectedCategory = 'all';
 let currentMonth = new Date();
 let praiseUnsubscribe = null;
+let categoryUnsubscribe = null;
 let lastPraiseSnapshot = '';
 
 /**
@@ -64,7 +69,14 @@ export function render() {
                 <button class="category-filter-btn flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${selectedCategory === 'all' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600'}" data-cat="all">
                     전체
                 </button>
-                ${Object.entries(categories).map(([key, cat]) => `
+                ${Object.entries(categories).sort(([a], [b]) => {
+                    const ai = DEFAULT_CAT_ORDER.indexOf(a);
+                    const bi = DEFAULT_CAT_ORDER.indexOf(b);
+                    if (ai !== -1 && bi !== -1) return ai - bi;
+                    if (ai !== -1) return -1;
+                    if (bi !== -1) return 1;
+                    return a.localeCompare(b);
+                }).map(([key, cat]) => `
                     <button class="category-filter-btn flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${selectedCategory === key ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600'}" data-cat="${key}">
                         ${cat.icon} ${cat.name}
                     </button>
@@ -157,9 +169,10 @@ export function afterRender() {
         }
     });
 
-    // 학생 세션이면 칭찬 실시간 구독 설정
+    // 학생 세션이면 칭찬 + 카테고리 실시간 구독 설정
     if (store.isStudentLoggedIn()) {
         setupPraiseSubscription();
+        setupCategorySubscription();
     }
 }
 
@@ -195,12 +208,37 @@ function setupPraiseSubscription() {
 }
 
 /**
+ * 카테고리 실시간 구독 설정
+ * 교사가 카테고리를 추가/수정/삭제하면 자동으로 필터 태그 갱신
+ */
+function setupCategorySubscription() {
+    // 기존 구독 해제
+    if (categoryUnsubscribe) {
+        categoryUnsubscribe();
+        categoryUnsubscribe = null;
+    }
+
+    if (!store.isFirebaseEnabled() || !store.getClassCode()) return;
+
+    categoryUnsubscribe = store.subscribeToPraiseCategories((categories) => {
+        console.log('학생 칭찬 카테고리 실시간 업데이트:', Object.keys(categories).length, '개');
+        if (router.getCurrentRoute() === 'student-praise') {
+            refreshView();
+        }
+    });
+}
+
+/**
  * 컴포넌트 언마운트 시 구독 해제
  */
 export function unmount() {
     if (praiseUnsubscribe) {
         praiseUnsubscribe();
         praiseUnsubscribe = null;
+    }
+    if (categoryUnsubscribe) {
+        categoryUnsubscribe();
+        categoryUnsubscribe = null;
     }
 }
 

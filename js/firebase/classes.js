@@ -9,7 +9,8 @@ import {
     getDoc,
     getDocs,
     deleteDoc,
-    updateDoc
+    updateDoc,
+    onSnapshot
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 import {
     getDb,
@@ -267,5 +268,29 @@ export async function deleteClass(teacherUid, classId) {
     } catch (error) {
         console.error('학급 삭제 실패:', error);
         return false;
+    }
+}
+
+/**
+ * 학급 문서 실시간 구독
+ * teachers/{uid}/classes/{classId} 문서 변경 시 콜백 호출
+ * @returns {Function} 구독 해제 함수
+ */
+export function subscribeToClassDoc(teacherUid, classId, callback) {
+    const db = getDb();
+    if (!db || !teacherUid || !classId) return null;
+
+    try {
+        const classRef = doc(db, 'teachers', teacherUid, 'classes', classId);
+        return onSnapshot(classRef, (docSnap) => {
+            if (docSnap.exists()) {
+                callback({ id: docSnap.id, teacherUid, ...docSnap.data() });
+            }
+        }, (error) => {
+            console.error('학급 문서 실시간 구독 오류:', error);
+        });
+    } catch (error) {
+        console.error('학급 문서 구독 설정 실패:', error);
+        return null;
     }
 }

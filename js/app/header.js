@@ -14,6 +14,7 @@ import {
 import { bindToolbarToggle, bindMobileDrawer, updateNotificationBadge, updateStudentNotificationBadge } from './navigation.js';
 import { setStudentTab, setHistoryDate } from '../components/StudentMode.js';
 import { showQuickPraise } from '../components/QuickPraise.js';
+import { getPetEmoji } from '../utils/petLogic.js';
 
 /**
  * 헤더 버튼 바인딩
@@ -128,17 +129,64 @@ function bindDateHistoryButton() {
             }
         });
 
-        // 날짜 선택 시 감정 히스토리로 이동
+        // 날짜 선택 시 학생 선택 모달 표시
         historyDatePicker.addEventListener('change', (e) => {
             const selectedDate = e.target.value; // "2025-01-22" 형식
             if (selectedDate) {
-                // sessionStorage에 선택한 날짜 저장
-                sessionStorage.setItem('emotionHistoryDate', selectedDate);
-                // 감정 페이지로 이동
-                router.navigate('emotion');
+                showStudentPickerModal(selectedDate);
             }
         });
     }
+}
+
+/**
+ * 날짜 선택 후 학생 선택 모달 표시
+ */
+function showStudentPickerModal(selectedDate) {
+    const students = store.getStudents() || [];
+
+    if (students.length === 0) {
+        showToast('등록된 학생이 없어요', 'warning');
+        return;
+    }
+
+    // 날짜 라벨 생성 (예: "2월 8일")
+    const dateObj = new Date(selectedDate + 'T00:00:00');
+    const dateLabel = `${dateObj.getMonth() + 1}월 ${dateObj.getDate()}일`;
+
+    const modalContent = `
+        <div class="space-y-4 max-h-[70vh] overflow-y-auto">
+            <div class="flex items-center justify-between sticky top-0 bg-white pb-2">
+                <h3 class="text-lg font-bold">📋 ${dateLabel} · 학생 선택</h3>
+                <button onclick="window.classpet.closeModal()" class="text-gray-400 hover:text-gray-600">✕</button>
+            </div>
+
+            <p class="text-sm text-gray-500">기록을 확인할 학생을 선택하세요</p>
+
+            <div class="grid grid-cols-4 gap-2">
+                ${students.map(student => `
+                    <button class="student-picker-btn flex flex-col items-center p-2 rounded-xl border-2 border-transparent hover:border-primary/50 hover:bg-primary/5 transition-all"
+                            data-student-id="${student.id}">
+                        <span class="text-2xl">${getPetEmoji(student.petType, student.level)}</span>
+                        <span class="text-xs mt-1 truncate w-full text-center">${student.name}</span>
+                    </button>
+                `).join('')}
+            </div>
+        </div>
+    `;
+
+    setModalContent(modalContent);
+    openModal();
+
+    // 학생 클릭 이벤트 바인딩
+    document.querySelectorAll('.student-picker-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const studentId = btn.dataset.studentId;
+            sessionStorage.setItem('studentDetailDate', selectedDate);
+            closeModal();
+            router.navigate('student', { id: studentId });
+        });
+    });
 }
 
 /**

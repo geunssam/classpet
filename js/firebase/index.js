@@ -43,7 +43,8 @@ export {
     getClassIdByCode,
     validateClassCode,
     updateClass,
-    deleteClass
+    deleteClass,
+    subscribeToClassDoc
 } from './classes.js';
 
 // students.js - 학생 관리

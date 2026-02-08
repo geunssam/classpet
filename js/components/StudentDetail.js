@@ -29,8 +29,20 @@ import {
 } from '../utils/animations.js';
 
 let activeTab = 'praise'; // 'praise', 'emotion', 'notes'
+let filterDate = null; // 캘린더에서 선택한 날짜 필터
 
 export function render(params) {
+    // sessionStorage에서 날짜 필터 읽기 (한번만 읽고 삭제)
+    const storedDate = sessionStorage.getItem('studentDetailDate');
+    if (storedDate) {
+        filterDate = new Date(storedDate + 'T00:00:00');
+        sessionStorage.removeItem('studentDetailDate');
+    } else if (!filterDate) {
+        // 진입 경로에 상관없이 기본값은 오늘
+        const now = new Date();
+        filterDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    }
+
     const rawId = params.id;
     const parsedId = parseInt(rawId);
     const studentId = isNaN(parsedId) ? rawId : parsedId;
@@ -74,67 +86,54 @@ export function render(params) {
     return `
         <div class="space-y-4">
             <!-- 펫 프로필 카드 -->
-            <div class="card bg-gradient-to-br from-primary/10 to-success/10">
-                <div class="flex items-start justify-between">
-                    <div class="flex items-center gap-4">
-                        <div class="relative">
-                            <div id="petEmojiContainer" class="relative">
-                                <span id="petEmoji" class="pet-emoji level-${stage} text-6xl cursor-pointer">${getPetEmoji(student.petType, student.level)}</span>
-                            </div>
-                            <span class="absolute -bottom-1 -right-1 text-xl">${rankTier.tier === 'S' ? '👑' : ''}</span>
+            <div class="card bg-gradient-to-br from-primary/10 to-success/10 overflow-hidden p-0">
+                <!-- 3열 그리드 -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr;">
+                    <!-- 1열: 펫 이모지 + 이름 + 랭크 -->
+                    <div class="flex flex-col items-center justify-center py-4 px-2">
+                        <div id="petEmojiContainer" class="relative">
+                            <span id="petEmoji" class="pet-emoji level-${stage} text-6xl cursor-pointer">${getPetEmoji(student.petType, student.level)}</span>
+                            ${rankTier.tier === 'S' ? '<span class="absolute -bottom-0 -right-1 text-lg">👑</span>' : ''}
                         </div>
-                        <div>
-                            <div class="flex items-center gap-2">
-                                <h2 class="text-xl font-bold">${student.name}</h2>
-                                <span class="text-sm text-gray-400">${student.number}번</span>
-                            </div>
-                            <div class="flex items-center gap-2 mt-1">
-                                <span class="level-badge">Lv.${student.level || 1}</span>
-                                <span class="text-xs px-2 py-0.5 rounded-full" style="background-color: ${rankTier.color}20; color: ${rankTier.color}">
-                                    ${rank}위 · ${rankTier.label}
-                                </span>
-                            </div>
-                            <div class="text-xs text-gray-500 mt-1">${getPetName(student.petType)}</div>
+                        <h2 class="text-xl font-bold mt-1">${student.name}</h2>
+                        <span class="text-xs text-gray-400">${student.number}번 · ${getPetName(student.petType)}</span>
+                        <span class="text-xs mt-0.5 px-2 py-0.5 rounded-full" style="background-color: ${rankTier.color}20; color: ${rankTier.color}">
+                            ${rank}위 · ${rankTier.label}
+                        </span>
+                    </div>
+
+                    <!-- 2열: 레벨 + 경험치바 -->
+                    <div class="flex flex-col justify-center gap-2 py-4 px-3 border-l border-gray-200/50">
+                        <div class="flex items-center gap-2">
+                            <span class="level-badge">Lv.${student.level || 1}</span>
+                            <span class="text-sm font-bold" style="color: #F59E0B">${stage === 'adult' ? '최종' : (stage === 'growing' ? '성장중' : '아기')}</span>
+                        </div>
+                        <div class="exp-bar-xl w-full" style="height: 28px; border-radius: 14px;">
+                            <div class="exp-bar-fill-xl" style="width: ${Math.max(expProgress, 15)}%; border-radius: 14px;"></div>
+                            <span class="exp-bar-percent" style="font-size: 11px;">${expProgress}% ( ${currentExp} / ${neededExp} )</span>
                         </div>
                     </div>
 
-                    <button onclick="window.classpet.showEditStudent('${student.id}')" class="text-gray-400 hover:text-gray-600 w-6 h-6">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                            <circle cx="12" cy="12" r="3"/>
-                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-                        </svg>
-                    </button>
-                </div>
-
-                <!-- 상태 텍스트 -->
-                <div class="mt-3 text-sm text-gray-600 text-center bg-white/50 rounded-lg py-2">
-                    "${statusText}"
-                </div>
-
-                <!-- 경험치 바 -->
-                <div class="mt-4">
-                    <div class="flex items-center justify-between text-sm mb-1">
-                        <span class="text-gray-600">경험치</span>
-                        <span class="font-medium">${currentExp} / ${neededExp}</span>
-                    </div>
-                    <div class="exp-bar h-3">
-                        <div class="exp-bar-fill" style="width: ${expProgress}%"></div>
-                    </div>
-                </div>
-
-                <!-- 빠른 통계 -->
-                <div class="grid grid-cols-3 gap-3 mt-4 text-center">
-                    <div class="bg-white rounded-lg py-2">
-                        <div class="text-lg font-bold text-primary">${student.totalPraises}</div>
-                        <div class="text-xs text-gray-500">총 칭찬</div>
-                    </div>
-                    <div class="bg-white rounded-lg py-2">
-                        <div class="text-lg font-bold text-secondary">${student.level}</div>
-                        <div class="text-xs text-gray-500">레벨</div>
-                    </div>
-                    <div class="bg-white rounded-lg py-2">
-                        <div class="text-lg font-bold text-success">${student.exp}</div>
-                        <div class="text-xs text-gray-500">총 EXP</div>
+                    <!-- 3열: 카테고리별 칭찬 + 설정 -->
+                    <div class="py-3 px-2 relative">
+                        <button onclick="window.classpet.showEditStudent('${student.id}')" class="absolute top-2 right-2 text-gray-400 hover:text-gray-600 w-5 h-5">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                            </svg>
+                        </button>
+                        <div class="text-xs font-medium text-gray-500 mb-1.5 text-center">칭찬 ${student.totalPraises}</div>
+                        <div class="grid grid-cols-3 gap-1 overflow-y-auto" style="max-height: 108px;">
+                            ${Object.entries(store.getPraiseCategories()).map(([key, cat]) => {
+                                const count = categoryCount[key] || 0;
+                                return `
+                                <div class="bg-white/80 rounded-lg py-1 ${count > 0 ? '' : 'opacity-30'}" style="display: grid; grid-template-columns: 16px 1fr 14px; align-items: center; gap: 2px; padding-left: 4px; padding-right: 4px; font-size: 10px;">
+                                    <span style="font-size: 12px; line-height: 1;">${cat.icon}</span>
+                                    <span class="truncate ${count > 0 ? 'text-gray-600' : 'text-gray-400'}">${cat.name}</span>
+                                    <span class="font-bold text-right ${count > 0 ? 'text-gray-700' : 'text-gray-400'}">${count}</span>
+                                </div>`;
+                            }).join('')}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -165,6 +164,27 @@ export function render(params) {
             </div>
             `}
 
+            <!-- 날짜 네비게이션 -->
+            ${filterDate ? (() => {
+                const days = ['일', '월', '화', '수', '목', '금', '토'];
+                const isToday = filterDate.toDateString() === new Date().toDateString();
+                return `
+            <div class="flex items-center">
+                <div class="flex-1 flex items-center justify-center">
+                    <div class="flex items-center bg-white rounded-xl px-1 py-1 shadow-sm">
+                        <button class="w-7 h-7 flex items-center justify-center rounded-lg text-gray-800 hover:bg-gray-100 transition-colors" data-action="prevDate">
+                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                        </button>
+                        <span class="px-3 text-sm font-semibold text-gray-900">${filterDate.getFullYear()}년 ${filterDate.getMonth() + 1}월 ${filterDate.getDate()}일 (${days[filterDate.getDay()]})</span>
+                        <button class="w-7 h-7 flex items-center justify-center rounded-lg transition-colors ${isToday ? 'text-gray-300 cursor-not-allowed' : 'text-gray-800 hover:bg-gray-100'}" data-action="nextDate" ${isToday ? 'disabled' : ''}>
+                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                        </button>
+                    </div>
+                </div>
+                <button class="flex-shrink-0 px-4 py-1.5 text-sm font-semibold text-gray-700 bg-white rounded-xl hover:bg-gray-50 transition-colors shadow-sm" data-action="clearFilter">전체</button>
+            </div>`;
+            })() : ''}
+
             <!-- 탭 -->
             <div class="tab-group">
                 <button class="tab-item ${activeTab === 'praise' ? 'active' : ''}" data-tab="praise">
@@ -180,8 +200,8 @@ export function render(params) {
 
             <!-- 탭 컨텐츠 -->
             <div id="tabContent">
-                ${activeTab === 'praise' ? renderPraiseHistory(praises) : ''}
-                ${activeTab === 'emotion' ? renderEmotionHistory(emotions) : ''}
+                ${activeTab === 'praise' ? renderPraiseHistory(praises, filterDate) : ''}
+                ${activeTab === 'emotion' ? renderEmotionHistory(emotions, filterDate) : ''}
                 ${activeTab === 'notes' ? renderNotes(notes, student.id) : ''}
             </div>
         </div>
@@ -191,12 +211,20 @@ export function render(params) {
 /**
  * 칭찬 기록 렌더링
  */
-function renderPraiseHistory(praises) {
+function renderPraiseHistory(praises, dateFilter) {
+    // 날짜 필터가 있으면 해당 날짜의 칭찬만 표시
+    if (dateFilter) {
+        praises = praises.filter(p => {
+            const d = new Date(p.timestamp);
+            return d.toDateString() === dateFilter.toDateString();
+        });
+    }
+
     if (praises.length === 0) {
         return `
             <div class="empty-state py-8">
                 <div class="text-3xl mb-2">⭐</div>
-                <div class="text-gray-500">아직 칭찬 기록이 없어요</div>
+                <div class="text-gray-500">${dateFilter ? '해당 날짜에 칭찬 기록이 없어요' : '아직 칭찬 기록이 없어요'}</div>
             </div>
         `;
     }
@@ -228,12 +256,20 @@ function renderPraiseHistory(praises) {
 /**
  * 감정 기록 렌더링 — 채팅 타임라인 UI
  */
-function renderEmotionHistory(emotions) {
+function renderEmotionHistory(emotions, dateFilter) {
+    // 날짜 필터가 있으면 해당 날짜의 감정만 표시
+    if (dateFilter) {
+        emotions = emotions.filter(e => {
+            const d = new Date(e.timestamp);
+            return d.toDateString() === dateFilter.toDateString();
+        });
+    }
+
     if (emotions.length === 0) {
         return `
             <div class="empty-state py-8">
                 <div class="text-3xl mb-2">💭</div>
-                <div class="text-gray-500">아직 감정 기록이 없어요</div>
+                <div class="text-gray-500">${dateFilter ? '해당 날짜에 감정 기록이 없어요' : '아직 감정 기록이 없어요'}</div>
             </div>
         `;
     }
@@ -458,6 +494,43 @@ export function afterRender(params) {
     const timeline = document.getElementById('emotionTimeline');
     if (timeline) {
         timeline.scrollTop = timeline.scrollHeight;
+    }
+
+    // 날짜 필터 "전체 보기" 클릭
+    const clearFilterBtn = document.querySelector('[data-action="clearFilter"]');
+    if (clearFilterBtn) {
+        clearFilterBtn.addEventListener('click', () => {
+            filterDate = null;
+            const content = document.getElementById('content');
+            content.innerHTML = render(params);
+            afterRender(params);
+        });
+    }
+
+    // 날짜 네비게이션 ← →
+    const prevDateBtn = document.querySelector('[data-action="prevDate"]');
+    const nextDateBtn = document.querySelector('[data-action="nextDate"]');
+    const rerender = () => {
+        const content = document.getElementById('content');
+        content.innerHTML = render(params);
+        afterRender(params);
+    };
+    if (prevDateBtn) {
+        prevDateBtn.addEventListener('click', () => {
+            if (!filterDate) return;
+            filterDate = new Date(filterDate.getTime() - 86400000); // -1일
+            rerender();
+        });
+    }
+    if (nextDateBtn && !nextDateBtn.disabled) {
+        nextDateBtn.addEventListener('click', () => {
+            if (!filterDate) return;
+            const tomorrow = new Date(filterDate.getTime() + 86400000);
+            if (tomorrow.toDateString() === new Date().toDateString() || tomorrow < new Date()) {
+                filterDate = tomorrow;
+                rerender();
+            }
+        });
     }
 
     // 탭 전환

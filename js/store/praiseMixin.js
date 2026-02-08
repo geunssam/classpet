@@ -209,6 +209,30 @@ export const praiseMixin = {
      * Firebase에서 학생+카테고리별 칭찬 조회
      */
     /**
+     * 학생 모드: 칭찬 카테고리 실시간 구독
+     * 교사가 카테고리를 추가/수정/삭제하면 자동으로 로컬에 반영
+     * @returns {Function|null} 구독 해제 함수
+     */
+    subscribeToPraiseCategories(callback) {
+        const teacherUid = this.getCurrentTeacherUid();
+        const classId = this.getCurrentClassId();
+        if (!teacherUid || !classId || !this.firebaseEnabled) return null;
+
+        return firebase.subscribeToClassDoc(teacherUid, classId, (classData) => {
+            if (classData.praiseCategories) {
+                // 현재 로컬과 비교하여 변경이 있을 때만 갱신
+                const localCategories = JSON.stringify(this.getPraiseCategories());
+                const remoteCategories = JSON.stringify(classData.praiseCategories);
+                if (localCategories !== remoteCategories) {
+                    this.savePraiseCategoriesLocal(classData.praiseCategories);
+                    console.log('✅ 칭찬 카테고리 실시간 동기화 완료');
+                    if (callback) callback(classData.praiseCategories);
+                }
+            }
+        });
+    },
+
+    /**
      * 학생 모드: 특정 학생의 칭찬 실시간 구독
      * 교사가 칭찬을 보내면 자동으로 로컬에 반영
      */
