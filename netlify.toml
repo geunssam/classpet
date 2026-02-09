@@ -10,6 +10,49 @@
 [build.processing.html]
   pretty_urls = false
 
+# 민감 파일 접근 차단
+[[redirects]]
+  from = "/firebase-debug.log"
+  to = "/404"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/firestore.rules"
+  to = "/404"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/firebase.json"
+  to = "/404"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/package.json"
+  to = "/404"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/package-lock.json"
+  to = "/404"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/.firebaserc"
+  to = "/404"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/tailwind.config.js"
+  to = "/404"
+  status = 404
+  force = true
+
 # SPA 라우팅을 위한 리다이렉트 설정
 [[redirects]]
   from = "/*"

@@ -1,3 +1,18 @@
 # Local Netlify folder
 .netlify
 node_modules/
+
+# Firebase
+firebase-debug.log
+.firebaserc
+
+# Build output
+css/output.css
+
+# OS files
+.DS_Store
+
+# Environment
+.env
+.env.local
+.env.*.local
