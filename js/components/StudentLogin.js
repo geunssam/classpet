@@ -12,6 +12,8 @@ let selectedStudent = null;
 let showClassCodeInput = false;
 // URL에서 전달된 학급 코드 (QR 스캔 시)
 let urlClassCode = null;
+// Firestore 새로고침 완료 플래그 (무한 루프 방지)
+let dataRefreshed = false;
 
 /**
  * 렌더링
@@ -281,6 +283,14 @@ export function afterRender() {
         return;
     }
 
+    // 학생 전용 기기에서만 Firestore 새로고침 (교사 기기는 localStorage가 이미 최신)
+    if (!dataRefreshed && store.isFirebaseEnabled() && store.getClassCode() && !store.isTeacherLoggedIn()) {
+        dataRefreshed = true;
+        store.loadClassDataFromFirebase().then(() => {
+            router.handleRoute();
+        }).catch(err => console.warn('학생 목록 새로고침 실패:', err));
+    }
+
     console.log('🔧 번호 버튼 클릭 이벤트 바인딩 시작');
 
     // 번호 버튼 클릭 이벤트
@@ -382,6 +392,7 @@ export function afterRender() {
     if (changeClassCodeBtn) {
         changeClassCodeBtn.addEventListener('click', () => {
             showClassCodeInput = true;
+            dataRefreshed = false; // 다른 학급 참가 시 새로고침 필요
             router.handleRoute();
         });
     }
@@ -436,6 +447,7 @@ async function handleAutoJoin() {
             // 성공: URL 코드 초기화 후 화면 새로고침
             urlClassCode = null;
             showClassCodeInput = false;
+            dataRefreshed = false;
             // history.replaceState로 해시 변경 (hashchange 이벤트 방지하여 중복 렌더링 방지)
             history.replaceState(null, '', '#student-login');
             // 직접 라우트 처리
@@ -643,6 +655,7 @@ function setupClassCodeInput() {
 
                 if (success) {
                     showClassCodeInput = false;
+                    dataRefreshed = false;
                     router.handleRoute(); // 화면 새로고침
                 } else {
                     // Firebase 검증 실패 시 에러 표시

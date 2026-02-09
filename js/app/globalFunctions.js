@@ -33,9 +33,7 @@ export function registerGlobalFunctions() {
         // 빠른 칭찬
         showQuickPraise,
 
-        // 감정 체크
-        showEmotionCheck: Emotion.showEmotionCheck,
-        showBulkEmotionCheck: Emotion.showBulkEmotionCheck,
+        // 감정
         openChatRoom: Emotion.openChatRoom,
 
         // 설정

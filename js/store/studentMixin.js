@@ -25,8 +25,10 @@ export const studentMixin = {
 
     addStudent(student) {
         const students = this.getStudents() || [];
-        const newId = students.length > 0 ? Math.max(...students.map(s => s.id)) + 1 : 1;
-        const newNumber = students.length + 1;
+        // number가 전달되면 그것을 id로 사용, 아니면 기존 숫자 ID 중 최대값+1
+        const numericIds = students.map(s => s.id).filter(id => typeof id === 'number' && !isNaN(id));
+        const newId = student.number || (numericIds.length > 0 ? Math.max(...numericIds) + 1 : 1);
+        const newNumber = student.number || students.length + 1;
         const newStudent = {
             id: newId,
             number: newNumber,
@@ -39,6 +41,7 @@ export const studentMixin = {
             ...student
         };
         students.push(newStudent);
+        students.sort((a, b) => a.number - b.number);
         this.saveStudents(students);
 
         // Firebase 동기화
@@ -65,7 +68,7 @@ export const studentMixin = {
     deleteStudent(studentId) {
         let students = this.getStudents() || [];
         students = students.filter(s => String(s.id) !== String(studentId));
-        students.forEach((s, i) => s.number = i + 1);
+        // 번호 재정렬 하지 않음 — 출석부 번호 유지
         this.saveStudents(students);
 
         // Firebase에서도 삭제 (계층 구조)
@@ -89,7 +92,16 @@ export const studentMixin = {
 
         if (this.isOnline) {
             try {
-                await firebase.saveStudent(teacherUid, classId, studentData);
+                const result = await firebase.saveStudent(teacherUid, classId, studentData);
+                // Firestore 자동생성 ID가 로컬 ID와 다르면 로컬 업데이트
+                if (result && result.id !== student.id) {
+                    const students = this.getStudents() || [];
+                    const idx = students.findIndex(s => String(s.id) === String(student.id));
+                    if (idx !== -1) {
+                        students[idx].id = result.id;
+                        this.saveStudents(students);
+                    }
+                }
             } catch (error) {
                 console.warn('학생 Firebase 동기화 실패:', error);
                 this.addToOfflineQueue({ type: 'saveStudent', teacherUid, classId, data: studentData });

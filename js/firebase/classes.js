@@ -245,17 +245,20 @@ export async function deleteClass(teacherUid, classId) {
 
         for (const studentDoc of studentsSnap.docs) {
             const sid = studentDoc.id;
-            const emotionsRef = collection(db, 'teachers', uid, 'classes', cId, 'students', sid, 'emotions');
-            const emotionsSnap = await getDocs(emotionsRef);
-            for (const emotionDoc of emotionsSnap.docs) {
-                await deleteDoc(emotionDoc.ref);
-            }
-            const petsRef = collection(db, 'teachers', uid, 'classes', cId, 'students', sid, 'pets');
-            const petsSnap = await getDocs(petsRef);
-            for (const petDoc of petsSnap.docs) {
-                await deleteDoc(petDoc.ref);
+            // 모든 하위 컬렉션 삭제
+            const subCollections = ['emotions', 'pets', 'praises'];
+            for (const sub of subCollections) {
+                const snap = await getDocs(collection(db, 'teachers', uid, 'classes', cId, 'students', sid, sub));
+                for (const d of snap.docs) await deleteDoc(d.ref);
             }
             await deleteDoc(studentDoc.ref);
+        }
+
+        // 클래스 레벨 notes 삭제
+        const notesRef = collection(db, 'teachers', uid, 'classes', cId, 'notes');
+        const notesSnap = await getDocs(notesRef);
+        for (const noteDoc of notesSnap.docs) {
+            await deleteDoc(noteDoc.ref);
         }
 
         await deleteDoc(doc(db, 'teachers', uid, 'classes', cId));

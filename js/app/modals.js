@@ -50,6 +50,13 @@ export function showAddStudent() {
             return;
         }
 
+        // 중복 번호 체크
+        const existing = (store.getStudents() || []).find(s => s.number === number);
+        if (existing) {
+            showToast(`${number}번은 이미 있어요 (${existing.name})`, 'warning');
+            return;
+        }
+
         store.addStudent({ name, number });
 
         showToast(`${name} 학생이 추가되었어요!`, 'success');

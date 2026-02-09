@@ -17,6 +17,7 @@ import {
     getUnsubscribeFunctions,
     serverTimestamp
 } from './init.js';
+import { deleteNotesByStudent } from './notes.js';
 
 /**
  * 학생 저장
@@ -31,15 +32,24 @@ export async function saveStudent(teacherUid, classId, student) {
     if (!uid || !cId) return null;
 
     try {
-        const studentId = String(student.id);
-        const studentRef = doc(db, 'teachers', uid, 'classes', cId, 'students', studentId);
+        const studentsRef = collection(db, 'teachers', uid, 'classes', cId, 'students');
+        const { id, ...dataWithoutId } = student;
+
+        // 기존 Firestore 문서 ID(문자열)가 있으면 그대로 사용, 없거나 숫자면 자동생성
+        let studentRef;
+        if (id != null && typeof id === 'string' && !/^\d+$/.test(id)) {
+            studentRef = doc(studentsRef, id);
+        } else {
+            studentRef = doc(studentsRef); // 자동생성 ID
+        }
 
         await setDoc(studentRef, {
-            ...student,
+            ...dataWithoutId,
             updatedAt: serverTimestamp()
         }, { merge: true });
 
-        return student;
+        // 생성된 문서 ID 반환
+        return { ...student, id: studentRef.id };
     } catch (error) {
         console.error('학생 저장 실패:', error);
         return null;
@@ -120,7 +130,21 @@ export async function deleteStudent(teacherUid, classId, studentId) {
     if (!uid || !cId) return false;
 
     try {
-        await deleteDoc(doc(db, 'teachers', uid, 'classes', cId, 'students', String(studentId)));
+        const sid = String(studentId);
+        const basePath = ['teachers', uid, 'classes', cId, 'students', sid];
+
+        // 하위 컬렉션 삭제 (Firestore는 부모 삭제 시 하위 자동 삭제 안 함)
+        const subCollections = ['praises', 'pets', 'emotions'];
+        for (const sub of subCollections) {
+            const snap = await getDocs(collection(db, ...basePath, sub));
+            for (const d of snap.docs) await deleteDoc(d.ref);
+        }
+
+        // 클래스 레벨 notes에서 해당 학생 메모 삭제
+        await deleteNotesByStudent(uid, cId, studentId);
+
+        // 학생 문서 삭제
+        await deleteDoc(doc(db, ...basePath));
         return true;
     } catch (error) {
         console.error('학생 삭제 실패:', error);

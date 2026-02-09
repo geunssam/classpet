@@ -10,7 +10,8 @@ import {
     addDoc,
     deleteDoc,
     query,
-    orderBy
+    orderBy,
+    where
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 import {
     getDb,
@@ -91,6 +92,30 @@ export async function deleteNote(teacherUid, classId, noteId) {
         return true;
     } catch (error) {
         console.error('메모 삭제 실패:', error);
+        return false;
+    }
+}
+
+/**
+ * 특정 학생의 모든 메모 삭제
+ */
+export async function deleteNotesByStudent(teacherUid, classId, studentId) {
+    const db = getDb();
+    if (!db) return false;
+
+    const uid = teacherUid || getCurrentTeacherUid();
+    const cId = classId || getCurrentClassId();
+
+    if (!uid || !cId) return false;
+
+    try {
+        const notesRef = collection(db, 'teachers', uid, 'classes', cId, 'notes');
+        const q = query(notesRef, where('studentId', '==', String(studentId)));
+        const snap = await getDocs(q);
+        for (const d of snap.docs) await deleteDoc(d.ref);
+        return true;
+    } catch (error) {
+        console.error('학생 메모 삭제 실패:', error);
         return false;
     }
 }
