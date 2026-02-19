@@ -318,6 +318,20 @@
     color: #6b7280;
 }
 
+/* 교사 프로필 사진 (Google 로그인 시) */
+.teacher-profile-pic {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(124, 158, 245, 0.3);
+    flex-shrink: 0;
+}
+
+.teacher-profile-pic.hidden {
+    display: none;
+}
+
 .hamburger-btn {
     display: none;
     padding: 8px;

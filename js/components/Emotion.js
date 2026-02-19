@@ -106,17 +106,17 @@ export function render() {
                                 const emotion = isSent ? todayEmotions.find(e => e.studentId === student.id) : null;
                                 const eInfo = emotion ? EMOTION_TYPES[emotion.emotion] : null;
                                 return isSent ? `
-                                <div class="rounded-lg py-1 flex items-center cursor-pointer transition-colors" style="background-color: rgba(124,158,245,0.18);"
+                                <div class="rounded-2xl py-1.5 px-2.5 flex items-center gap-1.5 cursor-pointer transition-colors" style="background-color: rgba(124,158,245,0.18);"
                                      onmouseenter="this.style.backgroundColor='rgba(124,158,245,0.3)'" onmouseleave="this.style.backgroundColor='rgba(124,158,245,0.18)'"
                                      data-action="open-chat" data-student-id="${student.id}">
-                                    <span class="text-sm leading-none flex-shrink-0" style="width:24px; text-align:center;">${getPetEmoji(student.petType, student.level)}</span>
-                                    <span class="text-[10px] font-medium truncate flex-1 text-center">${student.number || ''}. ${student.name}</span>
-                                    <span class="text-base leading-none flex-shrink-0" style="width:24px; text-align:center;">${eInfo ? eInfo.icon : ''}</span>
+                                    <span class="dash-pill-icon">${getPetEmoji(student.petType, student.level)}</span>
+                                    <span class="dash-pill-label">${student.number || ''}. ${student.name}</span>
+                                    <span class="dash-pill-icon">${eInfo ? eInfo.icon : ''}</span>
                                 </div>` : `
-                                <div class="rounded-lg py-1 flex items-center opacity-60" style="background-color: rgba(245,124,124,0.18);">
-                                    <span class="text-sm leading-none flex-shrink-0" style="width:24px; text-align:center;">${getPetEmoji(student.petType, student.level)}</span>
-                                    <span class="text-[10px] font-medium truncate flex-1 text-center">${student.number || ''}. ${student.name}</span>
-                                    <span class="flex-shrink-0" style="width:24px;"></span>
+                                <div class="rounded-2xl py-1.5 px-2.5 flex items-center gap-1.5 opacity-60" style="background-color: rgba(245,124,124,0.18);">
+                                    <span class="dash-pill-icon">${getPetEmoji(student.petType, student.level)}</span>
+                                    <span class="dash-pill-label">${student.number || ''}. ${student.name}</span>
+                                    <span class="dash-pill-icon" style="visibility:hidden;">·</span>
                                 </div>`;
                             }).join('')}
                         </div>

@@ -441,17 +441,30 @@ export function updateHeaderForStudentMode(isStudentMode, isLoggedIn) {
  */
 export function updateClassInfo() {
     const classInfoEl = document.getElementById('classInfo');
+    const profilePic = document.getElementById('teacherProfilePic');
     if (!classInfoEl) return;
 
     // 로그인 상태 확인 - 로그인하지 않았으면 표시하지 않음
     const isLoggedIn = store.isGoogleTeacher() || store.getClassCode();
     if (!isLoggedIn) {
         classInfoEl.textContent = '';
+        if (profilePic) profilePic.classList.add('hidden');
         return;
     }
 
     const settings = store.getSettings();
     if (settings) {
         classInfoEl.textContent = `${settings.className} · ${settings.teacherName}`;
+    }
+
+    // Google 프로필 사진 표시
+    if (profilePic) {
+        const session = store.getTeacherSession();
+        if (session?.photoURL) {
+            profilePic.src = session.photoURL;
+            profilePic.classList.remove('hidden');
+        } else {
+            profilePic.classList.add('hidden');
+        }
     }
 }
