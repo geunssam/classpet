@@ -1,5 +1,5 @@
 // 클래스펫 Service Worker
-const CACHE_NAME = 'classpet-v1771489596092';
+const CACHE_NAME = 'classpet-v1771493231554';
 const OFFLINE_URL = '/offline.html';
 
 // 캐시할 정적 파일들 (앱 셸)

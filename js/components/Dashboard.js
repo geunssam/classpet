@@ -12,6 +12,14 @@ import { showQuickPraise } from './QuickPraise.js';
 
 const DEFAULT_CAT_ORDER = Object.keys(PRAISE_CATEGORIES);
 
+// HEX → RGBA 변환 (투명도 적용)
+function hexToRgba(hex, alpha) {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 export function render() {
     const students = store.getStudents() || [];
     const timetable = store.getTimetable() || {};
@@ -151,7 +159,7 @@ export function render() {
                             const colors = subjectColors[item.subject] || { bg: '#F3F4F6', text: '#4B5563' };
                             return `
                             <div class="flex items-center rounded-xl px-3 py-2"
-                                 style="background-color: ${colors.bg};">
+                                 style="background-color: ${hexToRgba(colors.bg, 0.45)};">
                                 <span class="text-lg font-bold w-6 text-left" style="color: ${colors.text};">${item.period}</span>
                                 <span class="flex-1 text-sm font-semibold text-center" style="color: ${colors.text};">${item.subject}</span>
                             </div>
@@ -167,7 +175,7 @@ export function render() {
             </div>
 
             <!-- 펫 농장 미리보기 -->
-            <div class="card">
+            <div class="dash-section-transparent">
                 <div class="flex items-center justify-between mb-3">
                     <h3 class="section-title m-0">🐾 우리 반 펫들</h3>
                     <button onclick="window.classpet.router.navigate('petfarm')" class="liquid-btn-small">
@@ -175,13 +183,13 @@ export function render() {
                     </button>
                 </div>
 
-                <div class="grid grid-cols-4 gap-1" style="max-height: 95px; overflow-y: auto; overflow-x: hidden;">
+                <div class="dash-pill-grid" style="max-height: 100px; overflow-y: auto; overflow-x: hidden;">
                     ${students.map(student => `
-                    <div class="flex items-center bg-cream rounded-lg px-1 py-1.5 cursor-pointer hover:bg-cream-dark transition-colors"
+                    <div class="dash-pill-item cursor-pointer"
                          onclick="window.classpet.router.navigate('student', { id: '${student.id}' })">
-                        <span class="flex-1 text-center text-2xl">${getPetEmoji(student.petType, student.level || 1)}</span>
-                        <span class="flex-1 text-center text-sm font-semibold truncate">${student.name}</span>
-                        <span class="flex-1 text-center text-sm text-gray-400">Lv.${student.level || 1}</span>
+                        <span class="dash-pill-icon">${getPetEmoji(student.petType, student.level || 1)}</span>
+                        <span class="dash-pill-label">${student.name}</span>
+                        <span class="dash-pill-level">Lv.${student.level || 1}</span>
                     </div>
                     `).join('')}
                 </div>
@@ -208,7 +216,7 @@ export function render() {
             ` : ''}
 
             <!-- 카테고리별 칭찬 통계 -->
-            <div class="card py-3">
+            <div class="dash-section-transparent">
                 <div class="flex items-center justify-between mb-2">
                     <div class="flex items-center gap-2">
                         <span class="text-lg">📈</span>
@@ -218,7 +226,7 @@ export function render() {
                         칭찬하기
                     </button>
                 </div>
-                <div class="grid grid-cols-4 gap-1">
+                <div class="dash-pill-grid">
                     ${Object.entries(store.getPraiseCategories()).sort(([a], [b]) => {
                         const ai = DEFAULT_CAT_ORDER.indexOf(a);
                         const bi = DEFAULT_CAT_ORDER.indexOf(b);
@@ -227,11 +235,11 @@ export function render() {
                         if (bi !== -1) return 1;
                         return 0;
                     }).map(([key, cat]) => `
-                    <span class="flex items-center bg-cream rounded-lg px-1 py-1.5">
-                        <span class="flex-1 text-center text-xl">${cat.icon}</span>
-                        <span class="flex-1 text-center text-sm font-bold text-gray-800">${cat.name}</span>
-                        <span class="flex-1 text-center font-extrabold text-sm text-gray-800">${stats.categoryStats[key] || 0}</span>
-                    </span>
+                    <div class="dash-pill-item">
+                        <span class="dash-pill-icon">${cat.icon}</span>
+                        <span class="dash-pill-label">${cat.name}</span>
+                        <span class="dash-pill-count">${stats.categoryStats[key] || 0}</span>
+                    </div>
                     `).join('')}
                 </div>
             </div>

@@ -102,7 +102,7 @@
     box-shadow: 0 1px 3px rgba(245, 158, 11, 0.3);
 }
 
-/* 펫 카드 그리드 */
+/* 펫 카드 그리드 (기존) */
 .pet-circle-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -125,6 +125,116 @@
     .pet-circle-grid {
         grid-template-columns: repeat(5, 1fr);
     }
+}
+
+/* ======================================
+   펫 농장 칩 스타일 (Picker 학생칩 기반)
+   ====================================== */
+.pet-farm-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.pet-farm-chip {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px 14px;
+    background: white;
+    border: 1.5px solid #E5E7EB;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    min-width: 0;
+}
+
+.pet-farm-chip:hover {
+    border-color: rgba(124, 158, 245, 0.4);
+    box-shadow: 0 4px 16px rgba(124, 158, 245, 0.12);
+    transform: translateY(-2px);
+}
+
+.pet-farm-chip:active {
+    transform: scale(0.97);
+}
+
+/* MVP 배지 */
+.farm-mvp-badge {
+    position: absolute;
+    top: -6px;
+    right: -4px;
+    font-size: 14px;
+    z-index: 1;
+}
+
+/* 칩 메인 행: 펫이모지 | 번호 | 이름 | 레벨 */
+.farm-chip-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.farm-chip-pet {
+    font-size: 18px;
+    flex-shrink: 0;
+    line-height: 1;
+}
+
+.farm-chip-number {
+    font-size: 13px;
+    font-weight: 700;
+    color: #6B7280;
+    flex-shrink: 0;
+}
+
+.farm-chip-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1F2937;
+    white-space: nowrap;
+}
+
+.farm-chip-level {
+    font-size: 11px;
+    font-weight: 700;
+    color: #F59E0B;
+    flex-shrink: 0;
+    background: rgba(245, 158, 11, 0.08);
+    padding: 1px 6px;
+    border-radius: 6px;
+}
+
+/* 경험치 바 행 */
+.farm-chip-exp {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.farm-chip-exp-bar {
+    flex: 1;
+    height: 4px;
+    background: #F3F4F6;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.farm-chip-exp-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #F59E0B, #F97316);
+    border-radius: 2px;
+    transition: width 0.5s ease;
+}
+
+.farm-chip-exp-text {
+    font-size: 10px;
+    font-weight: 600;
+    color: #9CA3AF;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 /* 펫 이모지 크기 (레벨별) */

@@ -88,7 +88,6 @@ function renderPetHybridCard(student, stats) {
             <!-- 원형 프로그레스 바 -->
             <div class="circle-progress-container">
                 <svg class="circle-progress" width="76" height="76" viewBox="0 0 76 76">
-                    <!-- 배경 원 (Track) -->
                     <circle
                         class="circle-track"
                         cx="38"
@@ -98,7 +97,6 @@ function renderPetHybridCard(student, stats) {
                         stroke="#E5E7EB"
                         stroke-width="6"
                     />
-                    <!-- 진행 원 (Progress) -->
                     <circle
                         class="circle-progress-bar"
                         cx="38"
@@ -112,7 +110,6 @@ function renderPetHybridCard(student, stats) {
                         stroke-dashoffset="${strokeDashoffset}"
                         transform="rotate(-90 38 38)"
                     />
-                    <!-- 그라데이션 정의 -->
                     <defs>
                         <linearGradient id="gradient-${student.id}" x1="0%" y1="0%" x2="100%" y2="0%">
                             <stop offset="0%" stop-color="#F59E0B" />
@@ -121,14 +118,12 @@ function renderPetHybridCard(student, stats) {
                     </defs>
                 </svg>
 
-                <!-- 중앙 콘텐츠: 펫 이모지 + 레벨 -->
                 <div class="circle-center-content">
                     <span class="text-2xl pet-emoji level-${stage}">${getPetEmoji(student.petType, level)}</span>
                     <span class="level-badge-inside">Lv.${level}</span>
                 </div>
             </div>
 
-            <!-- 하단 텍스트 -->
             <div class="text-center mt-1">
                 <p class="text-sm font-bold text-gray-800">${student.number}번 ${student.name}</p>
                 <p class="text-xs text-gray-500">${currentExp}/${neededExp} (${expProgress}%)</p>

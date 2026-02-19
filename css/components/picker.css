@@ -146,8 +146,8 @@
 }
 
 .picker-student-chip .chip-number {
-    color: #9CA3AF;
-    font-weight: 500;
+    color: #6B7280;
+    font-weight: 700;
     font-size: 12px;
 }
 
@@ -163,8 +163,12 @@
 
 .picker-student-chip .chip-level {
     font-size: 10px;
-    color: #B0B8C4;
+    font-weight: 700;
+    color: #F59E0B;
     flex-shrink: 0;
+    background: rgba(245, 158, 11, 0.08);
+    padding: 0 5px;
+    border-radius: 4px;
 }
 
 .picker-student-chip.excluded {
