@@ -1,0 +1,466 @@
+/* ======================================
+   온도계 보상체계 스타일
+   pe-picker 세로형 온도계 이식
+   ====================================== */
+
+/* === 온도계 카드 === */
+.thermo-card {
+    padding: 16px;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+}
+
+.thermo-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.thermo-title {
+    font-size: 15px;
+    font-weight: 700;
+}
+
+/* === 온도계 비주얼 래퍼 === */
+.thermo-visual {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    height: 340px;
+    overflow: visible;
+}
+
+/* === 마일스톤 오버레이 === */
+.thermo-ms-col {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 5;
+}
+
+.thermo-ms-tag {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    padding: 4px 10px;
+    background: #ffd6dd;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #8b4050;
+    line-height: 1.3;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    pointer-events: auto;
+    white-space: nowrap;
+    transform: translateY(50%);
+}
+
+/* 왼쪽 마일스톤 */
+.thermo-ms-tag.ms-left {
+    right: calc(50% + 32px);
+    text-align: right;
+}
+
+.thermo-ms-tag.ms-left::after {
+    content: '';
+    position: absolute;
+    right: -6px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 5px solid transparent;
+    border-left-color: #ffd6dd;
+}
+
+/* 오른쪽 마일스톤 */
+.thermo-ms-tag.ms-right {
+    left: calc(50% + 32px);
+    text-align: left;
+}
+
+.thermo-ms-tag.ms-right::after {
+    content: '';
+    position: absolute;
+    left: -6px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 5px solid transparent;
+    border-right-color: #ffd6dd;
+}
+
+/* 달성한 마일스톤 */
+.thermo-ms-tag.achieved {
+    background: #c8f7dc;
+    color: #2d6b3f;
+}
+
+.thermo-ms-tag.achieved.ms-left::after {
+    border-left-color: #c8f7dc;
+}
+
+.thermo-ms-tag.achieved.ms-right::after {
+    border-right-color: #c8f7dc;
+}
+
+.thermo-ms-reward {
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.thermo-ms-temp {
+    font-size: 10px;
+    opacity: 0.7;
+}
+
+/* === 온도계 본체 === */
+.thermo-body-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    flex-shrink: 0;
+}
+
+/* 튜브 */
+.thermo-tube {
+    width: 48px;
+    height: 260px;
+    border-radius: 24px 24px 0 0;
+    position: relative;
+    overflow: hidden;
+    border: 3px solid #b8dce8;
+    background: #f8f3e8;
+}
+
+.thermo-tube-bg {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        to top,
+        #fff9e6 0%,
+        #fff3cc 10%,
+        #ffe4a0 20%,
+        #ffd580 30%,
+        #ffc266 40%,
+        #ffad80 50%,
+        #ff9a8c 60%,
+        #ff8090 70%,
+        #ff6680 80%,
+        #ee5070 90%,
+        #dd3344 100%
+    );
+    opacity: 0.2;
+}
+
+.thermo-tube-fill {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 0%;
+    background: linear-gradient(
+        to top,
+        #fff3cc 0%,
+        #ffe4a0 15%,
+        #ffd580 25%,
+        #ffc266 35%,
+        #ffad80 45%,
+        #ff9a8c 55%,
+        #ff8090 65%,
+        #ff6680 75%,
+        #ee5070 88%,
+        #dd3344 100%
+    );
+    transition: height 0.8s ease;
+    z-index: 1;
+}
+
+/* 구 (bulb) */
+.thermo-bulb {
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    border: 3px solid #b8dce8;
+    background: #ffeebb;
+    position: relative;
+    margin-top: -8px;
+    z-index: 2;
+    overflow: hidden;
+}
+
+.thermo-bulb-fill {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: radial-gradient(circle at center, #ff8080 0%, #ffb080 60%, #ffeebb 100%);
+    opacity: 0.6;
+}
+
+.thermo-face {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 3;
+}
+
+.thermo-eyes {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 4px;
+}
+
+.thermo-eye {
+    width: 5px;
+    height: 6px;
+    background: #333;
+    border-radius: 50%;
+}
+
+.thermo-mouth {
+    width: 12px;
+    height: 6px;
+    border-bottom: 2px solid #333;
+    border-radius: 0 0 50% 50%;
+}
+
+.thermo-cheeks {
+    position: absolute;
+    bottom: 16px;
+    width: 96px;
+    display: flex;
+    justify-content: space-between;
+    pointer-events: none;
+    z-index: 3;
+}
+
+.thermo-cheek {
+    width: 16px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(255, 160, 140, 0.5);
+}
+
+/* 현재 온도 */
+.thermo-temp {
+    font-family: var(--font-display, 'GmarketSans', sans-serif);
+    font-size: 28px;
+    font-weight: 700;
+    text-align: center;
+    margin-top: 8px;
+    color: #1f2937;
+}
+
+/* === 미니 온도계 (대시보드용) === */
+.thermo-mini {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+}
+
+.thermo-mini-bar-wrap {
+    flex: 1;
+}
+
+.thermo-mini-bar {
+    height: 12px;
+    background: #f3f4f6;
+    border-radius: 6px;
+    overflow: hidden;
+    position: relative;
+}
+
+.thermo-mini-bar-fill {
+    height: 100%;
+    background: linear-gradient(to right, #ffd580, #ff9a8c, #ee5070);
+    border-radius: 6px;
+    transition: width 0.8s ease;
+}
+
+.thermo-mini-temp {
+    font-family: var(--font-display, 'GmarketSans', sans-serif);
+    font-size: 20px;
+    font-weight: 700;
+    color: #ef4444;
+    min-width: 56px;
+    text-align: right;
+}
+
+.thermo-mini-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 6px;
+}
+
+.thermo-mini-praises {
+    font-size: 12px;
+    color: #9ca3af;
+}
+
+.thermo-mini-next {
+    font-size: 12px;
+    font-weight: 600;
+    color: #6366f1;
+}
+
+/* === 마일스톤 리스트 (미니용) === */
+.thermo-ms-list {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding: 8px 0 4px;
+    -webkit-overflow-scrolling: touch;
+}
+
+.thermo-ms-list::-webkit-scrollbar {
+    height: 3px;
+}
+
+.thermo-ms-list::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.08);
+    border-radius: 2px;
+}
+
+.thermo-ms-chip {
+    flex: 0 0 auto;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+    background: #fef3f3;
+    color: #9b4050;
+    border: 1px solid #fdd;
+}
+
+.thermo-ms-chip.achieved {
+    background: #ecfdf5;
+    color: #166534;
+    border-color: #bbf7d0;
+}
+
+/* === 온도계 설정 패널 === */
+.thermo-settings {
+    display: none;
+    margin-top: 12px;
+    padding: 12px;
+    background: #f8fafc;
+    border-radius: 12px;
+}
+
+.thermo-settings.open {
+    display: block;
+}
+
+.thermo-setting-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.thermo-setting-row label {
+    font-size: 13px;
+    font-weight: 600;
+    min-width: 80px;
+}
+
+.thermo-setting-row input {
+    padding: 6px 10px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 13px;
+}
+
+/* 마일스톤 에디터 */
+.thermo-ms-editor-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #6b7280;
+    margin: 8px 0;
+}
+
+.thermo-ms-edit-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+}
+
+.thermo-ms-edit-row input[type='number'] {
+    width: 56px;
+    padding: 6px 8px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 13px;
+    text-align: center;
+}
+
+.thermo-ms-edit-row input[type='text'] {
+    flex: 1;
+    padding: 6px 8px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 13px;
+}
+
+.thermo-ms-unit {
+    font-size: 11px;
+    color: #9ca3af;
+    flex-shrink: 0;
+}
+
+.thermo-ms-remove-btn {
+    width: 24px;
+    height: 24px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.thermo-ms-add-btn {
+    width: 100%;
+    padding: 6px;
+    border: 1.5px dashed #d1d5db;
+    border-radius: 8px;
+    background: transparent;
+    font-size: 13px;
+    font-weight: 600;
+    color: #9ca3af;
+    cursor: pointer;
+    margin-top: 4px;
+}
+
+.thermo-ms-add-btn:active {
+    border-color: #6366f1;
+    color: #6366f1;
+}
+
+/* === 모바일 반응형 === */
+@media (max-width: 400px) {
+    .thermo-ms-tag {
+        font-size: 10px;
+        padding: 3px 8px;
+    }
+
+    .thermo-ms-tag.ms-left {
+        right: calc(50% + 28px);
+    }
+
+    .thermo-ms-tag.ms-right {
+        left: calc(50% + 28px);
+    }
+}

@@ -9,7 +9,6 @@ import { router } from '../router.js';
 import { getPetEmoji, getExpProgress, getGrowthStage } from '../utils/petLogic.js';
 import { fadeInCards } from '../utils/animations.js';
 import { showQuickPraise } from './QuickPraise.js';
-
 const DEFAULT_CAT_ORDER = Object.keys(PRAISE_CATEGORIES);
 
 // HEX → RGBA 변환 (투명도 적용)

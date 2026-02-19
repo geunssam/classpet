@@ -17,7 +17,8 @@ export const STORAGE_KEYS = {
     OFFLINE_QUEUE: 'classpet_offline_queue',
     CURRENT_CLASS_ID: 'classpet_current_class_id',
     CURRENT_TEACHER_UID: 'classpet_current_teacher_uid',
-    PRAISE_CATEGORIES_CUSTOM: 'classpet_praise_categories'
+    PRAISE_CATEGORIES_CUSTOM: 'classpet_praise_categories',
+    THERMOSTAT: 'classpet_thermostat'
 };
 
 export const SESSION_KEYS = {

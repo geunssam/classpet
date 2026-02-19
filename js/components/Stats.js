@@ -7,7 +7,6 @@ import { store, PET_TYPES } from '../store.js';
 import { PRAISE_CATEGORIES } from '../constants/index.js';
 import { getPetEmoji, calculateRank, getRankTier, getGrowthStage } from '../utils/petLogic.js';
 import { showToast, setModalContent, openModal, closeModal, showLoading, hideLoading } from '../utils/animations.js';
-
 const DEFAULT_CAT_ORDER = Object.keys(PRAISE_CATEGORIES);
 
 export function render() {
@@ -114,7 +113,7 @@ export function render() {
 }
 
 export function afterRender() {
-    // 특별한 이벤트 바인딩 없음
+    // Stats 페이지에서는 특별한 afterRender 불필요
 }
 
 /**

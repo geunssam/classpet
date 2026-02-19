@@ -58,55 +58,110 @@ export function bindNavigation() {
 }
 
 /**
- * 우측 툴바 토글 바인딩
+ * 우측 툴바 토글 바인딩 (3단 구조)
+ * - minimized: 화살표만 (모바일 기본)
+ * - collapsed: 아이콘만
+ * - expanded: 아이콘 + 텍스트 (데스크탑 기본)
  */
 export function bindToolbarToggle() {
     const toolbar = document.getElementById('rightToolbar');
     const toggleBtn = document.getElementById('toolbarToggle');
 
-    if (toggleBtn && toolbar) {
-        const iconSpan = toggleBtn.querySelector('.toggle-icon');
-        const textSpan = toggleBtn.querySelector('.toggle-text');
+    if (!toggleBtn || !toolbar) return;
 
-        // 아이콘 회전 업데이트 (접힌 상태: <, 펼쳐진 상태: >)
-        const updateToggleIcon = (isCollapsed) => {
-            if (iconSpan) {
-                // 접힌 상태: < (0deg), 펼쳐진 상태: > (180deg)
-                iconSpan.style.transform = isCollapsed ? 'rotate(0deg)' : 'rotate(180deg)';
+    const iconSpan = toggleBtn.querySelector('.toggle-icon');
+    const textSpan = toggleBtn.querySelector('.toggle-text');
+
+    /**
+     * 툴바 상태 설정
+     * @param {'minimized' | 'collapsed' | 'expanded'} state
+     */
+    const setToolbarState = (state) => {
+        toolbar.classList.remove('minimized', 'collapsed');
+
+        if (state === 'minimized') {
+            toolbar.classList.add('minimized');
+        } else if (state === 'collapsed') {
+            toolbar.classList.add('collapsed');
+        }
+        // expanded = 클래스 없음
+
+        // 화살표 방향 업데이트
+        // 기본 SVG = < (왼쪽 화살표), rotate(180deg) = > (오른쪽 화살표)
+        // minimized: < (열기 = 왼쪽으로 펼침)
+        // collapsed 모바일: > (닫기 = 오른쪽으로 접기)
+        // collapsed 데스크탑: < (더 펼치기)
+        // expanded: > (접기)
+        if (iconSpan) {
+            if (state === 'minimized') {
+                iconSpan.style.transform = 'rotate(0deg)'; // <
+            } else if (state === 'collapsed') {
+                iconSpan.style.transform = isMobile() ? 'rotate(180deg)' : 'rotate(0deg)';
+            } else {
+                iconSpan.style.transform = 'rotate(180deg)'; // >
             }
-            if (textSpan) textSpan.textContent = isCollapsed ? '펼치기' : '접기';
-        };
+        }
+        if (textSpan) {
+            textSpan.textContent = state === 'expanded' ? '접기' : '펼치기';
+        }
+    };
 
-        // 화면 크기에 따른 초기 상태 설정
-        const initToolbarState = () => {
-            const isTablet = window.innerWidth <= 1024;
-            if (isTablet && !toolbar.classList.contains('collapsed')) {
-                toolbar.classList.add('collapsed');
-                updateToggleIcon(true);
-            }
-        };
+    /**
+     * 현재 상태 반환
+     */
+    const getState = () => {
+        if (toolbar.classList.contains('minimized')) return 'minimized';
+        if (toolbar.classList.contains('collapsed')) return 'collapsed';
+        return 'expanded';
+    };
 
-        // 초기화
-        initToolbarState();
+    const isMobile = () => window.innerWidth <= 768;
 
-        // 토글 이벤트
-        toggleBtn.addEventListener('click', () => {
-            toolbar.classList.toggle('collapsed');
-            const isCollapsed = toolbar.classList.contains('collapsed');
-            updateToggleIcon(isCollapsed);
-        });
+    // 초기 상태 설정
+    const initToolbarState = () => {
+        if (isMobile()) {
+            setToolbarState('minimized');
+        } else if (window.innerWidth <= 1024) {
+            setToolbarState('collapsed');
+        } else {
+            setToolbarState('expanded');
+        }
+    };
 
-        // 화면 크기 변경 시 상태 초기화 (옵션)
-        window.addEventListener('resize', () => {
-            // 모바일에서 태블릿/데스크탑으로 전환 시에만 초기화
-            if (window.innerWidth > 768 && window.innerWidth <= 1024) {
-                if (!toolbar.classList.contains('collapsed')) {
-                    toolbar.classList.add('collapsed');
-                    updateToggleIcon(true);
+    initToolbarState();
+
+    // 토글 이벤트: 3단 순환
+    toggleBtn.addEventListener('click', () => {
+        const current = getState();
+
+        if (isMobile()) {
+            // 모바일: minimized ↔ collapsed (2단)
+            setToolbarState(current === 'minimized' ? 'collapsed' : 'minimized');
+        } else {
+            // 데스크탑/태블릿: collapsed ↔ expanded (2단)
+            setToolbarState(current === 'expanded' ? 'collapsed' : 'expanded');
+        }
+    });
+
+    // 화면 크기 변경 시 상태 재설정
+    let resizeTimeout;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+            const current = getState();
+            if (isMobile()) {
+                // 모바일로 전환: expanded → minimized
+                if (current === 'expanded') {
+                    setToolbarState('minimized');
+                }
+            } else if (window.innerWidth <= 1024) {
+                // 태블릿: minimized → collapsed
+                if (current === 'minimized') {
+                    setToolbarState('collapsed');
                 }
             }
-        });
-    }
+        }, 150);
+    });
 }
 
 /**
@@ -444,11 +499,18 @@ export function updateClassInfo() {
     const profilePic = document.getElementById('teacherProfilePic');
     if (!classInfoEl) return;
 
+    // 모바일 드로어 프로필 요소
+    const mobileProfile = document.getElementById('mobileDrawerProfile');
+    const mobileProfilePic = document.getElementById('mobileProfilePic');
+    const mobileProfileName = document.getElementById('mobileProfileName');
+    const mobileProfileClass = document.getElementById('mobileProfileClass');
+
     // 로그인 상태 확인 - 로그인하지 않았으면 표시하지 않음
     const isLoggedIn = store.isGoogleTeacher() || store.getClassCode();
     if (!isLoggedIn) {
         classInfoEl.textContent = '';
         if (profilePic) profilePic.classList.add('hidden');
+        if (mobileProfile) mobileProfile.classList.add('hidden');
         return;
     }
 
@@ -458,13 +520,28 @@ export function updateClassInfo() {
     }
 
     // Google 프로필 사진 표시
+    const session = store.getTeacherSession();
     if (profilePic) {
-        const session = store.getTeacherSession();
         if (session?.photoURL) {
             profilePic.src = session.photoURL;
             profilePic.classList.remove('hidden');
         } else {
             profilePic.classList.add('hidden');
         }
+    }
+
+    // 모바일 드로어 프로필 업데이트 (앱 설정 기준)
+    if (mobileProfile) {
+        mobileProfile.classList.remove('hidden');
+        if (mobileProfilePic) {
+            if (session?.photoURL) {
+                mobileProfilePic.src = session.photoURL;
+                mobileProfilePic.style.display = '';
+            } else {
+                mobileProfilePic.style.display = 'none';
+            }
+        }
+        if (mobileProfileName) mobileProfileName.textContent = settings?.teacherName || '선생님';
+        if (mobileProfileClass) mobileProfileClass.textContent = settings?.className || '';
     }
 }

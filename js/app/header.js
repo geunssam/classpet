@@ -16,6 +16,7 @@ import { bindToolbarToggle, bindMobileDrawer, updateNotificationBadge, updateStu
 import { setStudentTab, setHistoryDate } from '../components/StudentMode.js';
 import { showQuickPraise } from '../components/QuickPraise.js';
 import { getPetEmoji } from '../utils/petLogic.js';
+import { DEFAULT_THERMOSTAT } from '../store/thermostatMixin.js';
 
 /**
  * 헤더 버튼 바인딩
@@ -103,6 +104,20 @@ export function bindHeaderButtons() {
             document.getElementById('mobileDrawer')?.classList.remove('open');
             document.getElementById('mobileDrawerOverlay')?.classList.remove('open');
             router.navigate('timer');
+        });
+    }
+
+    // 온도계 버튼 (우측 툴바 + 모바일)
+    const thermoToolbarBtn = document.getElementById('thermoToolbarBtn');
+    if (thermoToolbarBtn) {
+        thermoToolbarBtn.addEventListener('click', showThermometerModal);
+    }
+    const mobileThermoBtn = document.getElementById('mobileThermoBtn');
+    if (mobileThermoBtn) {
+        mobileThermoBtn.addEventListener('click', () => {
+            document.getElementById('mobileDrawer')?.classList.remove('open');
+            document.getElementById('mobileDrawerOverlay')?.classList.remove('open');
+            showThermometerModal();
         });
     }
 
@@ -477,6 +492,173 @@ export function updateCurrentDate() {
         const day = days[today.getDay()];
         dateEl.textContent = `${month}/${date} (${day})`;
     }
+}
+
+/**
+ * 온도계 모달 표시
+ */
+let thermoEditMilestones = [];
+
+export function showThermometerModal() {
+    const thermoTemp = store.getThermoTemp();
+    const thermoSettings = store.getThermostatSettings();
+    const totalPraises = store.getClassTotalPraises();
+    const sortedMilestones = [...(thermoSettings.milestones || [])].sort((a, b) => a.temp - b.temp);
+    const tubeHeight = 260;
+    const bulbOffset = 80;
+
+    const modalContent = `
+        <div class="space-y-3">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-bold">🌡️ 학급 온도계</h3>
+                <div class="flex items-center gap-2">
+                    <button id="thermoSettingsBtn" class="text-xs font-semibold text-gray-400 px-3 py-1.5 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">⚙️ 설정</button>
+                    <button onclick="window.classpet.closeModal()" class="text-gray-400 hover:text-gray-600">✕</button>
+                </div>
+            </div>
+
+            <!-- 세로 온도계 비주얼 -->
+            <div class="thermo-visual">
+                <!-- 마일스톤 라벨 -->
+                <div class="thermo-ms-col">
+                    ${sortedMilestones.map((ms, i) => {
+                        const achieved = thermoTemp >= ms.temp;
+                        const side = i % 2 === 0 ? 'ms-left' : 'ms-right';
+                        const bottomPx = bulbOffset + (ms.temp / 100) * tubeHeight;
+                        return `<div class="thermo-ms-tag ${side} ${achieved ? 'achieved' : ''}" style="bottom: ${bottomPx}px">
+                            <span class="thermo-ms-reward">${ms.reward}</span>
+                            <span class="thermo-ms-temp">${ms.temp}°C ${achieved ? '✅' : ''}</span>
+                        </div>`;
+                    }).join('')}
+                </div>
+
+                <!-- 온도계 본체 -->
+                <div class="thermo-body-col">
+                    <div class="thermo-tube">
+                        <div class="thermo-tube-bg"></div>
+                        <div class="thermo-tube-fill" style="height: ${thermoTemp}%"></div>
+                    </div>
+                    <div class="thermo-bulb">
+                        <div class="thermo-bulb-fill"></div>
+                        <div class="thermo-face">
+                            <div class="thermo-eyes">
+                                <span class="thermo-eye"></span>
+                                <span class="thermo-eye"></span>
+                            </div>
+                            <div class="thermo-mouth"></div>
+                        </div>
+                    </div>
+                    <div class="thermo-cheeks">
+                        <span class="thermo-cheek left"></span>
+                        <span class="thermo-cheek right"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 현재 온도 -->
+            <div class="thermo-temp">${thermoTemp}°C</div>
+            <div class="text-center text-xs text-gray-400">${totalPraises} / ${thermoSettings.targetPraises} 칭찬</div>
+
+            <!-- 마일스톤 칩 -->
+            <div class="thermo-ms-list">
+                ${sortedMilestones.map(ms => `
+                    <span class="thermo-ms-chip ${thermoTemp >= ms.temp ? 'achieved' : ''}">
+                        ${ms.temp}°C ${ms.reward} ${thermoTemp >= ms.temp ? '✅' : ''}
+                    </span>
+                `).join('')}
+            </div>
+
+            <!-- 온도계 설정 (토글) -->
+            <div id="thermoSettingsPanel" class="thermo-settings">
+                <div class="thermo-setting-row">
+                    <label>100°C 기준</label>
+                    <input type="number" id="thermoTargetInput" value="${thermoSettings.targetPraises}" min="10" max="9999" style="width: 80px" />
+                    <span class="thermo-ms-unit">개 칭찬</span>
+                </div>
+                <div id="thermoMilestoneEditor"></div>
+                <button class="w-full mt-2 py-2 bg-indigo-500 text-white text-sm font-semibold rounded-lg hover:bg-indigo-600 transition-colors" id="thermoSaveBtn">저장</button>
+            </div>
+        </div>
+    `;
+
+    setModalContent(modalContent);
+    openModal();
+
+    // 설정 토글
+    const settingsBtn = document.getElementById('thermoSettingsBtn');
+    const settingsPanel = document.getElementById('thermoSettingsPanel');
+    if (settingsBtn && settingsPanel) {
+        settingsBtn.addEventListener('click', () => {
+            settingsPanel.classList.toggle('open');
+            if (settingsPanel.classList.contains('open')) {
+                thermoEditMilestones = [...(thermoSettings.milestones || DEFAULT_THERMOSTAT.milestones)].sort((a, b) => a.temp - b.temp);
+                renderThermoMilestoneEditor();
+            }
+        });
+    }
+
+    // 저장
+    document.getElementById('thermoSaveBtn')?.addEventListener('click', () => {
+        const targetPraises = parseInt(document.getElementById('thermoTargetInput')?.value) || 200;
+        const validMilestones = thermoEditMilestones
+            .filter(ms => ms.temp > 0 && ms.temp <= 100 && ms.reward.trim())
+            .sort((a, b) => a.temp - b.temp);
+
+        store.saveThermostatSettings({
+            targetPraises,
+            milestones: validMilestones,
+        });
+
+        showToast('온도계 설정이 저장되었습니다', 'success');
+        closeModal();
+    });
+}
+
+/**
+ * 온도계 마일스톤 편집기 렌더링
+ */
+function renderThermoMilestoneEditor() {
+    const container = document.getElementById('thermoMilestoneEditor');
+    if (!container) return;
+
+    container.innerHTML = `
+        <div class="thermo-ms-editor-title">보상 마일스톤 편집</div>
+        ${thermoEditMilestones.map((ms, i) => `
+            <div class="thermo-ms-edit-row" data-idx="${i}">
+                <input type="number" class="ms-temp-input" value="${ms.temp}" min="1" max="100" />
+                <span class="thermo-ms-unit">°C</span>
+                <input type="text" class="ms-reward-input" value="${ms.reward}" placeholder="보상 내용" />
+                <button class="thermo-ms-remove-btn" data-idx="${i}">×</button>
+            </div>
+        `).join('')}
+        <button class="thermo-ms-add-btn" id="thermoMsAddBtn">+ 마일스톤 추가</button>
+    `;
+
+    container.querySelectorAll('.ms-temp-input').forEach((input, i) => {
+        input.addEventListener('change', () => {
+            thermoEditMilestones[i].temp = parseInt(input.value) || 0;
+        });
+    });
+
+    container.querySelectorAll('.ms-reward-input').forEach((input, i) => {
+        input.addEventListener('change', () => {
+            thermoEditMilestones[i].reward = input.value.trim();
+        });
+    });
+
+    container.querySelectorAll('.thermo-ms-remove-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const idx = parseInt(btn.dataset.idx);
+            thermoEditMilestones.splice(idx, 1);
+            renderThermoMilestoneEditor();
+        });
+    });
+
+    document.getElementById('thermoMsAddBtn')?.addEventListener('click', () => {
+        const maxTemp = thermoEditMilestones.length > 0 ? Math.max(...thermoEditMilestones.map(m => m.temp)) : 0;
+        thermoEditMilestones.push({ temp: Math.min(maxTemp + 10, 100), reward: '' });
+        renderThermoMilestoneEditor();
+    });
 }
 
 /**

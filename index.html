@@ -336,6 +336,14 @@
                         </span>
                         <span class="toolbar-text">타이머</span>
                     </button>
+                    <button id="thermoToolbarBtn" class="toolbar-btn">
+                        <span class="toolbar-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z" />
+                            </svg>
+                        </span>
+                        <span class="toolbar-text">온도계</span>
+                    </button>
                     <button id="notificationBtn" class="toolbar-btn">
                         <span class="toolbar-icon">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -490,6 +498,16 @@
                     <span>펫도감</span>
                 </button>
             </div>
+            <!-- 프로필 (하단 고정) -->
+            <div class="mobile-drawer-profile hidden" id="mobileDrawerProfile">
+                <div class="mobile-profile-info">
+                    <img id="mobileProfilePic" class="mobile-profile-pic" alt="" />
+                    <div class="mobile-profile-text">
+                        <span id="mobileProfileName" class="mobile-profile-name">선생님</span>
+                        <span id="mobileProfileClass" class="mobile-profile-class"></span>
+                    </div>
+                </div>
+            </div>
             <div class="mobile-drawer-tools">
                 <button id="mobilePickerBtn" class="mobile-tool-btn">
                     <span class="mobile-tool-icon">
@@ -524,6 +542,14 @@
                         </svg>
                     </span>
                     <span>빠른 칭찬</span>
+                </button>
+                <button id="mobileThermoBtn" class="mobile-tool-btn">
+                    <span class="mobile-tool-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z" />
+                        </svg>
+                    </span>
+                    <span>온도계</span>
                 </button>
                 <button id="mobileNotificationBtn" class="mobile-tool-btn">
                     <span class="mobile-tool-icon">

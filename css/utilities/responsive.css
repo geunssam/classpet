@@ -117,7 +117,16 @@
         display: flex !important;
     }
 
-    .right-toolbar:not(.hidden) {
+    /* 우측 툴바: JS에서 .minimized를 기본 적용 (화살표만) */
+
+    /* 모바일 드로어에서 도구 섹션 숨김 (툴바가 대신) */
+    .mobile-drawer-tools {
+        display: none !important;
+    }
+
+    /* 프로필/학급정보는 드로어 하단으로 이동 */
+    .teacher-profile-pic,
+    .navbar-class-info {
         display: none !important;
     }
 
