@@ -25,6 +25,13 @@
     border-color: #93C5FD;
 }
 
+/* 빠른 칭찬 모달 선택 버튼 터치 피드백 */
+.student-select-btn:active,
+.category-select-btn:active {
+    transform: scale(0.95);
+    transition: transform 0.1s ease;
+}
+
 /* 빠른 액션 버튼 (리퀴드 글라스) */
 .quick-action-btn {
     display: flex;

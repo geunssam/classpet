@@ -23,6 +23,8 @@
 @import './components/praise.css';
 @import './components/student.css';
 @import './components/notification.css';
+@import './components/picker.css';
+@import './components/timer-view.css';
 
 /* ======================================
    Utilities: 애니메이션, 반응형, 글라스 효과

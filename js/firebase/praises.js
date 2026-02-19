@@ -20,6 +20,7 @@ import {
     getUnsubscribeFunctions
 } from './init.js';
 import { studentSubRef } from './helpers.js';
+import { toDateString } from '../utils/dateUtils.js';
 
 export async function savePraise(teacherUid, classId, praise) {
     const db = getDb();
@@ -36,7 +37,7 @@ export async function savePraise(teacherUid, classId, praise) {
 
         const praiseData = {
             ...praise,
-            date: (() => { const d = praise.timestamp ? new Date(praise.timestamp) : new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; })(),
+            date: toDateString(praise.timestamp ? new Date(praise.timestamp) : new Date()),
             teacherUid: uid,
             classId: cId,
             createdAt: serverTimestamp()
@@ -60,8 +61,7 @@ export async function getTodayPraises(teacherUid, classId) {
     if (!uid || !cId) return [];
 
     try {
-        const now = new Date();
-        const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        const today = toDateString();
         const praisesGroup = collectionGroup(db, 'praises');
         const q = query(
             praisesGroup,

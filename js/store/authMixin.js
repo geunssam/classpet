@@ -95,6 +95,8 @@ export const authMixin = {
      */
     async signOut() {
         try {
+            // 모든 Firebase 실시간 구독 해제
+            this.unsubscribeAllFirebase();
             await firebase.firebaseSignOut();
             this.currentClassId = null;
             this.currentTeacherUid = null;

@@ -1,0 +1,1133 @@
+/* ======================================
+   Picker 컴포넌트 (술래뽑기 + 모둠뽑기)
+   ====================================== */
+
+/* --- 모드 선택 화면 --- */
+.picker-mode-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    padding: 8px 0;
+}
+
+.picker-mode-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 32px 16px;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: 2px solid transparent;
+    position: relative;
+    overflow: hidden;
+}
+
+.picker-mode-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    border-radius: 20px 20px 0 0;
+}
+
+.picker-mode-card.mode-tag::before {
+    background: linear-gradient(90deg, #F5A67C, #F57C7C);
+}
+
+.picker-mode-card.mode-group::before {
+    background: linear-gradient(90deg, #7C9EF5, #A78BFA);
+}
+
+.picker-mode-card:active {
+    transform: scale(0.97);
+}
+
+.picker-mode-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+}
+
+.picker-mode-card .mode-icon {
+    font-size: 48px;
+    line-height: 1;
+}
+
+.picker-mode-card .mode-icon-svg {
+    width: 48px;
+    height: 48px;
+}
+
+.picker-mode-card .mode-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1F2937;
+}
+
+.picker-mode-card .mode-desc {
+    font-size: 13px;
+    color: #9CA3AF;
+    text-align: center;
+    line-height: 1.4;
+}
+
+/* --- 공통 헤더 (뒤로가기) --- */
+.picker-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 12px;
+    margin-bottom: 4px;
+}
+
+.picker-back-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: #F3F4F6;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 18px;
+    color: #6B7280;
+    transition: background 0.2s ease;
+    flex-shrink: 0;
+}
+
+.picker-back-btn:hover {
+    background: #E5E7EB;
+}
+
+.picker-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1F2937;
+}
+
+/* --- 학생 칩 (참가자 선택) --- */
+.picker-students-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 12px;
+    background: #F9FAFB;
+    border-radius: 14px;
+    min-height: 48px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.picker-student-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    background: white;
+    border: 1.5px solid #E5E7EB;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    user-select: none;
+}
+
+.picker-student-chip:active {
+    transform: scale(0.95);
+}
+
+.picker-student-chip .chip-number {
+    color: #9CA3AF;
+    font-weight: 500;
+    font-size: 12px;
+}
+
+.picker-student-chip .chip-pet {
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.picker-student-chip .chip-name {
+    flex-shrink: 1;
+    min-width: 0;
+}
+
+.picker-student-chip .chip-level {
+    font-size: 10px;
+    color: #B0B8C4;
+    flex-shrink: 0;
+}
+
+.picker-student-chip.excluded {
+    opacity: 0.4;
+    text-decoration: line-through;
+    background: #F3F4F6;
+    border-color: #D1D5DB;
+}
+
+.picker-student-chip.excluded .chip-pet,
+.picker-student-chip.excluded .chip-level {
+    opacity: 0.5;
+}
+
+/* --- 설정 패널 --- */
+.picker-settings {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* 2×2 설정 그리드 (PEPicker .tag-settings-4col 이식) */
+.picker-settings-4col {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.picker-setting-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 8px;
+    background: #F9FAFB;
+    border-radius: 12px;
+}
+
+.picker-setting-item .setting-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #6B7280;
+    text-align: center;
+}
+
+.picker-setting-item .setting-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.picker-setting-item--empty {
+    background: transparent;
+}
+
+.picker-setting-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: #F9FAFB;
+    border-radius: 12px;
+}
+
+.picker-setting-row label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+}
+
+.picker-setting-row .setting-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.picker-count-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: 1.5px solid #D1D5DB;
+    background: white;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: 600;
+    color: #374151;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.picker-count-btn:active {
+    background: #F3F4F6;
+    transform: scale(0.93);
+}
+
+.picker-count-value {
+    min-width: 28px;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 700;
+    color: #1F2937;
+}
+
+/* 토글 스위치 */
+.picker-toggle {
+    position: relative;
+    width: 48px;
+    height: 28px;
+    background: #D1D5DB;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    border: none;
+    padding: 0;
+}
+
+.picker-toggle.active {
+    background: #7C9EF5;
+}
+
+.picker-toggle::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 22px;
+    height: 22px;
+    background: white;
+    border-radius: 50%;
+    transition: transform 0.2s ease;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+}
+
+.picker-toggle.active::after {
+    transform: translateX(20px);
+}
+
+/* --- 타이머 스테퍼 (설정 내 분/초) --- */
+.picker-timer-stepper {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+}
+
+.picker-stepper-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.picker-stepper-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #9CA3AF;
+    min-width: 18px;
+}
+
+/* --- 뽑기 시작 버튼 --- */
+.picker-start-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 14px;
+    font-size: 16px;
+    font-weight: 700;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.picker-start-btn.tag-start {
+    background: linear-gradient(135deg, #F5A67C, #F57C7C);
+    box-shadow: 0 4px 15px rgba(245,124,124,0.3);
+}
+
+.picker-start-btn.group-start {
+    background: linear-gradient(135deg, #7C9EF5, #A78BFA);
+    box-shadow: 0 4px 15px rgba(124,158,245,0.3);
+}
+
+.picker-start-btn:active {
+    transform: scale(0.98);
+}
+
+/* --- 뽑기 애니메이션 --- */
+.picker-animation-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.picker-shuffle-text {
+    font-size: 64px;
+    font-weight: 800;
+    color: white;
+    animation: pickerShuffle 0.1s steps(1) infinite;
+    text-shadow: 0 2px 20px rgba(0,0,0,0.3);
+}
+
+@keyframes pickerShuffle {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
+@keyframes pickerReveal {
+    0% {
+        transform: scale(0.5);
+        opacity: 0;
+    }
+    60% {
+        transform: scale(1.15);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* --- 결과 화면 --- */
+.picker-results {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.picker-result-section {
+    padding: 0 0 4px;
+}
+
+.picker-result-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    padding: 4px 12px;
+    border-radius: 8px;
+}
+
+.picker-result-label.label-it {
+    color: #DC2626;
+    background: rgba(220,38,38,0.08);
+}
+
+.picker-result-label.label-angel {
+    color: #2563EB;
+    background: rgba(37,99,235,0.08);
+}
+
+/* 결과 카드 (칩 형태) */
+.picker-result-cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.picker-result-chip {
+    animation: pickerReveal 0.4s ease-out;
+    cursor: default;
+    padding: 8px 14px;
+    font-size: 14px;
+}
+
+.picker-result-chip:active {
+    transform: none;
+}
+
+.picker-result-chip.chip-result-it {
+    background: linear-gradient(145deg, #FEF2F2, #FEE2E2);
+    border-color: rgba(220,38,38,0.2);
+    box-shadow: 0 3px 12px rgba(220,38,38,0.08);
+}
+
+.picker-result-chip.chip-result-angel {
+    background: linear-gradient(145deg, #EFF6FF, #DBEAFE);
+    border-color: rgba(37,99,235,0.2);
+    box-shadow: 0 3px 12px rgba(37,99,235,0.08);
+}
+
+/* --- 모둠 결과 --- */
+.picker-group-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.picker-group-card {
+    background: white;
+    border-radius: 16px;
+    padding: 14px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    animation: pickerReveal 0.4s ease-out;
+    border-top: 4px solid;
+}
+
+.picker-group-card:nth-child(1) { border-top-color: #F5A67C; }
+.picker-group-card:nth-child(2) { border-top-color: #7C9EF5; }
+.picker-group-card:nth-child(3) { border-top-color: #7CE0A3; }
+.picker-group-card:nth-child(4) { border-top-color: #F5E07C; }
+.picker-group-card:nth-child(5) { border-top-color: #A78BFA; }
+.picker-group-card:nth-child(6) { border-top-color: #F472B6; }
+.picker-group-card:nth-child(7) { border-top-color: #34D399; }
+.picker-group-card:nth-child(8) { border-top-color: #60A5FA; }
+
+.picker-group-card .group-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1F2937;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #F3F4F6;
+}
+
+.picker-group-card .group-count {
+    font-size: 12px;
+    font-weight: 500;
+    color: #9CA3AF;
+    margin-left: 4px;
+}
+
+.picker-group-card .group-members-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.picker-group-member-chip {
+    cursor: default;
+    font-size: 12px;
+    padding: 4px 10px;
+}
+
+.picker-group-member-chip:active {
+    transform: none;
+}
+
+/* ======================================
+   Phase 2: 결과 4열 버튼 그리드
+   ====================================== */
+.picker-phase2-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.picker-action-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 12px 4px;
+    border: none;
+    border-radius: 14px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-align: center;
+}
+
+.picker-action-btn:active {
+    transform: scale(0.95);
+}
+
+.picker-action-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.picker-action-btn:disabled:active {
+    transform: none;
+}
+
+.picker-action-icon {
+    font-size: 20px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.picker-action-icon svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* SVG inline 정렬 (헤더, 라벨, 버튼) */
+.picker-title svg,
+.picker-result-label svg,
+.picker-start-btn svg,
+.picker-collapse-toggle svg {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* 게임 시작 */
+.picker-action-game {
+    background: linear-gradient(135deg, #10B981, #059669);
+    color: white;
+    box-shadow: 0 3px 12px rgba(16,185,129,0.3);
+}
+
+/* 타이머 (모둠) */
+.picker-action-timer {
+    background: linear-gradient(135deg, #7C9EF5, #6366F1);
+    color: white;
+    box-shadow: 0 3px 12px rgba(99,102,241,0.3);
+}
+
+/* 다시뽑기 / 다시나누기 */
+.picker-action-retry {
+    background: linear-gradient(135deg, #F5A67C, #F57C7C);
+    color: white;
+    box-shadow: 0 3px 12px rgba(245,124,124,0.25);
+}
+
+/* 설정 */
+.picker-action-settings {
+    background: #F3F4F6;
+    color: #374151;
+}
+
+.picker-action-settings:hover {
+    background: #E5E7EB;
+}
+
+/* 초기화 */
+.picker-action-reset {
+    background: #F3F4F6;
+    color: #6B7280;
+}
+
+.picker-action-reset:hover {
+    background: #E5E7EB;
+}
+
+/* ======================================
+   아코디언 (접을 수 있는 후보 목록)
+   ====================================== */
+.picker-collapsible {
+    background: white;
+    border-radius: 14px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+    overflow: hidden;
+}
+
+.picker-folding-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.picker-collapse-toggle {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border: none;
+    background: #F9FAFB;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    color: #9CA3AF;
+    transition: background 0.2s;
+}
+
+.picker-collapse-arrow {
+    font-size: 11px;
+    transition: transform 0.2s;
+}
+
+.picker-collapse-arrow.open {
+    transform: rotate(180deg);
+}
+
+.picker-collapse-toggle:hover {
+    background: #F3F4F6;
+}
+
+.picker-collapse-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, padding 0.3s ease;
+    padding: 0 14px;
+}
+
+.picker-collapse-content.open {
+    max-height: 200px;
+    padding: 12px 14px;
+}
+
+.picker-candidate-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.picker-candidate-tag {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.picker-candidate-tag.type-it {
+    background: rgba(245,124,124,0.1);
+    color: #DC2626;
+}
+
+.picker-candidate-tag.type-angel {
+    background: rgba(124,158,245,0.1);
+    color: #2563EB;
+}
+
+.picker-candidate-tag.type-history {
+    background: rgba(150,150,150,0.1);
+    color: #9CA3AF;
+}
+
+/* 폴딩 섹션 칩 (학생 칩 포맷) */
+.picker-folding-chip {
+    cursor: default;
+    font-size: 12px;
+    padding: 4px 10px;
+}
+
+.picker-folding-chip:active {
+    transform: none;
+}
+
+.picker-folding-chip.chip-folding-it {
+    background: rgba(245,124,124,0.08);
+    border-color: rgba(220,38,38,0.15);
+}
+
+.picker-folding-chip.chip-folding-angel {
+    background: rgba(124,158,245,0.08);
+    border-color: rgba(37,99,235,0.15);
+}
+
+.picker-folding-chip.chip-folding-history {
+    background: rgba(150,150,150,0.06);
+    border-color: rgba(150,150,150,0.15);
+    opacity: 0.7;
+}
+
+/* ======================================
+   Phase 3: 타이머 (인라인 기본 ↔ 전체화면 토글)
+   ====================================== */
+
+/* 인라인 모드 (기본) */
+.picker-timer-phase {
+    text-align: center;
+    padding: 32px 20px;
+    background: #111827;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+/* 인라인 휘슬: 콤팩트 수평 레이아웃 */
+.picker-timer-phase .picker-timer-whistle-wrap {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+}
+
+.picker-timer-phase .picker-timer-whistle-btn-area {
+    width: 48px;
+    height: 48px;
+}
+
+.picker-timer-phase .picker-timer-whistle-btn {
+    width: 44px;
+    height: 44px;
+}
+
+.picker-timer-phase .picker-tw-mode-btn {
+    padding: 4px 12px;
+    font-size: 12px;
+}
+
+/* 전체화면 모드 */
+.picker-timer-phase.picker-timer-fullscreen {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    border-radius: 0;
+    justify-content: center;
+    gap: 28px;
+    padding: 20px;
+}
+
+/* 전체화면일 때 휘슬 원래 세로 레이아웃 복원 */
+.picker-timer-phase.picker-timer-fullscreen .picker-timer-whistle-wrap {
+    display: flex;
+    flex-direction: column;
+    padding: 16px 24px 20px;
+}
+
+.picker-timer-phase.picker-timer-fullscreen .picker-timer-whistle-btn-area {
+    width: 72px;
+    height: 72px;
+}
+
+.picker-timer-phase.picker-timer-fullscreen .picker-timer-whistle-btn {
+    width: 60px;
+    height: 60px;
+}
+
+.picker-timer-phase.picker-timer-fullscreen .picker-tw-mode-btn {
+    padding: 6px 16px;
+    font-size: 13px;
+}
+
+.picker-timer-label {
+    font-size: 16px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.5);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.picker-timer-display {
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: 64px;
+    font-weight: 800;
+    letter-spacing: 6px;
+    text-align: center;
+    user-select: none;
+    transition: color 0.5s ease, text-shadow 0.5s ease;
+    line-height: 1;
+}
+
+/* 전체화면 큰 폰트 */
+.picker-timer-phase.picker-timer-fullscreen .picker-timer-display {
+    font-size: min(28vw, 30dvh, 200px);
+}
+
+/* 타이머 색상 상태 */
+.picker-timer-state-normal {
+    color: #7C9EF5;
+    text-shadow: 0 0 40px rgba(124,158,245,0.3);
+}
+
+.picker-timer-state-warning {
+    color: #F5A623;
+    text-shadow: 0 0 40px rgba(245,166,35,0.4);
+}
+
+.picker-timer-state-danger {
+    color: #F57C7C;
+    text-shadow: 0 0 40px rgba(245,124,124,0.5);
+    animation: picker-pulse 1s ease-in-out infinite;
+}
+
+@keyframes picker-pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.06); opacity: 0.8; }
+}
+
+/* --- 인라인 휘슬 영역 --- */
+.picker-timer-whistle-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 20px;
+    padding: 16px 24px 20px;
+}
+
+.picker-timer-whistle-modes {
+    display: flex;
+    gap: 8px;
+}
+
+.picker-tw-mode-btn {
+    padding: 6px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.5);
+    background: rgba(255,255,255,0.08);
+    border: 2px solid transparent;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+}
+
+.picker-tw-mode-btn:active {
+    transform: scale(0.95);
+}
+
+.picker-tw-mode-btn.active {
+    color: #fff;
+    background: #F472B6;
+    border-color: #F472B6;
+}
+
+.picker-timer-whistle-btn-area {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 72px;
+    height: 72px;
+}
+
+/* 휘슬 리플 링 */
+.picker-tw-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 2px solid rgba(245,166,11,0.4);
+    pointer-events: none;
+    opacity: 0;
+}
+
+.picker-tw-ring--animate {
+    animation: picker-tw-ripple 0.8s ease-out forwards;
+}
+
+.picker-tw-ring--continuous {
+    animation: picker-tw-ripple-loop 1.2s ease-out infinite;
+}
+
+@keyframes picker-tw-ripple {
+    0% { transform: scale(1); opacity: 0.6; }
+    100% { transform: scale(1.8); opacity: 0; }
+}
+
+@keyframes picker-tw-ripple-loop {
+    0% { transform: scale(1); opacity: 0.5; }
+    100% { transform: scale(2); opacity: 0; }
+}
+
+/* 휘슬 버튼 */
+.picker-timer-whistle-btn {
+    position: relative;
+    z-index: 1;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #F59E0B 0%, #EF4444 100%);
+    border: none;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s;
+    box-shadow: 0 4px 20px rgba(239,68,68,0.5);
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+}
+
+.picker-timer-whistle-btn:active,
+.picker-timer-whistle-btn--pressed {
+    transform: scale(0.92);
+    box-shadow: 0 2px 10px rgba(239,68,68,0.4);
+}
+
+/* --- 하단 컨트롤 (일시정지/종료) --- */
+.picker-timer-sub-controls {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.picker-timer-ctrl-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 14px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.8);
+}
+
+.picker-timer-ctrl-btn:active {
+    transform: scale(0.95);
+}
+
+.picker-timer-ctrl-btn:hover {
+    background: rgba(255,255,255,0.15);
+}
+
+.picker-timer-ctrl-stop {
+    background: rgba(245,124,124,0.2);
+    color: #F57C7C;
+}
+
+.picker-timer-ctrl-stop:hover {
+    background: rgba(245,124,124,0.3);
+}
+
+/* hidden 유틸리티 (타이머 내부) */
+.picker-timer-phase .hidden {
+    display: none !important;
+}
+
+/* --- 모둠 이름 유형 선택 --- */
+.picker-naming-options {
+    display: flex;
+    gap: 8px;
+}
+
+.picker-naming-btn {
+    flex: 1;
+    padding: 8px;
+    border: 1.5px solid #E5E7EB;
+    background: white;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #6B7280;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-align: center;
+}
+
+.picker-naming-btn.active {
+    border-color: #7C9EF5;
+    background: rgba(124,158,245,0.08);
+    color: #7C9EF5;
+}
+
+.picker-naming-btn:active {
+    transform: scale(0.97);
+}
+
+/* 커스텀 이름 입력 */
+.picker-custom-names {
+    display: none;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-top: 4px;
+}
+
+.picker-custom-names.open {
+    display: flex;
+}
+
+.picker-custom-name-input {
+    flex: 1 1 calc(50% - 4px);
+    min-width: 0;
+    padding: 8px 12px;
+    border: 1.5px solid #E5E7EB;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+    background: white;
+    transition: border-color 0.15s;
+}
+
+.picker-custom-name-input:focus {
+    outline: none;
+    border-color: #7C9EF5;
+}
+
+.picker-custom-name-input::placeholder {
+    color: #D1D5DB;
+    font-weight: 400;
+}
+
+/* --- 참가자 수 표시 --- */
+.picker-participant-count {
+    font-size: 13px;
+    font-weight: 600;
+    color: #7C9EF5;
+    text-align: right;
+    padding: 4px 0;
+}
+
+/* --- 빈 상태 --- */
+.picker-empty {
+    text-align: center;
+    padding: 32px 16px;
+    color: #9CA3AF;
+}
+
+.picker-empty .empty-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+}
+
+.picker-empty .empty-text {
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+/* ======================================
+   반응형
+   ====================================== */
+
+/* 작은 화면 */
+@media (max-width: 380px) {
+    .picker-phase2-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 6px;
+    }
+
+    .picker-action-btn {
+        padding: 10px 4px;
+        font-size: 11px;
+    }
+
+    .picker-timer-display {
+        font-size: 48px;
+    }
+
+    .picker-timer-sub-controls {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .picker-timer-ctrl-btn {
+        padding: 10px 16px;
+        font-size: 13px;
+    }
+
+    .picker-settings-4col {
+        gap: 8px;
+    }
+}
+
+/* 큰 화면 */
+@media (min-width: 768px) {
+    .picker-timer-display {
+        font-size: 80px;
+    }
+
+    .picker-timer-phase.picker-timer-fullscreen .picker-timer-whistle-wrap {
+        padding: 20px 32px 24px;
+    }
+}

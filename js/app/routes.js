@@ -15,6 +15,8 @@ import * as Emotion from '../components/Emotion.js';
 import * as Stats from '../components/Stats.js';
 import * as Settings from '../components/Settings.js';
 import * as PraiseManagement from '../components/PraiseManagement.js';
+import * as Picker from '../components/Picker.js';
+import * as TimerView from '../components/TimerView.js';
 
 // 로그인 컴포넌트
 import * as LoginSelect from '../components/LoginSelect.js';
@@ -44,21 +46,24 @@ export function initRouter() {
                 const html = LoginSelect.render();
                 setTimeout(() => LoginSelect.afterRender?.(), 0);
                 return html;
-            }
+            },
+            unmount: () => LoginSelect.unmount?.()
         },
         'teacher-login': {
             render: () => {
                 const html = TeacherLogin.render();
                 setTimeout(() => TeacherLogin.afterRender?.(), 0);
                 return html;
-            }
+            },
+            unmount: () => TeacherLogin.unmount?.()
         },
         'class-select': {
             render: async () => {
                 const html = await ClassSelect.render();
                 setTimeout(() => ClassSelect.afterRender?.(), 0);
                 return html;
-            }
+            },
+            unmount: () => ClassSelect.unmount?.()
         },
         // 교사 모드 라우트
         'dashboard': {
@@ -70,7 +75,8 @@ export function initRouter() {
                 const html = Dashboard.render();
                 setTimeout(() => Dashboard.afterRender?.(), 0);
                 return html;
-            }
+            },
+            unmount: () => Dashboard.unmount?.()
         },
         'timetable': {
             render: () => {
@@ -81,7 +87,8 @@ export function initRouter() {
                 const html = Timetable.render();
                 setTimeout(() => Timetable.afterRender?.(), 0);
                 return html;
-            }
+            },
+            unmount: () => Timetable.unmount?.()
         },
         'petfarm': {
             render: () => {
@@ -92,7 +99,8 @@ export function initRouter() {
                 const html = PetFarm.render();
                 setTimeout(() => PetFarm.afterRender?.(), 0);
                 return html;
-            }
+            },
+            unmount: () => PetFarm.unmount?.()
         },
         'student': {
             render: (params) => {
@@ -103,7 +111,8 @@ export function initRouter() {
                 const html = StudentDetail.render(params);
                 setTimeout(() => StudentDetail.afterRender?.(params), 0);
                 return html;
-            }
+            },
+            unmount: () => StudentDetail.unmount?.()
         },
         'emotion': {
             render: () => {
@@ -114,7 +123,8 @@ export function initRouter() {
                 const html = Emotion.render();
                 setTimeout(() => Emotion.afterRender?.(), 0);
                 return html;
-            }
+            },
+            unmount: () => Emotion.unmount?.()
         },
         'praise': {
             render: () => {
@@ -125,7 +135,8 @@ export function initRouter() {
                 const html = PraiseManagement.render();
                 setTimeout(() => PraiseManagement.afterRender?.(), 0);
                 return html;
-            }
+            },
+            unmount: () => PraiseManagement.unmount?.()
         },
         'stats': {
             render: () => {
@@ -136,7 +147,8 @@ export function initRouter() {
                 const html = Stats.render();
                 setTimeout(() => Stats.afterRender?.(), 0);
                 return html;
-            }
+            },
+            unmount: () => Stats.unmount?.()
         },
         'settings': {
             render: () => {
@@ -147,7 +159,32 @@ export function initRouter() {
                 const html = Settings.render();
                 setTimeout(() => Settings.afterRender?.(), 0);
                 return html;
-            }
+            },
+            unmount: () => Settings.unmount?.()
+        },
+        'picker': {
+            render: () => {
+                if (!store.isTeacherLoggedIn()) {
+                    setTimeout(() => router.navigate('login'), 0);
+                    return '<div class="text-center p-8">로그인이 필요합니다...</div>';
+                }
+                const html = Picker.render();
+                setTimeout(() => Picker.afterRender?.(), 0);
+                return html;
+            },
+            unmount: () => Picker.unmount?.()
+        },
+        'timer': {
+            render: () => {
+                if (!store.isTeacherLoggedIn()) {
+                    setTimeout(() => router.navigate('login'), 0);
+                    return '<div class="text-center p-8">로그인이 필요합니다...</div>';
+                }
+                const html = TimerView.render();
+                setTimeout(() => TimerView.afterRender?.(), 0);
+                return html;
+            },
+            unmount: () => TimerView.unmount?.()
         },
         // 학생 모드 라우트
         'student-login': {
@@ -155,7 +192,8 @@ export function initRouter() {
                 const html = StudentLogin.render(params);
                 setTimeout(() => StudentLogin.afterRender?.(), 0);
                 return html;
-            }
+            },
+            unmount: () => StudentLogin.unmount?.()
         },
         'student-main': {
             render: () => {
@@ -163,7 +201,8 @@ export function initRouter() {
                 const html = StudentMode.render();
                 setTimeout(() => StudentMode.afterRender?.(), 0);
                 return html;
-            }
+            },
+            unmount: () => StudentMode.unmount?.()
         },
         'student-chat': {
             render: () => {
@@ -171,7 +210,8 @@ export function initRouter() {
                 const html = PetChat.render();
                 setTimeout(() => PetChat.afterRender?.(), 0);
                 return html;
-            }
+            },
+            unmount: () => PetChat.unmount?.()
         },
         'pet-selection': {
             render: () => {
@@ -182,7 +222,8 @@ export function initRouter() {
                 const html = PetSelection.render();
                 setTimeout(() => PetSelection.afterRender?.(), 0);
                 return html;
-            }
+            },
+            unmount: () => PetSelection.unmount?.()
         },
         'pet-collection': {
             render: () => {
@@ -194,7 +235,8 @@ export function initRouter() {
                 const html = PetCollection.render();
                 setTimeout(() => PetCollection.afterRender?.(), 0);
                 return html;
-            }
+            },
+            unmount: () => PetCollection.unmount?.()
         },
         'student-timetable': {
             render: () => {
@@ -206,7 +248,8 @@ export function initRouter() {
                 const html = StudentTimetable.render();
                 setTimeout(() => StudentTimetable.afterRender?.(), 0);
                 return html;
-            }
+            },
+            unmount: () => StudentTimetable.unmount?.()
         },
         'student-praise': {
             render: () => {
@@ -218,7 +261,8 @@ export function initRouter() {
                 const html = StudentPraise.render();
                 setTimeout(() => StudentPraise.afterRender?.(), 0);
                 return html;
-            }
+            },
+            unmount: () => StudentPraise.unmount?.()
         }
     });
 

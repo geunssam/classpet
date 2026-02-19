@@ -4,6 +4,8 @@
  */
 
 import { firebase, STORAGE_KEYS } from './Store.js';
+import { toDateString } from '../utils/dateUtils.js';
+import { showToast } from '../utils/animations.js';
 
 export const emotionMixin = {
     // ==================== 감정 로그 관련 ====================
@@ -67,6 +69,7 @@ export const emotionMixin = {
                 }
             } catch (error) {
                 console.error('Firebase 감정 저장 실패, 오프라인 큐에 추가:', error);
+                showToast('저장에 실패했어요. 나중에 다시 시도합니다.', 'warning');
                 this.addToOfflineQueue({ type: 'saveEmotion', teacherUid, classId, data: newEmotion });
             }
         } else if (teacherUid && classId && this.firebaseEnabled) {
@@ -234,12 +237,9 @@ export const emotionMixin = {
 
     getTodayEmotions() {
         const log = this.getEmotionLog() || [];
-        const now = new Date();
-        const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        const today = toDateString();
         return log.filter(e => {
-            const d = new Date(e.timestamp);
-            const localDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-            return localDate === today;
+            return toDateString(new Date(e.timestamp)) === today;
         });
     },
 

@@ -11,6 +11,7 @@ import {
     openModal,
     closeModal
 } from '../utils/animations.js';
+import { toDateString } from '../utils/dateUtils.js';
 import { bindToolbarToggle, bindMobileDrawer, updateNotificationBadge, updateStudentNotificationBadge } from './navigation.js';
 import { setStudentTab, setHistoryDate } from '../components/StudentMode.js';
 import { showQuickPraise } from '../components/QuickPraise.js';
@@ -77,6 +78,34 @@ export function bindHeaderButtons() {
         quickPraiseToolbarBtn.addEventListener('click', showQuickPraise);
     }
 
+    // 뽑기 버튼 (우측 툴바 + 모바일)
+    const pickerToolbarBtn = document.getElementById('pickerToolbarBtn');
+    if (pickerToolbarBtn) {
+        pickerToolbarBtn.addEventListener('click', () => router.navigate('picker'));
+    }
+    const mobilePickerBtn = document.getElementById('mobilePickerBtn');
+    if (mobilePickerBtn) {
+        mobilePickerBtn.addEventListener('click', () => {
+            document.getElementById('mobileDrawer')?.classList.remove('open');
+            document.getElementById('mobileDrawerOverlay')?.classList.remove('open');
+            router.navigate('picker');
+        });
+    }
+
+    // 타이머 버튼 (우측 툴바 + 모바일)
+    const timerToolbarBtn = document.getElementById('timerToolbarBtn');
+    if (timerToolbarBtn) {
+        timerToolbarBtn.addEventListener('click', () => router.navigate('timer'));
+    }
+    const mobileTimerBtn = document.getElementById('mobileTimerBtn');
+    if (mobileTimerBtn) {
+        mobileTimerBtn.addEventListener('click', () => {
+            document.getElementById('mobileDrawer')?.classList.remove('open');
+            document.getElementById('mobileDrawerOverlay')?.classList.remove('open');
+            router.navigate('timer');
+        });
+    }
+
     // 날짜 버튼 → 감정 히스토리로 이동
     bindDateHistoryButton();
 
@@ -109,8 +138,7 @@ function bindDateHistoryButton() {
 
     if (dateHistoryBtn && historyDatePicker) {
         // 오늘 날짜를 기본값으로 설정
-        const now = new Date();
-        const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        const today = toDateString();
         historyDatePicker.value = today;
         historyDatePicker.max = today; // 미래 날짜 선택 불가
 

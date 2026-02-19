@@ -23,6 +23,7 @@ import {
     serverTimestamp
 } from './init.js';
 import { studentSubRef, studentSubDoc } from './helpers.js';
+import { toDateString } from '../utils/dateUtils.js';
 
 export async function saveEmotion(teacherUid, classId, emotion) {
     const db = getDb();
@@ -38,7 +39,7 @@ export async function saveEmotion(teacherUid, classId, emotion) {
         const emotionsRef = studentSubRef(uid, cId, studentId, 'emotions');
         const now = new Date();
         const nowISO = now.toISOString();
-        const localDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        const localDate = toDateString(now);
 
         const emotionData = {
             studentId: emotion.studentId,
@@ -175,8 +176,7 @@ export async function getTodayEmotions(teacherUid, classId) {
     if (!uid || !cId) return [];
 
     try {
-        const now = new Date();
-        const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        const today = toDateString();
         const emotionsGroup = collectionGroup(db, 'emotions');
         const q = query(
             emotionsGroup,
@@ -271,8 +271,7 @@ export function subscribeToTodayEmotions(teacherUid, classId, callback) {
     if (!uid || !cId) return null;
 
     try {
-        const now = new Date();
-        const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        const today = toDateString();
         const emotionsGroup = collectionGroup(db, 'emotions');
         const q = query(
             emotionsGroup,

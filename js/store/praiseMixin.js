@@ -5,6 +5,8 @@
 
 import { firebase, STORAGE_KEYS } from './Store.js';
 import { PRAISE_CATEGORIES } from '../constants/index.js';
+import { toDateString } from '../utils/dateUtils.js';
+import { showToast } from '../utils/animations.js';
 
 export const praiseMixin = {
     // ==================== 칭찬 로그 관련 ====================
@@ -58,6 +60,7 @@ export const praiseMixin = {
                 console.log('✅ Firebase 칭찬 저장 완료:', result);
             } catch (error) {
                 console.error('❌ Firebase 칭찬 저장 실패:', error);
+                showToast('저장에 실패했어요. 나중에 다시 시도합니다.', 'warning');
                 this.addToOfflineQueue({ type: 'savePraise', teacherUid, classId, data: praise });
             }
         } else {
@@ -77,8 +80,7 @@ export const praiseMixin = {
 
     getTodayPraises() {
         const log = this.getPraiseLog() || [];
-        const now = new Date();
-        const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        const today = toDateString();
         return log.filter(p => p.timestamp.startsWith(today));
     },
 

@@ -9,11 +9,12 @@ import { router } from '../router.js';
 import { getPetEmoji } from '../utils/petLogic.js';
 import { showToast } from '../utils/animations.js';
 import { onEmotionUpdate } from '../services/EmotionService.js';
+import { toDateString } from '../utils/dateUtils.js';
 
 let viewMode = 'checkin'; // 'checkin', 'history', 'attention'
 let emotionsUnsubscribe = null; // 실시간 구독 해제 함수
 let isFirebaseMode = false; // Firebase 모드 여부
-let selectedDate = (() => { const n = new Date(); return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`; })(); // 선택된 날짜 (기본: 오늘)
+let selectedDate = toDateString(); // 선택된 날짜 (기본: 오늘)
 let historySubView = 'chatList'; // 'chatList' | 'chatRoom'
 let selectedChatStudentId = null;
 
@@ -107,7 +108,7 @@ export function render() {
                                 return isSent ? `
                                 <div class="rounded-lg py-1 flex items-center cursor-pointer transition-colors" style="background-color: rgba(124,158,245,0.18);"
                                      onmouseenter="this.style.backgroundColor='rgba(124,158,245,0.3)'" onmouseleave="this.style.backgroundColor='rgba(124,158,245,0.18)'"
-                                     onclick="window.classpet.openChatRoom('${student.id}')">
+                                     data-action="open-chat" data-student-id="${student.id}">
                                     <span class="text-sm leading-none flex-shrink-0" style="width:24px; text-align:center;">${getPetEmoji(student.petType, student.level)}</span>
                                     <span class="text-[10px] font-medium truncate flex-1 text-center">${student.number || ''}. ${student.name}</span>
                                     <span class="text-base leading-none flex-shrink-0" style="width:24px; text-align:center;">${eInfo ? eInfo.icon : ''}</span>
@@ -140,7 +141,7 @@ export function render() {
                         const emotionInfo = emotion ? EMOTION_TYPES[emotion.emotion] : null;
                         return `
                         <div class="bg-white rounded-xl p-3 cursor-pointer hover:bg-gray-50"
-                             onclick="window.classpet.router.navigate('student', { id: '${student.id}' })">
+                             data-action="open-detail" data-student-id="${student.id}">
                             <div class="flex items-center gap-3">
                                 <span class="text-2xl">${getPetEmoji(student.petType, student.level)}</span>
                                 <div class="flex-1">
@@ -245,7 +246,7 @@ function renderChatRoomList(students) {
 
                 return `
                     <div class="flex items-center gap-3 bg-white rounded-xl p-3 cursor-pointer hover:bg-gray-50 active:bg-gray-100 transition-colors"
-                         onclick="window.classpet.openChatRoom('${student.id}')">
+                         data-action="open-chat" data-student-id="${student.id}">
                         <div class="relative flex-shrink-0">
                             <span class="text-3xl">${getPetEmoji(student.petType, student.level)}</span>
                             ${emotionInfo ? `<span class="absolute -bottom-1 -right-1 text-sm">${emotionInfo.icon}</span>` : ''}
@@ -678,6 +679,23 @@ function bindChatReplyEvents() {
 }
 
 export function afterRender() {
+    // 이벤트 위임: data-action 클릭 처리
+    const content = document.getElementById('content');
+    if (content) {
+        content.addEventListener('click', (e) => {
+            const chatBtn = e.target.closest('[data-action="open-chat"]');
+            if (chatBtn) {
+                window.classpet.openChatRoom(chatBtn.dataset.studentId);
+                return;
+            }
+            const detailBtn = e.target.closest('[data-action="open-detail"]');
+            if (detailBtn) {
+                router.navigate('student', { id: detailBtn.dataset.studentId });
+                return;
+            }
+        });
+    }
+
     // 탭 전환
     document.querySelectorAll('.tab-item').forEach(tab => {
         tab.addEventListener('click', () => {

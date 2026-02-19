@@ -26,6 +26,10 @@ export const classMixin = {
      * 현재 학급 ID 설정
      */
     setCurrentClassId(classId) {
+        // 학급 전환 시 이전 학급의 Firebase 구독 해제
+        if (this.currentClassId && this.currentClassId !== classId) {
+            this.unsubscribeAllFirebase();
+        }
         this.currentClassId = classId;
         firebase.setCurrentClassId(classId);
         localStorage.setItem(STORAGE_KEYS.CURRENT_CLASS_ID, classId || '');

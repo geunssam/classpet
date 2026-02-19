@@ -199,6 +199,12 @@ function updateGivePraiseBtn() {
 function executeQuickPraise() {
     if (selectedStudents.size === 0 || selectedCategories.size === 0) return;
 
+    // 대량 칭찬 확인 (10건 초과 시)
+    const totalPraises = selectedStudents.size * selectedCategories.size;
+    if (totalPraises > 10) {
+        if (!confirm(`${selectedStudents.size}명 × ${selectedCategories.size}개 = 총 ${totalPraises}건의 칭찬을 보내시겠습니까?`)) return;
+    }
+
     const categories = store.getPraiseCategories();
     const catArray = [...selectedCategories];
 

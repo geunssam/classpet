@@ -4,6 +4,7 @@
 
 import { firebase, STORAGE_KEYS, SESSION_KEYS } from './Store.js';
 import { DEFAULT_SETTINGS } from '../constants/index.js';
+import { showToast } from '../utils/animations.js';
 
 export const settingsMixin = {
     // ==================== 설정 관련 ====================
@@ -62,6 +63,7 @@ export const settingsMixin = {
             try {
                 await firebase.saveNote(teacherUid, classId, note);
             } catch (error) {
+                showToast('저장에 실패했어요. 나중에 다시 시도합니다.', 'warning');
                 this.addToOfflineQueue({ type: 'saveNote', teacherUid, classId, data: note });
             }
         } else {

@@ -15,6 +15,14 @@ export const offlineMixin = {
     },
 
     addToOfflineQueue(action) {
+        // 5초 이내 동일 액션 중복 방지
+        const isDuplicate = this.offlineQueue.some(q =>
+            q.type === action.type &&
+            q.data?.studentId === action.data?.studentId &&
+            Date.now() - new Date(q.timestamp).getTime() < 5000
+        );
+        if (isDuplicate) return;
+
         this.offlineQueue.push({
             ...action,
             timestamp: new Date().toISOString()
@@ -23,26 +31,32 @@ export const offlineMixin = {
     },
 
     async processOfflineQueue() {
+        if (this._isProcessingQueue) return;
         if (!this.isOnline || !this.firebaseEnabled || this.offlineQueue.length === 0) {
             return;
         }
 
+        this._isProcessingQueue = true;
         console.log(`오프라인 큐 처리 시작: ${this.offlineQueue.length}개`);
 
         const queue = [...this.offlineQueue];
         this.offlineQueue = [];
 
-        for (const action of queue) {
-            try {
-                await this.executeQueuedAction(action);
-            } catch (error) {
-                console.error('큐 처리 실패:', action, error);
-                this.offlineQueue.push(action);
+        try {
+            for (const action of queue) {
+                try {
+                    await this.executeQueuedAction(action);
+                } catch (error) {
+                    console.error('큐 처리 실패:', action, error);
+                    this.offlineQueue.push(action);
+                }
             }
-        }
 
-        this.saveOfflineQueue();
-        console.log('오프라인 큐 처리 완료');
+            this.saveOfflineQueue();
+            console.log('오프라인 큐 처리 완료');
+        } finally {
+            this._isProcessingQueue = false;
+        }
     },
 
     async executeQueuedAction(action) {

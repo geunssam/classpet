@@ -79,7 +79,8 @@ service cloud.firestore {
             // 학생 (익명 인증): 생성 시 경로 일치 검증
             allow create: if isAuthenticated()
               && request.resource.data.teacherUid == uid
-              && request.resource.data.classId == classId;
+              && request.resource.data.classId == classId
+              && request.resource.data.studentId == studentId;
           }
 
           // 펫 데이터: /teachers/{uid}/classes/{classId}/students/{studentId}/pets/{petId}
@@ -139,8 +140,9 @@ service cloud.firestore {
       // 읽기: 인증된 모든 사용자 (학생이 학급코드로 접속할 때)
       allow read: if isAuthenticated();
 
-      // 생성: 인증된 사용자 (학급 생성 시 - 교사)
-      allow create: if isAuthenticated();
+      // 생성: Google 인증 교사만 (익명 인증 학생 차단)
+      allow create: if isAuthenticated()
+        && request.resource.data.teacherUid == request.auth.uid;
 
       // 수정/삭제: 해당 학급 소유자만 (계층 구조에서는 teacherUid로 확인)
       allow update, delete: if isAuthenticated() &&

@@ -13,6 +13,16 @@ import { startEmotionSubscription, stopEmotionSubscription } from '../services/E
 import { startPetSubscription, stopPetSubscription } from '../services/PetService.js';
 
 /**
+ * Firebase 서비스 구독 시작 + store에 정리 함수 등록
+ * unsubscribeAllFirebase() 호출 시 서비스 구독도 함께 해제됨
+ */
+function startFirebaseServices() {
+    startEmotionSubscription();
+    startPetSubscription();
+    store.firebaseListeners.push(stopEmotionSubscription, stopPetSubscription);
+}
+
+/**
  * 앱 초기화
  */
 async function initApp() {
@@ -57,11 +67,8 @@ async function initApp() {
             console.log('📦 Firebase 학급 데이터 로드 완료');
         }
 
-        // EmotionService: 백그라운드 감정 구독 시작
-        startEmotionSubscription();
-
-        // PetService: 백그라운드 펫 구독 시작
-        startPetSubscription();
+        // Firebase 서비스 구독 시작 + 정리 함수 등록
+        startFirebaseServices();
 
         // 로그인된 상태
         if (!currentHash || currentHash === 'login' || currentHash === 'teacher-login') {
@@ -77,7 +84,7 @@ async function initApp() {
         // 로그인되지 않은 상태에서 보호된 라우트 접근 시
         // student-login 등 학생 모드 라우트는 제외
         const studentModeRoutes = ['student-login', 'student-main', 'student-chat', 'pet-selection', 'pet-collection', 'student-timetable', 'student-praise'];
-        const protectedRoutes = ['dashboard', 'timetable', 'petfarm', 'student/', 'emotion', 'stats', 'settings'];
+        const protectedRoutes = ['dashboard', 'timetable', 'petfarm', 'student/', 'emotion', 'stats', 'settings', 'picker', 'timer'];
         if (!studentModeRoutes.includes(currentHash) && protectedRoutes.some(r => currentHash.startsWith(r))) {
             console.log('🔄 초기 라우트: 로그인');
             window.location.hash = 'login';
@@ -112,9 +119,8 @@ async function initApp() {
         }
         // Firebase 데이터 로드 완료 시 현재 화면 갱신
         if (type === 'dataLoaded') {
-            // 학급 전환 → EmotionService + PetService 재구독
-            startEmotionSubscription();
-            startPetSubscription();
+            // 학급 전환 → Firebase 서비스 재구독
+            startFirebaseServices();
 
             const currentRoute = window.location.hash.slice(1).split('/')[0].split('?')[0];
             const skipRoutes = ['login', 'teacher-login', 'class-select', 'student-login'];

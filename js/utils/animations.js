@@ -15,17 +15,6 @@ export function bounceAnimation(element) {
 }
 
 /**
- * 펫 흔들기 애니메이션
- */
-export function wiggleAnimation(element) {
-    if (!element) return;
-    element.classList.add('pet-wiggle');
-    setTimeout(() => {
-        element.classList.remove('pet-wiggle');
-    }, 300);
-}
-
-/**
  * 레벨업 애니메이션
  */
 export function levelUpAnimation(element) {
@@ -34,38 +23,6 @@ export function levelUpAnimation(element) {
     setTimeout(() => {
         element.classList.remove('pet-levelup');
     }, 800);
-}
-
-/**
- * 반짝임 애니메이션 시작
- */
-export function startSparkle(element) {
-    if (!element) return;
-    element.classList.add('pet-sparkle');
-}
-
-/**
- * 반짝임 애니메이션 중지
- */
-export function stopSparkle(element) {
-    if (!element) return;
-    element.classList.remove('pet-sparkle');
-}
-
-/**
- * 펄스 애니메이션 시작
- */
-export function startPulse(element) {
-    if (!element) return;
-    element.classList.add('pet-pulse');
-}
-
-/**
- * 펄스 애니메이션 중지
- */
-export function stopPulse(element) {
-    if (!element) return;
-    element.classList.remove('pet-pulse');
 }
 
 /**
@@ -144,62 +101,6 @@ export function showToast(message, type = 'default', options = {}) {
 }
 
 /**
- * 경험치 바 애니메이션
- */
-export function animateExpBar(element, targetPercent, duration = 500) {
-    if (!element) return;
-
-    const startPercent = parseFloat(element.style.width) || 0;
-    const diff = targetPercent - startPercent;
-    const startTime = performance.now();
-
-    function animate(currentTime) {
-        const elapsed = currentTime - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-
-        // 이징 함수 (ease-out)
-        const easeOut = 1 - Math.pow(1 - progress, 3);
-        const currentPercent = startPercent + (diff * easeOut);
-
-        element.style.width = `${currentPercent}%`;
-
-        if (progress < 1) {
-            requestAnimationFrame(animate);
-        }
-    }
-
-    requestAnimationFrame(animate);
-}
-
-/**
- * 숫자 카운트업 애니메이션
- */
-export function animateNumber(element, targetNumber, duration = 500, prefix = '', suffix = '') {
-    if (!element) return;
-
-    const startNumber = parseInt(element.textContent.replace(/[^0-9]/g, '')) || 0;
-    const diff = targetNumber - startNumber;
-    const startTime = performance.now();
-
-    function animate(currentTime) {
-        const elapsed = currentTime - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-
-        // 이징 함수 (ease-out)
-        const easeOut = 1 - Math.pow(1 - progress, 3);
-        const currentNumber = Math.round(startNumber + (diff * easeOut));
-
-        element.textContent = `${prefix}${currentNumber}${suffix}`;
-
-        if (progress < 1) {
-            requestAnimationFrame(animate);
-        }
-    }
-
-    requestAnimationFrame(animate);
-}
-
-/**
  * 카드 페이드인 애니메이션
  */
 export function fadeInCards(container, selector = '.card', delay = 100) {
@@ -216,35 +117,6 @@ export function fadeInCards(container, selector = '.card', delay = 100) {
             card.style.transform = 'translateY(0)';
         }, index * delay);
     });
-}
-
-/**
- * 셰이크 애니메이션 (에러/경고용)
- */
-export function shakeAnimation(element) {
-    if (!element) return;
-
-    element.style.animation = 'none';
-    element.offsetHeight; // 리플로우 트리거
-    element.style.animation = 'shake 0.5s ease';
-
-    // CSS에 shake 애니메이션 없으면 인라인으로 추가
-    if (!document.querySelector('#shake-keyframes')) {
-        const style = document.createElement('style');
-        style.id = 'shake-keyframes';
-        style.textContent = `
-            @keyframes shake {
-                0%, 100% { transform: translateX(0); }
-                10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-                20%, 40%, 60%, 80% { transform: translateX(5px); }
-            }
-        `;
-        document.head.appendChild(style);
-    }
-
-    setTimeout(() => {
-        element.style.animation = '';
-    }, 500);
 }
 
 /**
@@ -326,88 +198,4 @@ export function hideLoading() {
             overlay.remove();
         }, 300);
     }
-}
-
-/**
- * 스크롤 애니메이션
- */
-export function smoothScrollTo(element, offset = 0) {
-    if (!element) return;
-
-    const top = element.getBoundingClientRect().top + window.pageYOffset - offset;
-    window.scrollTo({
-        top,
-        behavior: 'smooth'
-    });
-}
-
-/**
- * 리플 효과 (버튼 클릭)
- */
-export function createRipple(event, color = 'rgba(255, 255, 255, 0.5)') {
-    const button = event.currentTarget;
-    const ripple = document.createElement('span');
-
-    const rect = button.getBoundingClientRect();
-    const size = Math.max(rect.width, rect.height);
-    const x = event.clientX - rect.left - size / 2;
-    const y = event.clientY - rect.top - size / 2;
-
-    ripple.style.cssText = `
-        position: absolute;
-        width: ${size}px;
-        height: ${size}px;
-        background: ${color};
-        border-radius: 50%;
-        left: ${x}px;
-        top: ${y}px;
-        transform: scale(0);
-        animation: ripple 0.6s ease-out;
-        pointer-events: none;
-    `;
-
-    // 리플 애니메이션 CSS 추가
-    if (!document.querySelector('#ripple-keyframes')) {
-        const style = document.createElement('style');
-        style.id = 'ripple-keyframes';
-        style.textContent = `
-            @keyframes ripple {
-                to {
-                    transform: scale(4);
-                    opacity: 0;
-                }
-            }
-        `;
-        document.head.appendChild(style);
-    }
-
-    button.style.position = 'relative';
-    button.style.overflow = 'hidden';
-    button.appendChild(ripple);
-
-    setTimeout(() => {
-        ripple.remove();
-    }, 600);
-}
-
-/**
- * 타이핑 효과
- */
-export function typeWriter(element, text, speed = 50, callback = null) {
-    if (!element) return;
-
-    element.textContent = '';
-    let index = 0;
-
-    function type() {
-        if (index < text.length) {
-            element.textContent += text.charAt(index);
-            index++;
-            setTimeout(type, speed);
-        } else if (callback) {
-            callback();
-        }
-    }
-
-    type();
 }

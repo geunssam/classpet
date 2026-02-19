@@ -4,6 +4,7 @@
 
 import { STORAGE_KEYS } from './Store.js';
 import { EMOTION_TYPES } from '../constants/index.js';
+import { toDateString } from '../utils/dateUtils.js';
 
 export const notificationMixin = {
     // ==================== 알림 관리 ====================
@@ -61,8 +62,7 @@ export const notificationMixin = {
 
     getTodayUnreadNotifications() {
         const notifications = this.getNotifications() || [];
-        const now = new Date();
-        const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        const today = toDateString();
         return notifications.filter(n => !n.read && n.timestamp.startsWith(today));
     },
 

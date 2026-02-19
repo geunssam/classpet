@@ -35,7 +35,7 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+            font-family: 'Paperlogy', -apple-system, 'Apple SD Gothic Neo', sans-serif;
             background: #FFF9F0;
             min-height: 100vh;
             min-height: -webkit-fill-available;
@@ -92,9 +92,12 @@
         <link rel="stylesheet" href="css/style.css">
     </noscript>
 
-    <!-- Google Fonts - 완전 비동기 (옵션) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- 폰트 CDN (Paperlogy + GmarketSans) -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/fonts-archive/Paperlogy/subsets/Paperlogy-dynamic-subset.css" />
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/fonts-archive/GmarketSans/GmarketSans.css" />
 </head>
 
 <body>
@@ -304,6 +307,33 @@
                         </span>
                         <span class="toolbar-text">빠른 칭찬</span>
                     </button>
+                    <button id="pickerToolbarBtn" class="toolbar-btn">
+                        <span class="toolbar-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <circle cx="12" cy="12" r="10" />
+                                <path d="M12 8v4l2 2" />
+                                <path d="M8.5 8.5L12 12" />
+                                <circle cx="12" cy="5" r="1" fill="currentColor" stroke="none" />
+                                <circle cx="17.5" cy="8.5" r="1" fill="currentColor" stroke="none" />
+                                <circle cx="17.5" cy="15.5" r="1" fill="currentColor" stroke="none" />
+                                <circle cx="12" cy="19" r="1" fill="currentColor" stroke="none" />
+                                <circle cx="6.5" cy="15.5" r="1" fill="currentColor" stroke="none" />
+                                <circle cx="6.5" cy="8.5" r="1" fill="currentColor" stroke="none" />
+                            </svg>
+                        </span>
+                        <span class="toolbar-text">뽑기</span>
+                    </button>
+                    <button id="timerToolbarBtn" class="toolbar-btn">
+                        <span class="toolbar-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <circle cx="12" cy="13" r="8" />
+                                <path d="M12 9v4l2 2" />
+                                <line x1="12" y1="1" x2="12" y2="3" />
+                                <line x1="9" y1="1" x2="15" y2="1" />
+                            </svg>
+                        </span>
+                        <span class="toolbar-text">타이머</span>
+                    </button>
                     <button id="notificationBtn" class="toolbar-btn">
                         <span class="toolbar-icon">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -459,6 +489,32 @@
                 </button>
             </div>
             <div class="mobile-drawer-tools">
+                <button id="mobilePickerBtn" class="mobile-tool-btn">
+                    <span class="mobile-tool-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <circle cx="12" cy="12" r="10" />
+                            <path d="M12 8v4l2 2" />
+                            <circle cx="12" cy="5" r="1" fill="currentColor" stroke="none" />
+                            <circle cx="17.5" cy="8.5" r="1" fill="currentColor" stroke="none" />
+                            <circle cx="17.5" cy="15.5" r="1" fill="currentColor" stroke="none" />
+                            <circle cx="12" cy="19" r="1" fill="currentColor" stroke="none" />
+                            <circle cx="6.5" cy="15.5" r="1" fill="currentColor" stroke="none" />
+                            <circle cx="6.5" cy="8.5" r="1" fill="currentColor" stroke="none" />
+                        </svg>
+                    </span>
+                    <span>뽑기</span>
+                </button>
+                <button id="mobileTimerBtn" class="mobile-tool-btn">
+                    <span class="mobile-tool-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <circle cx="12" cy="13" r="8" />
+                            <path d="M12 9v4l2 2" />
+                            <line x1="12" y1="1" x2="12" y2="3" />
+                            <line x1="9" y1="1" x2="15" y2="1" />
+                        </svg>
+                    </span>
+                    <span>타이머</span>
+                </button>
                 <button id="mobileQuickPraiseBtn" class="mobile-tool-btn">
                     <span class="mobile-tool-icon">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -648,19 +704,6 @@
         }
     </script>
 
-    <!-- Google Fonts 지연 로딩 -->
-    <script>
-        // 앱 로드 완료 후 폰트 로딩
-        window.addEventListener('load', function () {
-            requestIdleCallback ? requestIdleCallback(loadFonts) : setTimeout(loadFonts, 100);
-        });
-        function loadFonts() {
-            const link = document.createElement('link');
-            link.rel = 'stylesheet';
-            link.href = 'https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700&display=swap';
-            document.head.appendChild(link);
-        }
-    </script>
 </body>
 
 </html>

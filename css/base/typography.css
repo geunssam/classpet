@@ -2,6 +2,11 @@
    타이포그래피 및 입력/버튼 기본 스타일
    ====================================== */
 
+/* Display 폰트 유틸리티 */
+.font-display {
+    font-family: var(--font-display);
+}
+
 /* 입력 필드 */
 input[type="text"],
 input[type="number"],
@@ -61,6 +66,10 @@ input[type="password"]:focus {
 .btn-primary:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(124, 158, 245, 0.4);
+}
+
+.btn:active {
+    transform: scale(0.97);
 }
 
 .btn-secondary {
@@ -130,6 +139,7 @@ input[type="password"]:focus {
 
 /* 섹션 제목 */
 .section-title {
+    font-family: var(--font-display);
     font-size: 18px;
     font-weight: 700;
     color: #1F2937;
@@ -187,7 +197,8 @@ input[type="password"]:focus {
 .tab-item.active {
     background: linear-gradient(135deg, #7C9EF5 0%, #A78BFA 100%);
     color: white;
-    box-shadow: 0 4px 12px rgba(124, 158, 245, 0.3);
+    font-weight: 600;
+    box-shadow: 0 4px 14px rgba(124, 158, 245, 0.4);
 }
 
 /* 스크롤바 스타일링 */

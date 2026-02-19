@@ -18,7 +18,8 @@ module.exports = {
         'cream-dark': '#FFF3E0',
       },
       fontFamily: {
-        sans: ['Pretendard', '-apple-system', 'BlinkMacSystemFont', 'system-ui', 'Roboto', 'sans-serif'],
+        sans: ['Paperlogy', '-apple-system', 'Apple SD Gothic Neo', 'sans-serif'],
+        display: ['GmarketSans', 'Paperlogy', 'sans-serif'],
       },
       borderRadius: {
         'xl': '16px',

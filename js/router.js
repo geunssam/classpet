@@ -102,6 +102,11 @@ class Router {
         const component = this.routes[route];
 
         if (component) {
+            // 이전 컴포넌트 정리 (Firebase 구독 해제 등)
+            if (this.currentComponent && typeof this.currentComponent.unmount === 'function') {
+                this.currentComponent.unmount();
+            }
+
             this.currentRoute = route;
 
             // 네비게이션 업데이트
@@ -110,9 +115,11 @@ class Router {
             // 컴포넌트 렌더링
             try {
                 if (typeof component === 'function') {
+                    this.currentComponent = null;
                     const content = await component(params);
                     this.render(content);
                 } else if (typeof component.render === 'function') {
+                    this.currentComponent = component;
                     const content = await component.render(params);
                     this.render(content);
 
