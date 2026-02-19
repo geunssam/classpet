@@ -29,13 +29,107 @@
     background: #FFF9F0;
 }
 
-/* 통계 카드 */
+/* 통계 카드 (레거시) */
 .stat-card {
     background: linear-gradient(135deg, rgba(124, 158, 245, 0.1) 0%, rgba(124, 224, 163, 0.1) 100%);
     border-radius: 16px;
     padding: 16px;
     text-align: center;
 }
+
+/* 통계 요약 카드 */
+.stat-summary-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 16px 8px;
+    border-radius: 16px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-summary-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.5) 0%, transparent 100%);
+    border-radius: 16px 16px 0 0;
+    pointer-events: none;
+}
+
+.stat-summary-card:hover {
+    transform: translateY(-2px);
+}
+
+.stat-summary-card .stat-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+}
+
+.stat-summary-card .stat-value {
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.5px;
+}
+
+.stat-summary-card .stat-label {
+    font-size: 12px;
+    font-weight: 500;
+    opacity: 0.7;
+}
+
+/* 학생 카드 - 인디고 */
+.stat-summary-card.stat-students {
+    background: linear-gradient(145deg, rgba(124,158,245,0.06) 0%, rgba(124,158,245,0.02) 100%);
+    box-shadow:
+        0 1px 8px rgba(124,158,245,0.06),
+        inset 0 1px 0 rgba(255,255,255,0.8);
+}
+.stat-summary-card.stat-students .stat-icon {
+    background: linear-gradient(135deg, rgba(124,158,245,0.7), rgba(91,126,217,0.8));
+    box-shadow: 0 2px 8px rgba(124,158,245,0.2);
+}
+.stat-summary-card.stat-students .stat-value { color: #5B7ED9; }
+.stat-summary-card.stat-students .stat-label { color: #8B9DC0; }
+
+/* 칭찬 카드 - 앰버 */
+.stat-summary-card.stat-praises {
+    background: linear-gradient(145deg, rgba(245,166,124,0.06) 0%, rgba(245,224,124,0.02) 100%);
+    box-shadow:
+        0 1px 8px rgba(245,166,124,0.06),
+        inset 0 1px 0 rgba(255,255,255,0.8);
+}
+.stat-summary-card.stat-praises .stat-icon {
+    background: linear-gradient(135deg, rgba(245,166,124,0.75), rgba(224,138,92,0.85));
+    box-shadow: 0 2px 8px rgba(245,166,124,0.2);
+}
+.stat-summary-card.stat-praises .stat-value { color: #D4854A; }
+.stat-summary-card.stat-praises .stat-label { color: #B89878; }
+
+/* 레벨 카드 - 에메랄드 */
+.stat-summary-card.stat-level {
+    background: linear-gradient(145deg, rgba(124,224,163,0.06) 0%, rgba(78,205,196,0.02) 100%);
+    box-shadow:
+        0 1px 8px rgba(124,224,163,0.06),
+        inset 0 1px 0 rgba(255,255,255,0.8);
+}
+.stat-summary-card.stat-level .stat-icon {
+    background: linear-gradient(135deg, rgba(124,224,163,0.75), rgba(5,150,105,0.8));
+    box-shadow: 0 2px 8px rgba(124,224,163,0.2);
+}
+.stat-summary-card.stat-level .stat-value { color: #059669; }
+.stat-summary-card.stat-level .stat-label { color: #7EAE90; }
 
 /* 랭킹 헤더 */
 .ranking-header {

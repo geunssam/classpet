@@ -36,20 +36,20 @@ export function render() {
 
             <!-- 전체 통계 -->
             <div class="grid grid-cols-3 gap-2">
-                <div class="flex items-center justify-center gap-2 bg-indigo-50 border border-indigo-200 rounded-lg px-3 py-4">
-                    <span class="text-xl">👥</span>
-                    <span class="text-base font-bold text-gray-700">학생</span>
-                    <span class="text-indigo-600"><span class="font-extrabold text-lg">${stats.totalStudents}</span><span class="text-sm font-medium">명</span></span>
+                <div class="stat-summary-card stat-students">
+                    <div class="stat-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+                    <div class="stat-value">${stats.totalStudents}</div>
+                    <div class="stat-label">학생</div>
                 </div>
-                <div class="flex items-center justify-center gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-4">
-                    <span class="text-xl">⭐</span>
-                    <span class="text-base font-bold text-gray-700">누적 칭찬</span>
-                    <span class="text-amber-600"><span class="font-extrabold text-lg">${stats.totalPraises}</span><span class="text-sm font-medium">개</span></span>
+                <div class="stat-summary-card stat-praises">
+                    <div class="stat-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+                    <div class="stat-value">${stats.totalPraises}</div>
+                    <div class="stat-label">누적 칭찬</div>
                 </div>
-                <div class="flex items-center justify-center gap-2 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-4">
-                    <span class="text-xl">📈</span>
-                    <span class="text-base font-bold text-gray-700">평균 레벨</span>
-                    <span class="font-extrabold text-lg text-emerald-600">${isNaN(stats.averageLevel) ? 0 : stats.averageLevel}</span>
+                <div class="stat-summary-card stat-level">
+                    <div class="stat-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></div>
+                    <div class="stat-value">${isNaN(stats.averageLevel) ? 0 : stats.averageLevel}</div>
+                    <div class="stat-label">평균 레벨</div>
                 </div>
             </div>
 
