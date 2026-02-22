@@ -329,18 +329,23 @@
     margin-bottom: 0.75rem;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
     border: 1px solid #F3F4F6;
-    transition: box-shadow 0.2s ease;
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
 
 .student-notice-card:hover {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
+.student-notice-card:active {
+    transform: scale(0.98);
+}
+
 .student-notice-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.5rem;
 }
 
 .student-notice-title {
@@ -355,17 +360,84 @@
     white-space: nowrap;
 }
 
-.student-notice-body {
-    font-size: 0.9rem;
-    line-height: 1.7;
-    color: #4B5563;
+/* 카드 미리보기 (2줄 제한) */
+.student-notice-preview {
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: #9CA3AF;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* 상세 모달 */
+.student-notice-detail {
+    background: white;
+    border-radius: 1.25rem;
+    overflow: hidden;
+}
+
+.student-notice-detail-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #F3F4F6;
+}
+
+.student-notice-detail-title {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #1F2937;
+}
+
+.student-notice-detail-date {
+    font-size: 0.8125rem;
+    color: #9CA3AF;
+    margin-top: 0.25rem;
+}
+
+.student-notice-close-btn {
+    color: #9CA3AF;
+    background: transparent;
+    border: none;
+    padding: 0.25rem;
+    cursor: pointer;
+    border-radius: 0.5rem;
+    transition: all 0.2s;
+}
+
+.student-notice-close-btn:hover {
+    color: #374151;
+    background: #F3F4F6;
+}
+
+.student-notice-detail-body {
+    padding: 1.25rem 1.5rem 1.5rem;
+    font-size: 0.9375rem;
+    line-height: 1.8;
+    color: #374151;
+    max-height: 60vh;
+    overflow-y: auto;
     word-break: keep-all;
 }
 
-.student-notice-body p {
+.student-notice-detail-body p {
     margin-bottom: 0.5rem;
 }
 
-.student-notice-body p:last-child {
+.student-notice-detail-body p:last-child {
     margin-bottom: 0;
+}
+
+.student-notice-detail-body ul,
+.student-notice-detail-body ol {
+    padding-left: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.student-notice-detail-body strong,
+.student-notice-detail-body b {
+    font-weight: 700;
 }

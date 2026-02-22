@@ -6,6 +6,8 @@
 import { store } from '../store.js';
 import { router } from '../router.js';
 import { sanitizeHTML } from '../utils/htmlSanitizer.js';
+import { openModal, closeModal, setModalContent } from '../utils/animations.js';
+import { updateStudentNotificationBadge } from '../app/navigation.js';
 
 let noticeUnsubscribe = null;
 
@@ -53,15 +55,41 @@ function renderStudentNoticeList(notices) {
                 <h3 class="student-notice-title">${escapeText(n.title)}</h3>
                 <span class="student-notice-date">${formatDate(n.date)}</span>
             </div>
-            <div class="student-notice-body">${sanitizeHTML(n.content)}</div>
+            <div class="student-notice-preview">${escapeText(stripHTMLSimple(n.content))}</div>
         </div>
     `).join('');
 }
 
 export function afterRender() {
+    const student = store.getCurrentStudent();
+
+    // 읽음 처리: 현재 알림장 중 가장 최신 ID 기록
+    if (student) {
+        const notices = store.getSharedNoticesForStudent(student.id);
+        if (notices.length > 0) {
+            store.setLastSeenStudentNoticeId(notices[0].id);
+            updateStudentNotificationBadge();
+        }
+    }
+
+    // 카드 클릭 → 상세 모달
+    document.getElementById('studentNoticeList')?.addEventListener('click', (e) => {
+        const card = e.target.closest('.student-notice-card');
+        if (!card) return;
+
+        const noticeId = card.dataset.noticeId;
+        const student = store.getCurrentStudent();
+        if (!student) return;
+
+        const notices = store.getSharedNoticesForStudent(student.id);
+        const notice = notices.find(n => n.id === noticeId);
+        if (notice) openNoticeDetail(notice);
+    });
+
     // 실시간 구독으로 교사가 새 알림장을 공유하면 자동 갱신
     noticeUnsubscribe = store.subscribeToNoticesRealtime(() => {
         refreshStudentNoticeList();
+        updateStudentNotificationBadge();
     });
 }
 
@@ -81,6 +109,34 @@ function refreshStudentNoticeList() {
     }
 }
 
+// ==================== 상세 보기 모달 ====================
+
+function openNoticeDetail(notice) {
+    setModalContent(`
+        <div class="student-notice-detail">
+            <div class="student-notice-detail-header">
+                <div>
+                    <h3 class="student-notice-detail-title">${escapeText(notice.title)}</h3>
+                    <p class="student-notice-detail-date">${formatDate(notice.date)} ${formatTime(notice.createdAt)}</p>
+                </div>
+                <button id="closeNoticeDetail" class="student-notice-close-btn">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 6L6 18M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="student-notice-detail-body">${sanitizeHTML(notice.content)}</div>
+        </div>
+    `);
+    openModal();
+
+    const container = document.getElementById('modalContainer');
+    const backdrop = container?.querySelector('.modal-backdrop');
+    if (backdrop) backdrop.onclick = () => closeModal();
+
+    document.getElementById('closeNoticeDetail')?.addEventListener('click', () => closeModal());
+}
+
 // ==================== 유틸리티 ====================
 
 function escapeText(text) {
@@ -90,6 +146,13 @@ function escapeText(text) {
     return div.innerHTML;
 }
 
+function stripHTMLSimple(html) {
+    if (!html) return '';
+    const div = document.createElement('div');
+    div.innerHTML = html;
+    return div.textContent || '';
+}
+
 function formatDate(dateStr) {
     if (!dateStr) return '';
     const [y, m, d] = dateStr.split('-');
@@ -97,4 +160,19 @@ function formatDate(dateStr) {
     const days = ['일', '월', '화', '수', '목', '금', '토'];
     const date = new Date(Number(y), Number(m) - 1, Number(d));
     return `${Number(m)}월 ${Number(d)}일 (${days[date.getDay()]})`;
+}
+
+function formatTime(isoStr) {
+    if (!isoStr) return '';
+    try {
+        const d = new Date(isoStr);
+        if (isNaN(d.getTime())) return '';
+        const h = d.getHours();
+        const m = String(d.getMinutes()).padStart(2, '0');
+        const period = h < 12 ? '오전' : '오후';
+        const hour12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
+        return `${period} ${hour12}:${m}`;
+    } catch {
+        return '';
+    }
 }

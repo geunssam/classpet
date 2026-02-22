@@ -154,5 +154,28 @@ export const noticeMixin = {
         if (lastSeenIndex === -1) return notices.length;
 
         return lastSeenIndex;
+    },
+
+    // ==================== 학생용 알림장 읽음 추적 ====================
+
+    getLastSeenStudentNoticeId() {
+        return sessionStorage.getItem('lastSeenStudentNoticeId') || '';
+    },
+
+    setLastSeenStudentNoticeId(noticeId) {
+        sessionStorage.setItem('lastSeenStudentNoticeId', noticeId || '');
+    },
+
+    getUnreadStudentNoticeCount(studentId) {
+        const notices = this.getSharedNoticesForStudent(studentId);
+        if (notices.length === 0) return 0;
+
+        const lastSeenId = this.getLastSeenStudentNoticeId();
+        if (!lastSeenId) return notices.length;
+
+        const lastSeenIndex = notices.findIndex(n => n.id === lastSeenId);
+        if (lastSeenIndex === -1) return notices.length;
+
+        return lastSeenIndex;
     }
 };

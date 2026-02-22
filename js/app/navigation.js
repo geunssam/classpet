@@ -347,7 +347,10 @@ export function updateStudentNotificationBadge() {
     const lastSeen = parseInt(sessionStorage.getItem('lastSeenPraiseCount') || '0');
     const newPraises = Math.max(0, praises.length - lastSeen);
 
-    const total = unreadReplies + newPraises;
+    // 3. 새 알림장 수
+    const unreadNotices = store.getUnreadStudentNoticeCount?.(student.id) || 0;
+
+    const total = unreadReplies + newPraises + unreadNotices;
 
     if (badge) {
         if (total > 0) {

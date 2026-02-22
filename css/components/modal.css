@@ -249,6 +249,9 @@
     padding: 0.5rem 0;
     outline: none;
     text-shadow: 0 0 6px rgba(255,255,255,0.08);
+    position: relative;
+    z-index: 2;
+    -webkit-appearance: none;
 }
 
 .chalkboard-input::placeholder {
