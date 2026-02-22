@@ -6,7 +6,7 @@
 import { store } from '../store.js';
 import { router } from '../router.js';
 import { toDateString } from '../utils/dateUtils.js';
-import { showToast } from '../utils/animations.js';
+import { showToast, openModal, closeModal, setModalContent } from '../utils/animations.js';
 import { sanitizeHTML, stripHTML } from '../utils/htmlSanitizer.js';
 
 let noticeUnsubscribe = null;
@@ -131,13 +131,10 @@ function refreshList() {
 // ==================== 작성 모달 ====================
 
 function openWriteModal() {
-    const modal = document.getElementById('modalContainer');
-    if (!modal) return;
-
     const today = toDateString();
     const defaultTitle = `${today.replace(/-/g, '.')} 알림장`;
 
-    modal.querySelector('.modal-content').innerHTML = `
+    setModalContent(`
         <div class="modal-inner bg-white rounded-2xl w-full max-w-lg mx-4 max-h-[85vh] flex flex-col overflow-hidden shadow-2xl">
             <div class="flex items-center justify-between p-4 border-b border-gray-100">
                 <h3 class="font-bold text-gray-800">새 알림장 작성</h3>
@@ -165,12 +162,13 @@ function openWriteModal() {
                 <button id="saveNoticeBtn" class="btn btn-primary w-full py-2.5 rounded-xl font-semibold text-sm">저장</button>
             </div>
         </div>
-    `;
+    `);
 
-    modal.classList.remove('hidden');
+    openModal();
 
     // 에디터 서식 버튼
-    modal.querySelectorAll('.editor-btn').forEach(btn => {
+    const modal = document.getElementById('modalContainer');
+    modal?.querySelectorAll('.editor-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.preventDefault();
             document.execCommand(btn.dataset.cmd, false, null);
@@ -202,18 +200,14 @@ function openWriteModal() {
         refreshList();
     });
 
-    // 닫기
-    document.getElementById('closeWriteModal')?.addEventListener('click', closeModal);
-    modal.querySelector('.modal-backdrop')?.addEventListener('click', closeModal);
+    // 닫기 (백드롭은 openModal이 처리)
+    document.getElementById('closeWriteModal')?.addEventListener('click', () => closeModal());
 }
 
 // ==================== 보기 모달 ====================
 
 function openViewModal(notice) {
-    const modal = document.getElementById('modalContainer');
-    if (!modal) return;
-
-    modal.querySelector('.modal-content').innerHTML = `
+    setModalContent(`
         <div class="modal-inner bg-white rounded-2xl w-full max-w-lg mx-4 max-h-[85vh] flex flex-col overflow-hidden shadow-2xl">
             <div class="flex items-center justify-between p-4 border-b border-gray-100">
                 <div>
@@ -230,17 +224,12 @@ function openViewModal(notice) {
                 <div class="notice-content prose prose-sm text-gray-700 leading-relaxed">${sanitizeHTML(notice.content)}</div>
             </div>
         </div>
-    `;
+    `);
 
-    modal.classList.remove('hidden');
+    openModal();
 
-    document.getElementById('closeViewModal')?.addEventListener('click', closeModal);
-    modal.querySelector('.modal-backdrop')?.addEventListener('click', closeModal);
-}
-
-function closeModal() {
-    const modal = document.getElementById('modalContainer');
-    if (modal) modal.classList.add('hidden');
+    // 닫기 (백드롭은 openModal이 처리)
+    document.getElementById('closeViewModal')?.addEventListener('click', () => closeModal());
 }
 
 // ==================== 유틸리티 ====================
