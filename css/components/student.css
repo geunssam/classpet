@@ -317,3 +317,55 @@
 .settings-container #studentList>div:hover {
     background: #F3F4F6;
 }
+
+/* ======================================
+   학생 알림장
+   ====================================== */
+
+.student-notice-card {
+    background: white;
+    border-radius: 1rem;
+    padding: 1.25rem;
+    margin-bottom: 0.75rem;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+    border: 1px solid #F3F4F6;
+    transition: box-shadow 0.2s ease;
+}
+
+.student-notice-card:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.student-notice-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.student-notice-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1F2937;
+}
+
+.student-notice-date {
+    font-size: 0.75rem;
+    color: #9CA3AF;
+    white-space: nowrap;
+}
+
+.student-notice-body {
+    font-size: 0.9rem;
+    line-height: 1.7;
+    color: #4B5563;
+    word-break: keep-all;
+}
+
+.student-notice-body p {
+    margin-bottom: 0.5rem;
+}
+
+.student-notice-body p:last-child {
+    margin-bottom: 0;
+}

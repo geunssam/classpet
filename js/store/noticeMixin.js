@@ -94,6 +94,8 @@ export const noticeMixin = {
                 content: n.content || '',
                 plainText: n.plainText || '',
                 date: n.date || '',
+                sharedTo: n.sharedTo || null,
+                sharedAt: n.sharedAt || '',
                 createdAt: n.createdAt?.toDate?.()?.toISOString() || n.createdAt || '',
                 updatedAt: n.updatedAt?.toDate?.()?.toISOString() || n.updatedAt || ''
             }));
@@ -115,6 +117,20 @@ export const noticeMixin = {
 
         await this.syncNoticeToFirebase(notice);
         return true;
+    },
+
+    // ==================== 학생용 알림장 조회 ====================
+
+    /**
+     * 특정 학생에게 공유된 알림장 목록 반환
+     */
+    getSharedNoticesForStudent(studentId) {
+        const notices = this.getNotices();
+        if (!studentId) return [];
+        const sid = String(studentId);
+        return notices.filter(n =>
+            n.sharedTo && Array.isArray(n.sharedTo) && n.sharedTo.includes(sid)
+        );
     },
 
     // ==================== 새 알림 감지 ====================

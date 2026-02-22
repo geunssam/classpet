@@ -32,6 +32,7 @@ import * as PetSelection from '../components/PetSelection.js';
 import * as PetCollection from '../components/PetCollection.js';
 import * as StudentTimetable from '../components/StudentTimetable.js';
 import * as StudentPraise from '../components/StudentPraise.js';
+import * as StudentNotice from '../components/StudentNotice.js';
 
 import { updateHeaderForStudentMode, syncActiveTab, updateNotificationBadge, updateUIVisibility } from './navigation.js';
 
@@ -276,6 +277,19 @@ export function initRouter() {
                 return html;
             },
             unmount: () => StudentPraise.unmount?.()
+        },
+        'student-notice': {
+            render: () => {
+                if (!store.isStudentLoggedIn()) {
+                    setTimeout(() => router.navigate('student-login'), 0);
+                    return '<div class="text-center p-8">로그인이 필요합니다...</div>';
+                }
+                updateHeaderForStudentMode(true, true);
+                const html = StudentNotice.render();
+                setTimeout(() => StudentNotice.afterRender?.(), 0);
+                return html;
+            },
+            unmount: () => StudentNotice.unmount?.()
         }
     });
 
@@ -284,7 +298,7 @@ export function initRouter() {
 
     // 라우트 변경 시 헤더 업데이트
     router.onRouteChange = (route, params) => {
-        const isStudentRoute = ['student-login', 'student-main', 'student-chat', 'pet-selection', 'pet-collection', 'student-timetable', 'student-praise'].includes(route);
+        const isStudentRoute = ['student-login', 'student-main', 'student-chat', 'pet-selection', 'pet-collection', 'student-timetable', 'student-praise', 'student-notice'].includes(route);
         const isLoginRoute = ['login', 'teacher-login', 'student-login', 'class-select'].includes(route);
 
         if (!isStudentRoute && !isLoginRoute) {

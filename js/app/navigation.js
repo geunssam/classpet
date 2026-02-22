@@ -369,7 +369,7 @@ export function updateUIVisibility(route) {
     const mobileDrawerOverlay = document.getElementById('mobileDrawerOverlay');
     const classInfoEl = document.getElementById('classInfo');
     const isLoginRoute = ['login', 'teacher-login', 'student-login', 'class-select'].includes(route);
-    const isStudentRoute = ['student-main', 'student-chat', 'pet-selection', 'pet-collection', 'student-timetable', 'student-praise'].includes(route);
+    const isStudentRoute = ['student-main', 'student-chat', 'pet-selection', 'pet-collection', 'student-timetable', 'student-praise', 'student-notice'].includes(route);
 
     if (isLoginRoute) {
         // 로그인 화면: 헤더, 툴바, 모바일 드로어 모두 숨김

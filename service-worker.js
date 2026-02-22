@@ -1,5 +1,5 @@
 // 클래스펫 Service Worker
-const CACHE_NAME = 'classpet-v1771769600000';
+const CACHE_NAME = 'classpet-v1771771565599';
 const OFFLINE_URL = '/offline.html';
 
 // 캐시할 정적 파일들 (앱 셸)
@@ -90,6 +90,7 @@ const STATIC_ASSETS = [
     '/js/components/QuickPraise.js',
     '/js/components/PraiseManagement.js',
     '/js/components/Notice.js',
+    '/js/components/StudentNotice.js',
     '/js/firebase/notices.js',
     '/js/store/noticeMixin.js',
     '/js/utils/htmlSanitizer.js',
