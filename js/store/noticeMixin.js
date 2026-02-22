@@ -102,6 +102,21 @@ export const noticeMixin = {
         });
     },
 
+    // ==================== 학생 공유 ====================
+
+    async shareNotice(noticeId, studentIds) {
+        const notices = this.getNotices();
+        const notice = notices.find(n => n.id === noticeId);
+        if (!notice) return false;
+
+        notice.sharedTo = studentIds;
+        notice.sharedAt = new Date().toISOString();
+        this.saveNoticesLocal(notices);
+
+        await this.syncNoticeToFirebase(notice);
+        return true;
+    },
+
     // ==================== 새 알림 감지 ====================
 
     getLastSeenNoticeId() {
