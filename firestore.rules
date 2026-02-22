@@ -118,6 +118,15 @@ service cloud.firestore {
           // 교사만 접근 가능 (학생 접근 불가)
           allow read, write: if isOwner(uid);
         }
+
+        // 알림장: /teachers/{uid}/classes/{classId}/notices/{noticeId}
+        match /notices/{noticeId} {
+          // 교사: 모든 권한
+          allow read, write: if isOwner(uid);
+
+          // 학생 (익명 인증): 읽기만 가능
+          allow read: if isAuthenticated();
+        }
       }
     }
 

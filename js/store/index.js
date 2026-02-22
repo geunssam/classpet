@@ -15,6 +15,7 @@ import { emotionMixin } from './emotionMixin.js';
 import { settingsMixin } from './settingsMixin.js';
 import { notificationMixin } from './notificationMixin.js';
 import { thermostatMixin } from './thermostatMixin.js';
+import { noticeMixin } from './noticeMixin.js';
 
 // 상수 re-export (하위 호환성)
 import {
@@ -43,7 +44,8 @@ Object.assign(Store.prototype,
     emotionMixin,
     settingsMixin,
     notificationMixin,
-    thermostatMixin
+    thermostatMixin,
+    noticeMixin
 );
 
 // 싱글톤 인스턴스 생성

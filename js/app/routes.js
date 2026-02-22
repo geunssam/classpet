@@ -17,6 +17,7 @@ import * as Settings from '../components/Settings.js';
 import * as PraiseManagement from '../components/PraiseManagement.js';
 import * as Picker from '../components/Picker.js';
 import * as TimerView from '../components/TimerView.js';
+import * as Notice from '../components/Notice.js';
 
 // 로그인 컴포넌트
 import * as LoginSelect from '../components/LoginSelect.js';
@@ -185,6 +186,18 @@ export function initRouter() {
                 return html;
             },
             unmount: () => TimerView.unmount?.()
+        },
+        'notice': {
+            render: () => {
+                if (!store.isTeacherLoggedIn()) {
+                    setTimeout(() => router.navigate('login'), 0);
+                    return '<div class="text-center p-8">로그인이 필요합니다...</div>';
+                }
+                const html = Notice.render();
+                setTimeout(() => Notice.afterRender?.(), 0);
+                return html;
+            },
+            unmount: () => Notice.unmount?.()
         },
         // 학생 모드 라우트
         'student-login': {

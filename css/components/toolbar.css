@@ -214,6 +214,58 @@
     text-align: center;
 }
 
+/* ===== 툴바 아이콘 컬러 ===== */
+.toolbar-btn-coral .toolbar-icon svg { stroke: #f97066; }
+.toolbar-btn-coral { color: #f97066; }
+.toolbar-btn-coral:hover { background: rgba(249, 112, 102, 0.1); }
+
+.toolbar-btn-green .toolbar-icon svg { stroke: #22c55e; }
+.toolbar-btn-green { color: #374151; }
+.toolbar-btn-green:hover { background: rgba(34, 197, 94, 0.1); }
+
+.toolbar-btn-amber .toolbar-icon svg { stroke: #f59e0b; }
+.toolbar-btn-amber { color: #374151; }
+.toolbar-btn-amber:hover { background: rgba(245, 158, 11, 0.1); }
+
+.toolbar-btn-violet .toolbar-icon svg { stroke: #8b5cf6; }
+.toolbar-btn-violet { color: #374151; }
+.toolbar-btn-violet:hover { background: rgba(139, 92, 246, 0.1); }
+
+.toolbar-btn-blue .toolbar-icon svg { stroke: #3b82f6; }
+.toolbar-btn-blue { color: #374151; }
+.toolbar-btn-blue:hover { background: rgba(59, 130, 246, 0.1); }
+
+.toolbar-btn-teal .toolbar-icon svg { stroke: #14b8a6; }
+.toolbar-btn-teal { color: #374151; }
+.toolbar-btn-teal:hover { background: rgba(20, 184, 166, 0.1); }
+
+.toolbar-btn-emerald .toolbar-icon svg { stroke: #10b981; }
+.toolbar-btn-emerald { color: #374151; }
+.toolbar-btn-emerald:hover { background: rgba(16, 185, 129, 0.1); }
+
+.toolbar-btn-gray .toolbar-icon svg { stroke: #6b7280; }
+.toolbar-btn-gray { color: #374151; }
+.toolbar-btn-gray:hover { background: rgba(107, 114, 128, 0.1); }
+
+.toolbar-btn-indigo .toolbar-icon svg { stroke: #6366f1; }
+.toolbar-btn-indigo { color: #374151; }
+.toolbar-btn-indigo:hover { background: rgba(99, 102, 241, 0.1); }
+
+.toolbar-btn-danger .toolbar-icon svg { stroke: #ef4444; }
+.toolbar-btn-danger { color: #ef4444; }
+.toolbar-btn-danger:hover { background: rgba(239, 68, 68, 0.12); }
+
+/* ===== 툴바 구분선 ===== */
+.toolbar-divider {
+    height: 1px;
+    background: #e5e7eb;
+    margin: 4px 8px;
+}
+
+.right-toolbar.collapsed .toolbar-divider {
+    margin: 4px 4px;
+}
+
 /* 툴바 버튼 인디케이터 (컬러 점) */
 .toolbar-btn .toolbar-indicator {
     width: 8px;

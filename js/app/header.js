@@ -121,6 +121,24 @@ export function bindHeaderButtons() {
         });
     }
 
+    // 알림장 버튼 (우측 툴바)
+    const noticeToolbarBtn = document.getElementById('noticeToolbarBtn');
+    if (noticeToolbarBtn) {
+        noticeToolbarBtn.addEventListener('click', () => router.navigate('notice'));
+    }
+
+    // 학급 전환 버튼 (우측 툴바)
+    const switchClassToolbarBtn = document.getElementById('switchClassToolbarBtn');
+    if (switchClassToolbarBtn) {
+        // Google 로그인 시에만 표시
+        if (store.isGoogleTeacher()) {
+            switchClassToolbarBtn.classList.remove('hidden');
+            switchClassToolbarBtn.addEventListener('click', () => {
+                router.navigate('class-select');
+            });
+        }
+    }
+
     // 날짜 버튼 → 감정 히스토리로 이동
     bindDateHistoryButton();
 

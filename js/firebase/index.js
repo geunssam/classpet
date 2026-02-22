@@ -103,6 +103,14 @@ export {
     deleteNote
 } from './notes.js';
 
+// notices.js - 알림장
+export {
+    saveNotice,
+    getAllNotices,
+    deleteNotice,
+    subscribeToNotices
+} from './notices.js';
+
 // pets.js - 펫 관리
 export {
     savePet,

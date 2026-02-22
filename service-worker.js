@@ -1,5 +1,5 @@
 // 클래스펫 Service Worker
-const CACHE_NAME = 'classpet-v1771493677977';
+const CACHE_NAME = 'classpet-v1771765104852';
 const OFFLINE_URL = '/offline.html';
 
 // 캐시할 정적 파일들 (앱 셸)
@@ -89,6 +89,10 @@ const STATIC_ASSETS = [
     '/js/components/Stats.js',
     '/js/components/QuickPraise.js',
     '/js/components/PraiseManagement.js',
+    '/js/components/Notice.js',
+    '/js/firebase/notices.js',
+    '/js/store/noticeMixin.js',
+    '/js/utils/htmlSanitizer.js',
     '/manifest.json'
 ];
 
@@ -183,7 +187,10 @@ self.addEventListener('fetch', (event) => {
             })
             .catch(() => {
                 // 네트워크 실패 시 캐시에서 제공
-                return caches.match(request);
+                return caches.match(request).then((cached) => {
+                    // 캐시에도 없으면 빈 응답 반환 (undefined 방지)
+                    return cached || new Response('', { status: 503, statusText: 'Service Unavailable' });
+                });
             })
     );
 });

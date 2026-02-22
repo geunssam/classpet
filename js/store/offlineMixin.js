@@ -81,6 +81,9 @@ export const offlineMixin = {
             case 'saveNote':
                 await firebase.saveNote(teacherUid, classId, action.data);
                 break;
+            case 'saveNotice':
+                await firebase.saveNotice(teacherUid, classId, action.data);
+                break;
         }
     }
 };
