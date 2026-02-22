@@ -165,9 +165,9 @@ function openWriteModal() {
                 <button id="closeWriteModal" class="chalkboard-close-btn">✕</button>
             </div>
             <div class="chalkboard-body">
-                <input id="noticeTitle" type="text" value="${escapeText(defaultTitle)}"
-                       class="chalkboard-input"
-                       placeholder="제목을 입력하세요" />
+                <div id="noticeTitle" contenteditable="true"
+                     class="chalkboard-input"
+                     data-placeholder="제목을 입력하세요">${escapeText(defaultTitle)}</div>
                 <div class="chalkboard-divider"></div>
                 <div class="chalkboard-toolbar">
                     <button data-cmd="bold" class="chalk-tool-btn" title="굵게"><strong>B</strong></button>
@@ -213,7 +213,7 @@ function openWriteModal() {
 
     // 저장 → 공유 모달로 전환
     document.getElementById('saveNoticeBtn')?.addEventListener('click', () => {
-        const title = document.getElementById('noticeTitle')?.value?.trim();
+        const title = document.getElementById('noticeTitle')?.textContent?.trim();
         const content = document.getElementById('noticeEditor')?.innerHTML?.trim();
 
         if (!content || stripHTML(content).trim() === '') {

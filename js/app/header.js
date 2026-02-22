@@ -368,7 +368,12 @@ export function showStudentNotifications() {
     const newCount = Math.max(0, praises.length - lastSeen);
     const newPraises = praises.slice(0, newCount);
 
-    const hasAnyNotifications = unreadReplies.length > 0 || newPraises.length > 0;
+    // 3. 새 알림장 목록
+    const unreadNoticeCount = store.getUnreadStudentNoticeCount?.(student.id) || 0;
+    const sharedNotices = store.getSharedNoticesForStudent?.(student.id) || [];
+    const newNotices = sharedNotices.slice(0, unreadNoticeCount);
+
+    const hasAnyNotifications = unreadReplies.length > 0 || newPraises.length > 0 || newNotices.length > 0;
 
     const modalContent = `
         <div class="space-y-4">
@@ -380,6 +385,31 @@ export function showStudentNotifications() {
             <div class="max-h-80 overflow-y-auto">
                 ${hasAnyNotifications ? `
                     <div class="space-y-3">
+                        ${newNotices.length > 0 ? `
+                            <div class="mb-4">
+                                <p class="text-sm font-medium text-gray-600 mb-2">📋 새 알림장</p>
+                                ${newNotices.map(notice => {
+        const noticeDate = notice.date || '';
+        const [ny, nm, nd] = noticeDate.split('-');
+        const dateDisplay = nm && nd ? `${Number(nm)}월 ${Number(nd)}일` : '';
+        return `
+                                        <div class="notification-item p-3 rounded-xl bg-emerald-50 cursor-pointer hover:bg-emerald-100 transition-colors"
+                                             data-notice-id="${notice.id}">
+                                            <div class="flex items-start gap-3">
+                                                <span class="text-2xl">📋</span>
+                                                <div class="flex-1">
+                                                    <p class="text-sm font-medium text-gray-700">${notice.title || '알림장'}</p>
+                                                    <p class="text-xs text-gray-500 mt-1">${(notice.plainText || '').substring(0, 60)}${(notice.plainText || '').length > 60 ? '...' : ''}</p>
+                                                    <p class="text-xs text-gray-400 mt-1">${dateDisplay}</p>
+                                                </div>
+                                                <span class="w-2 h-2 bg-emerald-400 rounded-full flex-shrink-0 mt-2"></span>
+                                            </div>
+                                        </div>
+                                    `;
+    }).join('')}
+                            </div>
+                        ` : ''}
+
                         ${unreadReplies.length > 0 ? `
                             <div class="mb-4">
                                 <p class="text-sm font-medium text-gray-600 mb-2">💌 새로운 답장</p>
@@ -447,6 +477,14 @@ export function showStudentNotifications() {
     if (newPraises.length > 0) {
         sessionStorage.setItem('lastSeenPraiseCount', praises.length.toString());
     }
+
+    // 알림장 클릭 시 알림장 페이지로 이동
+    document.querySelectorAll('[data-notice-id]').forEach(item => {
+        item.addEventListener('click', () => {
+            closeModal();
+            router.navigate('student-notice');
+        });
+    });
 
     // 답장 클릭 시 읽음 처리 + 마음 탭 기록보기로 이동
     document.querySelectorAll('[data-emotion-id]').forEach(item => {

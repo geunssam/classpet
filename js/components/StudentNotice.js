@@ -11,6 +11,22 @@ import { updateStudentNotificationBadge } from '../app/navigation.js';
 
 let noticeUnsubscribe = null;
 
+// ==================== 모달 모드 관리 ====================
+
+function setModalMode(mode) {
+    const container = document.getElementById('modalContainer');
+    if (!container) return;
+    container.classList.remove('chalkboard-mode', 'share-mode');
+    if (mode) container.classList.add(mode);
+}
+
+function closeNoticeModal() {
+    setModalMode(null);
+    closeModal();
+}
+
+// ==================== 메인 렌더링 ====================
+
 export function render() {
     if (!store.isStudentLoggedIn()) {
         setTimeout(() => router.navigate('student-login'), 0);
@@ -72,7 +88,7 @@ export function afterRender() {
         }
     }
 
-    // 카드 클릭 → 상세 모달
+    // 카드 클릭 → 칠판 스타일 상세 모달
     document.getElementById('studentNoticeList')?.addEventListener('click', (e) => {
         const card = e.target.closest('.student-notice-card');
         if (!card) return;
@@ -109,32 +125,33 @@ function refreshStudentNoticeList() {
     }
 }
 
-// ==================== 상세 보기 모달 ====================
+// ==================== 칠판 스타일 상세 모달 ====================
 
 function openNoticeDetail(notice) {
+    setModalMode('chalkboard-mode');
+
     setModalContent(`
-        <div class="student-notice-detail">
-            <div class="student-notice-detail-header">
+        <div class="chalkboard chalkboard-view">
+            <div class="chalkboard-header">
                 <div>
-                    <h3 class="student-notice-detail-title">${escapeText(notice.title)}</h3>
-                    <p class="student-notice-detail-date">${formatDate(notice.date)} ${formatTime(notice.createdAt)}</p>
+                    <h3 class="chalkboard-title">${escapeText(notice.title)}</h3>
+                    <p class="chalkboard-date">${formatDate(notice.date)} ${formatTime(notice.createdAt)}</p>
                 </div>
-                <button id="closeNoticeDetail" class="student-notice-close-btn">
-                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M18 6L6 18M6 6l12 12"/>
-                    </svg>
-                </button>
+                <button id="closeNoticeDetail" class="chalkboard-close-btn">✕</button>
             </div>
-            <div class="student-notice-detail-body">${sanitizeHTML(notice.content)}</div>
+            <div class="chalkboard-body chalkboard-view-body">
+                <div class="chalkboard-content">${sanitizeHTML(notice.content)}</div>
+            </div>
         </div>
     `);
+
     openModal();
 
     const container = document.getElementById('modalContainer');
     const backdrop = container?.querySelector('.modal-backdrop');
-    if (backdrop) backdrop.onclick = () => closeModal();
+    if (backdrop) backdrop.onclick = () => closeNoticeModal();
 
-    document.getElementById('closeNoticeDetail')?.addEventListener('click', () => closeModal());
+    document.getElementById('closeNoticeDetail')?.addEventListener('click', () => closeNoticeModal());
 }
 
 // ==================== 유틸리티 ====================

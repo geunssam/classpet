@@ -254,12 +254,15 @@
     -webkit-appearance: none;
 }
 
-.chalkboard-input::placeholder {
+.chalkboard-input:empty::before {
+    content: attr(data-placeholder);
     color: rgba(255, 255, 255, 0.35);
+    pointer-events: none;
 }
 
 .chalkboard-input:focus {
     border-bottom-color: rgba(255, 255, 255, 0.5);
+    outline: none;
 }
 
 /* 구분선 */
