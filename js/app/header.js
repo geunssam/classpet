@@ -55,6 +55,35 @@ export function bindHeaderButtons() {
         studentLogoutBtn.addEventListener('click', handleStudentLogout);
     }
 
+    // 모바일 드로어 학생 버튼들
+    const mobileStudentNotiBtn = document.getElementById('mobileStudentNotiBtn');
+    if (mobileStudentNotiBtn) {
+        mobileStudentNotiBtn.addEventListener('click', () => {
+            document.getElementById('mobileDrawer')?.classList.remove('open');
+            document.getElementById('mobileDrawerOverlay')?.classList.remove('open');
+            showStudentNotifications();
+        });
+    }
+
+    const mobileStudentSettingsBtn = document.getElementById('mobileStudentSettingsBtn');
+    if (mobileStudentSettingsBtn) {
+        mobileStudentSettingsBtn.addEventListener('click', () => {
+            document.getElementById('mobileDrawer')?.classList.remove('open');
+            document.getElementById('mobileDrawerOverlay')?.classList.remove('open');
+            showStudentPinChangeModal();
+        });
+    }
+
+    const mobileStudentLogoutBtn = document.getElementById('mobileStudentLogoutBtn');
+    if (mobileStudentLogoutBtn) {
+        mobileStudentLogoutBtn.removeEventListener('click', handleStudentLogout);
+        mobileStudentLogoutBtn.addEventListener('click', () => {
+            document.getElementById('mobileDrawer')?.classList.remove('open');
+            document.getElementById('mobileDrawerOverlay')?.classList.remove('open');
+            handleStudentLogout();
+        });
+    }
+
     // 로그아웃 버튼 (헤더 + 기존 숨김 버튼)
     const logoutHandler = () => {
         if (confirm('로그아웃 하시겠습니까?')) {

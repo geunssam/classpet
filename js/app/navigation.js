@@ -360,6 +360,17 @@ export function updateStudentNotificationBadge() {
             badge.classList.add('hidden');
         }
     }
+
+    // 모바일 드로어 알림 뱃지도 동기화
+    const mobileBadge = document.getElementById('mobileStudentNotiBadge');
+    if (mobileBadge) {
+        if (total > 0) {
+            mobileBadge.textContent = total > 99 ? '99+' : total;
+            mobileBadge.classList.remove('hidden');
+        } else {
+            mobileBadge.classList.add('hidden');
+        }
+    }
 }
 
 /**
@@ -413,8 +424,14 @@ export function updateUIVisibility(route) {
         // 모바일 드로어: 교사 메뉴 숨기고 학생 메뉴 표시
         const mobileTeacherNav = mobileDrawer?.querySelector('.mobile-drawer-nav:not(#mobileStudentNav)');
         const mobileStudentNav = document.getElementById('mobileStudentNav');
+        const mobileStudentActions = document.getElementById('mobileStudentActions');
         if (mobileTeacherNav) mobileTeacherNav.classList.add('hidden');
         if (mobileStudentNav) mobileStudentNav.classList.remove('hidden');
+        if (mobileStudentActions) mobileStudentActions.classList.remove('hidden');
+
+        // 교사 프로필 숨김
+        const mobileDrawerProfile = document.getElementById('mobileDrawerProfile');
+        if (mobileDrawerProfile) mobileDrawerProfile.classList.add('hidden');
 
         // 학생 알림/로그아웃 버튼 표시
         updateStudentNotificationBadge();
@@ -441,8 +458,10 @@ export function updateUIVisibility(route) {
         // 모바일 드로어: 학생 메뉴 숨기고 교사 메뉴 표시
         const mobileTeacherNav = mobileDrawer?.querySelector('.mobile-drawer-nav:not(#mobileStudentNav)');
         const mobileStudentNav = document.getElementById('mobileStudentNav');
+        const mobileStudentActions = document.getElementById('mobileStudentActions');
         if (mobileTeacherNav) mobileTeacherNav.classList.remove('hidden');
         if (mobileStudentNav) mobileStudentNav.classList.add('hidden');
+        if (mobileStudentActions) mobileStudentActions.classList.add('hidden');
         updateClassInfo();
     }
 }

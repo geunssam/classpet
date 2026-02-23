@@ -216,7 +216,7 @@
     background: white;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
     display: grid;
-    grid-template-columns: 1fr auto 1fr;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
     align-items: center;
     padding: 0 24px;
     z-index: 100;
@@ -226,6 +226,7 @@
     display: flex;
     align-items: center;
     gap: 12px;
+    min-width: 0;
 }
 
 .navbar-logo {
@@ -245,12 +246,47 @@
     font-size: 20px;
     font-weight: 700;
     color: #1f2937;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .navbar-tabs {
     display: flex;
     gap: 4px;
     justify-content: center;
+    min-width: 0;
+}
+
+/* 학생 네비 탭 - 스크롤 가능 */
+#studentNav {
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    flex-wrap: nowrap;
+}
+
+#studentNav::-webkit-scrollbar {
+    display: none;
+}
+
+/* 중간 화면: 학생 탭 컴팩트 */
+@media (min-width: 769px) and (max-width: 1100px) {
+    #studentNav .navbar-tab {
+        padding: 8px 10px;
+        font-size: 13px;
+        gap: 4px;
+    }
+
+    #studentNav .navbar-tab .nav-icon {
+        width: 16px;
+        height: 16px;
+    }
+
+    #studentNav .navbar-tab .nav-icon svg {
+        width: 16px;
+        height: 16px;
+    }
 }
 
 .navbar-tabs.hidden {
@@ -565,10 +601,15 @@
     right: -2px;
 }
 
-/* 모바일에서 학생 헤더 버튼 숨김 */
+/* 모바일에서 학생 헤더 버튼 - 알림벨만 표시, 나머지 숨김 */
 @media (max-width: 767px) {
     .student-header-btn {
         display: none !important;
+    }
+
+    /* 알림 버튼은 모바일에서도 표시 */
+    #studentNotificationBtn.student-header-btn {
+        display: inline-flex !important;
     }
 
     #studentClassInfo {

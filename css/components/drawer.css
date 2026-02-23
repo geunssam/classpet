@@ -171,6 +171,53 @@
     border-top: 1px solid #f3f4f6;
 }
 
+/* 프로필 하단 액션 버튼 (아이콘 가로 행) */
+.mobile-drawer-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-top: 12px;
+}
+
+.mobile-action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: #f3f4f6;
+    border: none;
+    cursor: pointer;
+    color: #6b7280;
+    transition: all 0.2s;
+}
+
+.mobile-action-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
+.mobile-action-btn:hover {
+    background: #e5e7eb;
+}
+
+.mobile-action-btn.hidden {
+    display: none;
+}
+
+.mobile-action-btn-danger {
+    color: #ef4444;
+}
+
+.mobile-action-btn-danger:hover {
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.mobile-drawer-tools.hidden {
+    display: none !important;
+}
+
 .mobile-drawer-profile.hidden {
     display: none;
 }

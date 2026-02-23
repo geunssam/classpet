@@ -152,7 +152,8 @@
     }
 
     .navbar-left {
-        flex-shrink: 0;
+        flex-shrink: 1;
+        min-width: 0;
     }
 
     .navbar-right {
@@ -160,7 +161,7 @@
     }
 
     .navbar-title {
-        font-size: 18px;
+        font-size: 16px;
     }
 
     .bg-decorations {
