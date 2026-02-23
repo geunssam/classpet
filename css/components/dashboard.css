@@ -24,6 +24,7 @@
     border: 1.5px solid rgba(229, 218, 195, 0.4);
     border-radius: 20px;
     transition: all 0.15s ease;
+    min-width: 0;
 }
 
 .dash-pill-item:hover {
@@ -73,6 +74,26 @@
     color: #7C9EF5;
     margin-left: auto;
     flex-shrink: 0;
+}
+
+/* 반응형: 모바일 카드 축소 */
+@media (max-width: 640px) {
+    .dash-pill-item {
+        padding: 6px 10px;
+        gap: 6px;
+    }
+
+    .dash-pill-icon {
+        font-size: 15px;
+    }
+
+    .dash-pill-label {
+        font-size: 12px;
+    }
+
+    .dash-pill-count {
+        font-size: 12px;
+    }
 }
 
 /* 반응형: 좁은 화면 2열 */
