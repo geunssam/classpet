@@ -183,8 +183,50 @@
     }
 }
 
-/* ===== 학생 모드: 1024px 이하에서 햄버거 전환 ===== */
-@media (max-width: 1024px) {
+/* ===== 교사 모드: 1100px 이하에서 햄버거 전환 ===== */
+@media (max-width: 1100px) {
+    body.teacher-mode .navbar-tabs {
+        display: none !important;
+    }
+
+    body.teacher-mode .hamburger-btn:not(.hidden) {
+        display: flex !important;
+    }
+
+    body.teacher-mode .navbar-class-info,
+    body.teacher-mode .teacher-profile-pic {
+        display: none !important;
+    }
+
+    body.teacher-mode .navbar-left {
+        flex-shrink: 1;
+        min-width: 0;
+    }
+
+    body.teacher-mode .navbar-title {
+        font-size: 18px;
+    }
+
+    /* 탭 숨김 시 우측 버튼이 끝으로 가도록 고정 */
+    body.teacher-mode .navbar-right {
+        grid-column: -1;
+    }
+}
+
+/* 교사 모드 769-1100px: 드로어/오버레이 표시 허용 */
+@media (min-width: 769px) and (max-width: 1100px) {
+    body.teacher-mode .mobile-drawer {
+        display: flex !important;
+        flex-direction: column;
+    }
+
+    body.teacher-mode .mobile-drawer-overlay {
+        display: block !important;
+    }
+}
+
+/* ===== 학생 모드: 900px 이하에서 햄버거 전환 ===== */
+@media (max-width: 900px) {
     body.student-mode .navbar-tabs {
         display: none !important;
     }
@@ -216,10 +258,15 @@
         padding: 16px;
         margin-right: 0 !important;
     }
+
+    /* 탭 숨김 시 우측 버튼이 끝으로 가도록 고정 */
+    body.student-mode .navbar-right {
+        grid-column: -1;
+    }
 }
 
-/* 학생 모드 769-1024px: 드로어/오버레이 표시 허용 (769px+ 숨김 오버라이드) */
-@media (min-width: 769px) and (max-width: 1024px) {
+/* 학생 모드 769-900px: 드로어/오버레이 표시 허용 (769px+ 숨김 오버라이드) */
+@media (min-width: 769px) and (max-width: 900px) {
     body.student-mode .mobile-drawer {
         display: flex !important;
         flex-direction: column;

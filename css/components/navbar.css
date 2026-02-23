@@ -271,7 +271,7 @@
 }
 
 /* 학생 탭: 중간 화면에서 컴팩트 */
-@media (min-width: 1025px) and (max-width: 1280px) {
+@media (min-width: 901px) and (max-width: 1280px) {
     #studentNav .navbar-tab {
         padding: 8px 10px;
         font-size: 13px;
@@ -362,6 +362,13 @@
     object-fit: cover;
     border: 2px solid rgba(124, 158, 245, 0.3);
     flex-shrink: 0;
+    background: #e5e7eb;
+}
+
+/* 프로필 사진 로드 실패 시 깨진 아이콘 숨김 */
+.teacher-profile-pic:not([src]),
+.teacher-profile-pic[src=""] {
+    display: none;
 }
 
 .teacher-profile-pic.hidden {
