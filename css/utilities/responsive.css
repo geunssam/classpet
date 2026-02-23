@@ -183,6 +183,53 @@
     }
 }
 
+/* ===== 학생 모드: 1024px 이하에서 햄버거 전환 ===== */
+@media (max-width: 1024px) {
+    body.student-mode .navbar-tabs {
+        display: none !important;
+    }
+
+    body.student-mode .hamburger-btn:not(.hidden) {
+        display: flex !important;
+    }
+
+    body.student-mode .navbar-class-info,
+    body.student-mode .teacher-profile-pic {
+        display: none !important;
+    }
+
+    /* 학생 헤더 버튼: 알림벨만 남기고 숨김 */
+    body.student-mode .student-header-btn:not(#studentNotificationBtn) {
+        display: none !important;
+    }
+
+    body.student-mode .navbar-left {
+        flex-shrink: 1;
+        min-width: 0;
+    }
+
+    body.student-mode .navbar-title {
+        font-size: 16px;
+    }
+
+    body.student-mode .main-content {
+        padding: 16px;
+        margin-right: 0 !important;
+    }
+}
+
+/* 학생 모드 769-1024px: 드로어/오버레이 표시 허용 (769px+ 숨김 오버라이드) */
+@media (min-width: 769px) and (max-width: 1024px) {
+    body.student-mode .mobile-drawer {
+        display: flex !important;
+        flex-direction: column;
+    }
+
+    body.student-mode .mobile-drawer-overlay {
+        display: block !important;
+    }
+}
+
 /* ===== 콘텐츠 최대 너비 ===== */
 @media (min-width: 1280px) {
     .main-content {

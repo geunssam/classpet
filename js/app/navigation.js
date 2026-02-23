@@ -386,6 +386,8 @@ export function updateUIVisibility(route) {
     const isStudentRoute = ['student-main', 'student-chat', 'pet-selection', 'pet-collection', 'student-timetable', 'student-praise', 'student-notice'].includes(route);
 
     if (isLoginRoute) {
+        // 학생 모드 해제
+        document.body.classList.remove('student-mode');
         // 로그인 화면: 헤더, 툴바, 모바일 드로어 모두 숨김
         if (header) {
             header.style.display = 'none';
@@ -402,6 +404,8 @@ export function updateUIVisibility(route) {
         if (mobileDrawerOverlay) mobileDrawerOverlay.classList.add('hidden');
         if (classInfoEl) classInfoEl.textContent = '';
     } else if (isStudentRoute) {
+        // 학생 모드 클래스 (1024px 이하 햄버거 전환용)
+        document.body.classList.add('student-mode');
         // 학생 모드: 헤더 표시하되 탭 숨김, 툴바 숨김
         if (header) {
             header.style.display = '';
@@ -436,6 +440,8 @@ export function updateUIVisibility(route) {
         // 학생 알림/로그아웃 버튼 표시
         updateStudentNotificationBadge();
     } else {
+        // 학생 모드 해제
+        document.body.classList.remove('student-mode');
         // 교사 모드: 모두 표시
         if (header) {
             header.style.display = '';
