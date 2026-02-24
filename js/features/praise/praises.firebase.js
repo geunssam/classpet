@@ -18,9 +18,9 @@ import {
     getCurrentClassId,
     serverTimestamp,
     getUnsubscribeFunctions
-} from './init.js';
-import { studentSubRef } from './helpers.js';
-import { toDateString } from '../utils/dateUtils.js';
+} from '../../shared/firebase/init.js';
+import { studentSubRef } from '../../shared/firebase/helpers.js';
+import { toDateString } from '../../shared/utils/dateUtils.js';
 
 export async function savePraise(teacherUid, classId, praise) {
     const db = getDb();

@@ -3,11 +3,11 @@
  * 교사가 공유한 알림장을 읽기 전용으로 표시
  */
 
-import { store } from '../store.js';
-import { router } from '../router.js';
-import { sanitizeHTML } from '../utils/htmlSanitizer.js';
-import { openModal, closeModal, setModalContent } from '../utils/animations.js';
-import { updateStudentNotificationBadge } from '../app/navigation.js';
+import { store } from '../../store.js';
+import { router } from '../../router.js';
+import { sanitizeHTML } from '../../shared/utils/htmlSanitizer.js';
+import { openModal, closeModal, setModalContent } from '../../shared/utils/animations.js';
+import { updateStudentNotificationBadge } from '../../app/navigation.js';
 
 let noticeUnsubscribe = null;
 

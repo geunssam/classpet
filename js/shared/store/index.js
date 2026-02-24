@@ -5,17 +5,17 @@
 
 import { Store } from './Store.js';
 import { offlineMixin } from './offlineMixin.js';
-import { authMixin } from './authMixin.js';
-import { classMixin } from './classMixin.js';
-import { studentMixin } from './studentMixin.js';
-import { petMixin } from './petMixin.js';
-import { timetableMixin } from './timetableMixin.js';
-import { praiseMixin } from './praiseMixin.js';
-import { emotionMixin } from './emotionMixin.js';
+import { authMixin } from '../../features/auth/authMixin.js';
+import { classMixin } from '../../features/class/classMixin.js';
+import { studentMixin } from '../../features/class/studentMixin.js';
+import { petMixin } from '../../features/pet/petMixin.js';
+import { timetableMixin } from '../../features/timetable/timetableMixin.js';
+import { praiseMixin } from '../../features/praise/praiseMixin.js';
+import { emotionMixin } from '../../features/emotion/emotionMixin.js';
 import { settingsMixin } from './settingsMixin.js';
 import { notificationMixin } from './notificationMixin.js';
-import { thermostatMixin } from './thermostatMixin.js';
-import { noticeMixin } from './noticeMixin.js';
+import { thermostatMixin } from '../../features/praise/thermostatMixin.js';
+import { noticeMixin } from '../../features/notice/noticeMixin.js';
 
 // 상수 re-export (하위 호환성)
 import {

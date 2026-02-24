@@ -3,10 +3,10 @@
  * 플로팅 버튼에서 열리는 빠른 칭찬 모달
  */
 
-import { store, PET_TYPES } from '../store.js';
-import { PRAISE_CATEGORIES } from '../constants/index.js';
-import { getPetEmoji, calculateLevel, getLevelUpMessage, isMaxLevel } from '../utils/petLogic.js';
-import { showToast, setModalContent, openModal, closeModal, createPraiseParticles } from '../utils/animations.js';
+import { store, PET_TYPES } from '../../store.js';
+import { PRAISE_CATEGORIES } from '../../shared/constants/index.js';
+import { getPetEmoji, calculateLevel, getLevelUpMessage, isMaxLevel } from '../../shared/utils/petLogic.js';
+import { showToast, setModalContent, openModal, closeModal, createPraiseParticles } from '../../shared/utils/animations.js';
 
 const DEFAULT_CAT_ORDER = Object.keys(PRAISE_CATEGORIES);
 

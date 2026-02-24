@@ -49,7 +49,7 @@ function checkExpiry() {
         // 경고
         warningShown = true;
         const minutes = Math.ceil(remaining / 60000);
-        import('../utils/animations.js').then(({ showToast }) => {
+        import('../../shared/utils/animations.js').then(({ showToast }) => {
             showToast(`${minutes}분 후 자동 로그아웃됩니다`, 'warning');
         });
     }
@@ -66,7 +66,7 @@ async function handleExpiry() {
         window.location.hash = 'login';
     }
 
-    import('../utils/animations.js').then(({ showToast }) => {
+    import('../../shared/utils/animations.js').then(({ showToast }) => {
         showToast('장시간 비활동으로 자동 로그아웃되었습니다', 'info');
     });
 }

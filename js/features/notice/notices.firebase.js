@@ -19,7 +19,7 @@ import {
     getCurrentClassId,
     getUnsubscribeFunctions,
     serverTimestamp
-} from './init.js';
+} from '../../shared/firebase/init.js';
 
 export async function saveNotice(teacherUid, classId, notice) {
     const db = getDb();

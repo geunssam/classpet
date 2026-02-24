@@ -7,9 +7,9 @@
  * - 학급 선택 후 대시보드로 이동
  */
 
-import { store } from '../store.js';
-import { router } from '../router.js';
-import { showToast } from '../utils/animations.js';
+import { store } from '../../store.js';
+import { router } from '../../router.js';
+import { showToast } from '../../shared/utils/animations.js';
 
 // 상태 관리
 let classes = [];

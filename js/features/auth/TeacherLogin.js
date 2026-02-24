@@ -6,9 +6,9 @@
  * - 오프라인이거나 레거시 모드일 경우 → 기존 비밀번호 로그인
  */
 
-import { store } from '../store.js';
-import { router } from '../router.js';
-import { showToast } from '../utils/animations.js';
+import { store } from '../../store.js';
+import { router } from '../../router.js';
+import { showToast } from '../../shared/utils/animations.js';
 
 /**
  * 렌더링

@@ -3,9 +3,9 @@
  * 카테고리 필터 + 월별 조회
  */
 
-import { store } from '../store.js';
-import { router } from '../router.js';
-import { PRAISE_CATEGORIES } from '../constants/index.js';
+import { store } from '../../store.js';
+import { router } from '../../router.js';
+import { PRAISE_CATEGORIES } from '../../shared/constants/index.js';
 
 // 기본 카테고리 키 순서 (교사 페이지와 동일)
 const DEFAULT_CAT_ORDER = Object.keys(PRAISE_CATEGORIES);

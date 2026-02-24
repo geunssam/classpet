@@ -12,7 +12,7 @@ import {
     getCurrentTeacherUid,
     getCurrentClassId,
     serverTimestamp
-} from './init.js';
+} from '../../shared/firebase/init.js';
 
 export async function saveTimetable(teacherUid, classId, timetable) {
     const db = getDb();

@@ -3,10 +3,10 @@
  * 교사용 - 칭찬 카테고리 관리 + 칭찬 보내기
  */
 
-import { store } from '../store.js';
+import { store } from '../../store.js';
 import { showQuickPraise } from './QuickPraise.js';
-import { showToast, setModalContent, openModal, closeModal } from '../utils/animations.js';
-import { PRAISE_CATEGORIES } from '../constants/index.js';
+import { showToast, setModalContent, openModal, closeModal } from '../../shared/utils/animations.js';
+import { PRAISE_CATEGORIES } from '../../shared/constants/index.js';
 
 // 기본 카테고리 키 순서 (학생 페이지와 동일)
 const DEFAULT_CAT_ORDER = Object.keys(PRAISE_CATEGORIES);

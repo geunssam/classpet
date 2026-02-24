@@ -6,8 +6,8 @@
  * 계층 구조: /teachers/{uid}/classes/{classId}/students/{studentId}/emotions|praises|pets/...
  */
 
-export * from './firebase/index.js';
+export * from './shared/firebase/index.js';
 
 // 자동 초기화
-import { initializeFirebase } from './firebase/index.js';
+import { initializeFirebase } from './shared/firebase/index.js';
 initializeFirebase();

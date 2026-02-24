@@ -3,9 +3,9 @@
  * 학생이 처음 로그인할 때 자신의 펫을 선택하고 이름을 지어주는 화면
  */
 
-import { store, PET_TYPES } from '../store.js';
-import { router } from '../router.js';
-import { getNameWithSuffix } from '../utils/nameUtils.js';
+import { store, PET_TYPES } from '../../store.js';
+import { router } from '../../router.js';
+import { getNameWithSuffix } from '../../shared/utils/nameUtils.js';
 
 // 선택된 펫 타입
 let selectedPetType = null;

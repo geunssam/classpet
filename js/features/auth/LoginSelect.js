@@ -7,9 +7,9 @@
  * - 학생: 학급코드 입력 → 번호 선택 → PIN → 학생 메인
  */
 
-import { store } from '../store.js';
-import { router } from '../router.js';
-import { showToast } from '../utils/animations.js';
+import { store } from '../../store.js';
+import { router } from '../../router.js';
+import { showToast } from '../../shared/utils/animations.js';
 
 /**
  * 렌더링

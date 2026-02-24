@@ -3,8 +3,8 @@
  * 단일 Firebase 구독으로 배지 갱신 + 컴포넌트 알림 처리
  */
 
-import { store } from '../store.js';
-import { updateNotificationBadge } from '../app/navigation.js';
+import { store } from '../../store.js';
+import { updateNotificationBadge } from '../../app/navigation.js';
 
 let unsubscribe = null;
 const listeners = new Set();

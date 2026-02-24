@@ -16,8 +16,8 @@ import {
     getCurrentClassId,
     getUnsubscribeFunctions,
     serverTimestamp
-} from './init.js';
-import { deleteNotesByStudent } from './notes.js';
+} from '../../shared/firebase/init.js';
+import { deleteNotesByStudent } from '../../shared/firebase/notes.js';
 
 /**
  * 학생 저장

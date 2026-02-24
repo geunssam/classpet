@@ -5,10 +5,10 @@
 
 import { store } from '../store.js';
 import { router } from '../router.js';
-import { openModal, closeModal } from '../utils/animations.js';
-import { showQuickPraise } from '../components/QuickPraise.js';
-import * as Emotion from '../components/Emotion.js';
-import * as Stats from '../components/Stats.js';
+import { openModal, closeModal } from '../shared/utils/animations.js';
+import { showQuickPraise } from '../features/praise/QuickPraise.js';
+import * as Emotion from '../features/emotion/Emotion.js';
+import * as Stats from '../features/stats/Stats.js';
 import { showAddStudent, showEditStudent, deleteStudent, showAddNote, deleteNote } from './modals.js';
 
 /**

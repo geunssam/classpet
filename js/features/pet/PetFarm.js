@@ -3,9 +3,9 @@
  * 전체 학생 펫 그리드 뷰
  */
 
-import { store, PET_TYPES } from '../store.js';
-import { PRAISE_CATEGORIES } from '../constants/index.js';
-import { router } from '../router.js';
+import { store, PET_TYPES } from '../../store.js';
+import { PRAISE_CATEGORIES } from '../../shared/constants/index.js';
+import { router } from '../../router.js';
 
 const DEFAULT_CAT_ORDER = Object.keys(PRAISE_CATEGORIES);
 import {
@@ -16,7 +16,7 @@ import {
     getExpForNextLevel,
     calculateLevel,
     getLevelUpMessage
-} from '../utils/petLogic.js';
+} from '../../shared/utils/petLogic.js';
 import {
     bounceAnimation,
     levelUpAnimation,
@@ -25,7 +25,7 @@ import {
     setModalContent,
     openModal,
     closeModal
-} from '../utils/animations.js';
+} from '../../shared/utils/animations.js';
 
 export function render() {
     const students = store.getStudents() || [];

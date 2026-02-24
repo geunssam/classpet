@@ -3,10 +3,10 @@
  * 알림장 CRUD, Firebase 동기화, 실시간 구독
  */
 
-import { firebase, STORAGE_KEYS } from './Store.js';
-import { toDateString } from '../utils/dateUtils.js';
-import { sanitizeHTML, stripHTML } from '../utils/htmlSanitizer.js';
-import { showToast } from '../utils/animations.js';
+import { firebase, STORAGE_KEYS } from '../../shared/store/Store.js';
+import { toDateString } from '../../shared/utils/dateUtils.js';
+import { sanitizeHTML, stripHTML } from '../../shared/utils/htmlSanitizer.js';
+import { showToast } from '../../shared/utils/animations.js';
 
 export const noticeMixin = {
     // ==================== 로컬 캐시 ====================

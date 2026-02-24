@@ -32,7 +32,7 @@ export {
     isTeacherUser,
     createOrUpdateTeacherProfile,
     getTeacherProfile
-} from './auth.js';
+} from '../../features/auth/auth.firebase.js';
 
 // classes.js - 학급 관리
 export {
@@ -45,7 +45,7 @@ export {
     updateClass,
     deleteClass,
     subscribeToClassDoc
-} from './classes.js';
+} from '../../features/class/classes.firebase.js';
 
 // students.js - 학생 관리
 export {
@@ -54,7 +54,7 @@ export {
     getAllStudents,
     deleteStudent,
     subscribeToStudents
-} from './students.js';
+} from '../../features/class/students.firebase.js';
 
 // emotions.js - 감정 기록
 export {
@@ -71,7 +71,7 @@ export {
     getEmotionsByDateAndType,
     getUnreadReplyCount,
     markEmotionReplyAsRead
-} from './emotions.js';
+} from '../../features/emotion/emotions.firebase.js';
 
 // praises.js - 칭찬 기록
 export {
@@ -84,7 +84,7 @@ export {
     getStudentPraises,
     getStudentPraisesByCategory,
     subscribeToStudentPraises
-} from './praises.js';
+} from '../../features/praise/praises.firebase.js';
 
 // timetable.js - 시간표
 export {
@@ -94,7 +94,7 @@ export {
     getTimetableOverrides,
     saveSubjectColors,
     getSubjectColors
-} from './timetable.js';
+} from '../../features/timetable/timetable.firebase.js';
 
 // notes.js - 메모
 export {
@@ -109,7 +109,7 @@ export {
     getAllNotices,
     deleteNotice,
     subscribeToNotices
-} from './notices.js';
+} from '../../features/notice/notices.firebase.js';
 
 // pets.js - 펫 관리
 export {
@@ -121,4 +121,4 @@ export {
     updatePet,
     deletePet,
     subscribeToStudentPets
-} from './pets.js';
+} from '../../features/pet/pets.firebase.js';

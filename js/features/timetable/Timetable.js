@@ -3,8 +3,8 @@
  * 주간 시간표 관리
  */
 
-import { store, COLOR_PRESETS, DEFAULT_SUBJECT_COLORS } from '../store.js';
-import { showToast, setModalContent, openModal, closeModal } from '../utils/animations.js';
+import { store, COLOR_PRESETS, DEFAULT_SUBJECT_COLORS } from '../../store.js';
+import { showToast, setModalContent, openModal, closeModal } from '../../shared/utils/animations.js';
 
 const DAYS = ['월', '화', '수', '목', '금'];
 const DAY_KEYS = ['mon', 'tue', 'wed', 'thu', 'fri'];

@@ -18,8 +18,8 @@ import {
     getCurrentClassId,
     setCurrentTeacherUid,
     serverTimestamp
-} from './init.js';
-import { getCurrentUser } from './auth.js';
+} from '../../shared/firebase/init.js';
+import { getCurrentUser } from '../auth/auth.firebase.js';
 
 /**
  * 새 학급 코드 생성 (6자리 영숫자)

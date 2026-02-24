@@ -3,9 +3,9 @@
  * 펫 선택/생성/완성/경험치, Firebase 연동
  */
 
-import { firebase } from './Store.js';
-import { PET_TYPES } from '../constants/index.js';
-import { calculateLevel, LEVEL_EXP_TABLE } from '../utils/petLogic.js';
+import { firebase } from '../../shared/store/Store.js';
+import { PET_TYPES } from '../../shared/constants/index.js';
+import { calculateLevel, LEVEL_EXP_TABLE } from '../../shared/utils/petLogic.js';
 
 export const petMixin = {
     /**

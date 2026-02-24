@@ -3,9 +3,9 @@
  * 학생이 소유한 펫 컬렉션을 표시
  */
 
-import { store, PET_TYPES } from '../store.js';
-import { router } from '../router.js';
-import { showToast } from '../utils/animations.js';
+import { store, PET_TYPES } from '../../store.js';
+import { router } from '../../router.js';
+import { showToast } from '../../shared/utils/animations.js';
 
 /**
  * 렌더링

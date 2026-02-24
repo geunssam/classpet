@@ -3,11 +3,11 @@
  * 칠판 스타일 모달, 학생 공유 기능 포함
  */
 
-import { store } from '../store.js';
-import { router } from '../router.js';
-import { toDateString } from '../utils/dateUtils.js';
-import { showToast, openModal, closeModal, setModalContent } from '../utils/animations.js';
-import { sanitizeHTML, stripHTML } from '../utils/htmlSanitizer.js';
+import { store } from '../../store.js';
+import { router } from '../../router.js';
+import { toDateString } from '../../shared/utils/dateUtils.js';
+import { showToast, openModal, closeModal, setModalContent } from '../../shared/utils/animations.js';
+import { sanitizeHTML, stripHTML } from '../../shared/utils/htmlSanitizer.js';
 
 let noticeUnsubscribe = null;
 

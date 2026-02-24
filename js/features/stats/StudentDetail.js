@@ -3,8 +3,8 @@
  * 개별 학생의 펫, 칭찬 기록, 감정 기록 등
  */
 
-import { store, PET_TYPES, EMOTION_TYPES } from '../store.js';
-import { router } from '../router.js';
+import { store, PET_TYPES, EMOTION_TYPES } from '../../store.js';
+import { router } from '../../router.js';
 import {
     getPetEmoji,
     getPetName,
@@ -17,7 +17,7 @@ import {
     calculateRank,
     getRankTier,
     getPetStatusText
-} from '../utils/petLogic.js';
+} from '../../shared/utils/petLogic.js';
 import {
     bounceAnimation,
     levelUpAnimation,
@@ -26,7 +26,7 @@ import {
     setModalContent,
     openModal,
     closeModal
-} from '../utils/animations.js';
+} from '../../shared/utils/animations.js';
 
 let activeTab = 'praise'; // 'praise', 'emotion', 'notes'
 let filterDate = null; // 캘린더에서 선택한 날짜 필터

@@ -3,7 +3,7 @@
  * 학급 생성/삭제/참가, 교사UID/학급ID 관리, Firebase 데이터 로드
  */
 
-import { firebase, STORAGE_KEYS } from './Store.js';
+import { firebase, STORAGE_KEYS } from '../../shared/store/Store.js';
 
 export const classMixin = {
     /**

@@ -3,8 +3,8 @@
  * 학급 코드 입력 + 번호 선택 + PIN 입력 방식의 보안 로그인
  */
 
-import { store, PET_TYPES } from '../store.js';
-import { router } from '../router.js';
+import { store, PET_TYPES } from '../../store.js';
+import { router } from '../../router.js';
 
 // 현재 선택된 학생 정보
 let selectedStudent = null;

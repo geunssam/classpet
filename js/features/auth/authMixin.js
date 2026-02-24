@@ -3,7 +3,7 @@
  * Google 로그인/로그아웃, 인증 상태 관리
  */
 
-import { firebase, SESSION_KEYS, STORAGE_KEYS } from './Store.js';
+import { firebase, SESSION_KEYS, STORAGE_KEYS } from '../../shared/store/Store.js';
 
 export const authMixin = {
     /**

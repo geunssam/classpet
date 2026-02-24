@@ -3,9 +3,9 @@
  * 감정 로그 CRUD, 구독, 답장, Firebase 동기화/조회
  */
 
-import { firebase, STORAGE_KEYS } from './Store.js';
-import { toDateString } from '../utils/dateUtils.js';
-import { showToast } from '../utils/animations.js';
+import { firebase, STORAGE_KEYS } from '../../shared/store/Store.js';
+import { toDateString } from '../../shared/utils/dateUtils.js';
+import { showToast } from '../../shared/utils/animations.js';
 
 export const emotionMixin = {
     // ==================== 감정 로그 관련 ====================

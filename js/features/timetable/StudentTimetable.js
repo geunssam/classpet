@@ -4,8 +4,8 @@
  * 교사용 Timetable.js와 동일한 UI, Firebase에서 실시간 로드
  */
 
-import { store } from '../store.js';
-import { router } from '../router.js';
+import { store } from '../../store.js';
+import { router } from '../../router.js';
 
 const DAYS = ['월', '화', '수', '목', '금'];
 const DAY_KEYS = ['mon', 'tue', 'wed', 'thu', 'fri'];

@@ -3,9 +3,9 @@
  * 학생이 펫에게 전달한 감정 히스토리
  */
 
-import { store, PET_TYPES, EMOTION_TYPES, PET_REACTIONS } from '../store.js';
-import { router } from '../router.js';
-import { getPetEmoji, getGrowthStage } from '../utils/petLogic.js';
+import { store, PET_TYPES, EMOTION_TYPES, PET_REACTIONS } from '../../store.js';
+import { router } from '../../router.js';
+import { getPetEmoji, getGrowthStage } from '../../shared/utils/petLogic.js';
 
 /**
  * 렌더링

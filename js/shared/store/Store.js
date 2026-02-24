@@ -3,7 +3,7 @@
  * 생성자, 초기화, 네트워크/오프라인 관리, 구독/알림
  */
 
-import * as firebase from '../firebase-config.js';
+import * as firebase from '../../firebase-config.js';
 
 import {
     STORAGE_KEYS,

@@ -17,4 +17,4 @@ export {
     DEFAULT_SUBJECT_COLORS,
     COLOR_PRESETS,
     convertToPetSpeech
-} from './store/index.js';
+} from './shared/store/index.js';

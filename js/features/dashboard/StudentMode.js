@@ -3,11 +3,11 @@
  * 내 펫과 대화하기 인터페이스
  */
 
-import { store, PET_TYPES, EMOTION_TYPES, PET_REACTIONS, PET_SPEECH_STYLES, convertToPetSpeech } from '../store.js';
-import { router } from '../router.js';
-import { getPetEmoji, getGrowthStage, getExpProgress, getCurrentLevelExp, getExpForNextLevel, isMaxLevel } from '../utils/petLogic.js';
-import { showToast } from '../utils/animations.js';
-import { getNameWithSuffix } from '../utils/nameUtils.js';
+import { store, PET_TYPES, EMOTION_TYPES, PET_REACTIONS, PET_SPEECH_STYLES, convertToPetSpeech } from '../../store.js';
+import { router } from '../../router.js';
+import { getPetEmoji, getGrowthStage, getExpProgress, getCurrentLevelExp, getExpForNextLevel, isMaxLevel } from '../../shared/utils/petLogic.js';
+import { showToast } from '../../shared/utils/animations.js';
+import { getNameWithSuffix } from '../../shared/utils/nameUtils.js';
 
 let currentStudentTab = 'send'; // 'send' | 'history'
 

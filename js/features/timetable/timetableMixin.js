@@ -3,8 +3,8 @@
  * 시간표 CRUD, 주간 오버라이드, 과목 목록/색상, Firebase 동기화
  */
 
-import { firebase, STORAGE_KEYS } from './Store.js';
-import { DEFAULT_SUBJECT_LIST, DEFAULT_SUBJECT_COLORS } from '../constants/index.js';
+import { firebase, STORAGE_KEYS } from '../../shared/store/Store.js';
+import { DEFAULT_SUBJECT_LIST, DEFAULT_SUBJECT_COLORS } from '../../shared/constants/index.js';
 
 export const timetableMixin = {
     // ==================== 과목 목록 관련 ====================

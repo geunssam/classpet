@@ -20,8 +20,8 @@ import {
     getCurrentClassId,
     getUnsubscribeFunctions,
     serverTimestamp
-} from './init.js';
-import { studentSubRef, studentSubDoc } from './helpers.js';
+} from '../../shared/firebase/init.js';
+import { studentSubRef, studentSubDoc } from '../../shared/firebase/helpers.js';
 
 export async function savePet(teacherUid, classId, pet) {
     const db = getDb();

@@ -3,9 +3,9 @@
  * 전체화면 카운트다운 타이머 + 휘슬 통합
  */
 
-import { Timer, formatTime } from '../tools/timer.js';
-import { Whistle } from '../tools/whistle.js';
-import { Sound } from '../tools/sound.js';
+import { Timer, formatTime } from './timer.js';
+import { Whistle } from './whistle.js';
+import { Sound } from './sound.js';
 
 // --- 내부 상태 ---
 let timer = null;

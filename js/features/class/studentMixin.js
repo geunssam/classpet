@@ -3,7 +3,7 @@
  * 학생 CRUD, Firebase 동기화, PIN 관리
  */
 
-import { firebase, STORAGE_KEYS } from './Store.js';
+import { firebase, STORAGE_KEYS } from '../../shared/store/Store.js';
 
 export const studentMixin = {
     // ==================== 학생 관련 ====================

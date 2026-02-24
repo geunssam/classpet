@@ -3,7 +3,7 @@
  * 학생이 펫을 선택/레벨업하면 교사 대시보드에 실시간 반영
  */
 
-import { store } from '../store.js';
+import { store } from '../../store.js';
 
 let unsubscribes = [];
 let refreshTimer = null;

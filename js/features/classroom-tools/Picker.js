@@ -4,12 +4,12 @@
  * PEPicker 3단계 구조 이식: 설정 → 결과 → 타이머
  */
 
-import { store } from '../store.js';
-import { Sound } from '../tools/sound.js';
-import { Timer, formatTime } from '../tools/timer.js';
-import { Whistle } from '../tools/whistle.js';
-import { showToast } from '../utils/animations.js';
-import { getPetEmoji } from '../utils/petLogic.js';
+import { store } from '../../store.js';
+import { Sound } from './sound.js';
+import { Timer, formatTime } from './timer.js';
+import { Whistle } from './whistle.js';
+import { showToast } from '../../shared/utils/animations.js';
+import { getPetEmoji } from '../../shared/utils/petLogic.js';
 
 // ========== 상태 ==========
 let currentPhase = 'mode-select';

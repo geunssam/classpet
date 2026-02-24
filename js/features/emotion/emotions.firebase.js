@@ -21,9 +21,9 @@ import {
     getCurrentClassId,
     getUnsubscribeFunctions,
     serverTimestamp
-} from './init.js';
-import { studentSubRef, studentSubDoc } from './helpers.js';
-import { toDateString } from '../utils/dateUtils.js';
+} from '../../shared/firebase/init.js';
+import { studentSubRef, studentSubDoc } from '../../shared/firebase/helpers.js';
+import { toDateString } from '../../shared/utils/dateUtils.js';
 
 export async function saveEmotion(teacherUid, classId, emotion) {
     const db = getDb();

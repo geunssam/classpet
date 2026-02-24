@@ -10,7 +10,7 @@ import {
     setModalContent,
     openModal,
     closeModal
-} from '../utils/animations.js';
+} from '../shared/utils/animations.js';
 import { refreshCurrentView } from './globalFunctions.js';
 
 /**

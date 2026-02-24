@@ -9,9 +9,9 @@ import { initRouter } from './routes.js';
 import { bindNavigation, updateClassInfo } from './navigation.js';
 import { bindHeaderButtons, updateCurrentDate } from './header.js';
 import { registerGlobalFunctions, refreshCurrentView } from './globalFunctions.js';
-import { startEmotionSubscription, stopEmotionSubscription } from '../services/EmotionService.js';
-import { startPetSubscription, stopPetSubscription } from '../services/PetService.js';
-import { initSessionTimeout } from '../utils/sessionTimeout.js';
+import { startEmotionSubscription, stopEmotionSubscription } from '../features/emotion/EmotionService.js';
+import { startPetSubscription, stopPetSubscription } from '../features/pet/PetService.js';
+import { initSessionTimeout } from '../features/emotion/sessionTimeout.js';
 
 /**
  * Firebase 서비스 구독 시작 + store에 정리 함수 등록

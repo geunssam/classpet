@@ -3,12 +3,12 @@
  * 메인 홈 화면
  */
 
-import { store, PET_TYPES, EMOTION_TYPES } from '../store.js';
-import { PRAISE_CATEGORIES } from '../constants/index.js';
-import { router } from '../router.js';
-import { getPetEmoji, getExpProgress, getGrowthStage } from '../utils/petLogic.js';
-import { fadeInCards } from '../utils/animations.js';
-import { showQuickPraise } from './QuickPraise.js';
+import { store, PET_TYPES, EMOTION_TYPES } from '../../store.js';
+import { PRAISE_CATEGORIES } from '../../shared/constants/index.js';
+import { router } from '../../router.js';
+import { getPetEmoji, getExpProgress, getGrowthStage } from '../../shared/utils/petLogic.js';
+import { fadeInCards } from '../../shared/utils/animations.js';
+import { showQuickPraise } from '../praise/QuickPraise.js';
 const DEFAULT_CAT_ORDER = Object.keys(PRAISE_CATEGORIES);
 
 // HEX → RGBA 변환 (투명도 적용)

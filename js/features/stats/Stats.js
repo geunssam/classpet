@@ -3,10 +3,10 @@
  * 학급 전체 통계 및 데이터 관리
  */
 
-import { store, PET_TYPES } from '../store.js';
-import { PRAISE_CATEGORIES } from '../constants/index.js';
-import { getPetEmoji, calculateRank, getRankTier, getGrowthStage } from '../utils/petLogic.js';
-import { showToast, setModalContent, openModal, closeModal, showLoading, hideLoading } from '../utils/animations.js';
+import { store, PET_TYPES } from '../../store.js';
+import { PRAISE_CATEGORIES } from '../../shared/constants/index.js';
+import { getPetEmoji, calculateRank, getRankTier, getGrowthStage } from '../../shared/utils/petLogic.js';
+import { showToast, setModalContent, openModal, closeModal, showLoading, hideLoading } from '../../shared/utils/animations.js';
 const DEFAULT_CAT_ORDER = Object.keys(PRAISE_CATEGORIES);
 
 export function render() {

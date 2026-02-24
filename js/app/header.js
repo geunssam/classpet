@@ -10,13 +10,13 @@ import {
     setModalContent,
     openModal,
     closeModal
-} from '../utils/animations.js';
-import { toDateString } from '../utils/dateUtils.js';
+} from '../shared/utils/animations.js';
+import { toDateString } from '../shared/utils/dateUtils.js';
 import { bindToolbarToggle, bindMobileDrawer, updateNotificationBadge, updateStudentNotificationBadge } from './navigation.js';
-import { setStudentTab, setHistoryDate } from '../components/StudentMode.js';
-import { showQuickPraise } from '../components/QuickPraise.js';
-import { getPetEmoji } from '../utils/petLogic.js';
-import { DEFAULT_THERMOSTAT } from '../store/thermostatMixin.js';
+import { setStudentTab, setHistoryDate } from '../features/dashboard/StudentMode.js';
+import { showQuickPraise } from '../features/praise/QuickPraise.js';
+import { getPetEmoji } from '../shared/utils/petLogic.js';
+import { DEFAULT_THERMOSTAT } from '../features/praise/thermostatMixin.js';
 
 /**
  * 헤더 버튼 바인딩

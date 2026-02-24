@@ -3,10 +3,10 @@
  * 칭찬 로그 CRUD, 칭찬 카테고리 관리, Firebase 동기화/조회
  */
 
-import { firebase, STORAGE_KEYS } from './Store.js';
-import { PRAISE_CATEGORIES } from '../constants/index.js';
-import { toDateString } from '../utils/dateUtils.js';
-import { showToast } from '../utils/animations.js';
+import { firebase, STORAGE_KEYS } from '../../shared/store/Store.js';
+import { PRAISE_CATEGORIES } from '../../shared/constants/index.js';
+import { toDateString } from '../../shared/utils/dateUtils.js';
+import { showToast } from '../../shared/utils/animations.js';
 
 export const praiseMixin = {
     // ==================== 칭찬 로그 관련 ====================

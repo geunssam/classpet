@@ -7,32 +7,32 @@ import { store } from '../store.js';
 import { router } from '../router.js';
 
 // 컴포넌트 임포트
-import * as Dashboard from '../components/Dashboard.js';
-import * as Timetable from '../components/Timetable.js';
-import * as PetFarm from '../components/PetFarm.js';
-import * as StudentDetail from '../components/StudentDetail.js';
-import * as Emotion from '../components/Emotion.js';
-import * as Stats from '../components/Stats.js';
-import * as Settings from '../components/Settings.js';
-import * as PraiseManagement from '../components/PraiseManagement.js';
-import * as Picker from '../components/Picker.js';
-import * as TimerView from '../components/TimerView.js';
-import * as Notice from '../components/Notice.js';
+import * as Dashboard from '../features/dashboard/Dashboard.js';
+import * as Timetable from '../features/timetable/Timetable.js';
+import * as PetFarm from '../features/pet/PetFarm.js';
+import * as StudentDetail from '../features/stats/StudentDetail.js';
+import * as Emotion from '../features/emotion/Emotion.js';
+import * as Stats from '../features/stats/Stats.js';
+import * as Settings from '../features/class/Settings.js';
+import * as PraiseManagement from '../features/praise/PraiseManagement.js';
+import * as Picker from '../features/classroom-tools/Picker.js';
+import * as TimerView from '../features/classroom-tools/TimerView.js';
+import * as Notice from '../features/notice/Notice.js';
 
 // 로그인 컴포넌트
-import * as LoginSelect from '../components/LoginSelect.js';
-import * as TeacherLogin from '../components/TeacherLogin.js';
-import * as ClassSelect from '../components/ClassSelect.js';
+import * as LoginSelect from '../features/auth/LoginSelect.js';
+import * as TeacherLogin from '../features/auth/TeacherLogin.js';
+import * as ClassSelect from '../features/class/ClassSelect.js';
 
 // 학생 모드 컴포넌트
-import * as StudentLogin from '../components/StudentLogin.js';
-import * as StudentMode from '../components/StudentMode.js';
-import * as PetChat from '../components/PetChat.js';
-import * as PetSelection from '../components/PetSelection.js';
-import * as PetCollection from '../components/PetCollection.js';
-import * as StudentTimetable from '../components/StudentTimetable.js';
-import * as StudentPraise from '../components/StudentPraise.js';
-import * as StudentNotice from '../components/StudentNotice.js';
+import * as StudentLogin from '../features/auth/StudentLogin.js';
+import * as StudentMode from '../features/dashboard/StudentMode.js';
+import * as PetChat from '../features/pet/PetChat.js';
+import * as PetSelection from '../features/pet/PetSelection.js';
+import * as PetCollection from '../features/pet/PetCollection.js';
+import * as StudentTimetable from '../features/timetable/StudentTimetable.js';
+import * as StudentPraise from '../features/praise/StudentPraise.js';
+import * as StudentNotice from '../features/notice/StudentNotice.js';
 
 import { updateHeaderForStudentMode, syncActiveTab, updateNotificationBadge, updateUIVisibility } from './navigation.js';
 

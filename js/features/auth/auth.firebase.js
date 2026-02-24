@@ -22,7 +22,7 @@ import {
     setCurrentTeacherUid,
     clearCurrentSession,
     serverTimestamp
-} from './init.js';
+} from '../../shared/firebase/init.js';
 
 const googleProvider = new GoogleAuthProvider();
 

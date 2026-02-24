@@ -4,7 +4,7 @@
  * pe-picker 로직 이식
  */
 
-import { STORAGE_KEYS } from './Store.js';
+import { STORAGE_KEYS } from '../../shared/store/Store.js';
 
 /** 기본 온도계 설정 */
 export const DEFAULT_THERMOSTAT = {

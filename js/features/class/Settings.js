@@ -3,9 +3,9 @@
  * 학급 정보, 학생 관리, 데이터 백업/복원
  */
 
-import { store, PET_TYPES, COLOR_PRESETS } from '../store.js';
-import { router } from '../router.js';
-import { showToast, setModalContent, openModal, closeModal } from '../utils/animations.js';
+import { store, PET_TYPES, COLOR_PRESETS } from '../../store.js';
+import { router } from '../../router.js';
+import { showToast, setModalContent, openModal, closeModal } from '../../shared/utils/animations.js';
 
 /**
  * 렌더링

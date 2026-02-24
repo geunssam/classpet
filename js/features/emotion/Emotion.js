@@ -4,12 +4,12 @@
  * + Firebase 실시간 동기화
  */
 
-import { store, EMOTION_TYPES } from '../store.js';
-import { router } from '../router.js';
-import { getPetEmoji } from '../utils/petLogic.js';
-import { showToast } from '../utils/animations.js';
-import { onEmotionUpdate } from '../services/EmotionService.js';
-import { toDateString } from '../utils/dateUtils.js';
+import { store, EMOTION_TYPES } from '../../store.js';
+import { router } from '../../router.js';
+import { getPetEmoji } from '../../shared/utils/petLogic.js';
+import { showToast } from '../../shared/utils/animations.js';
+import { onEmotionUpdate } from './EmotionService.js';
+import { toDateString } from '../../shared/utils/dateUtils.js';
 
 let viewMode = 'checkin'; // 'checkin', 'history', 'attention'
 let emotionsUnsubscribe = null; // 실시간 구독 해제 함수
