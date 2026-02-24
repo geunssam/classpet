@@ -5,12 +5,23 @@
 
 import { store } from '../store.js';
 import { router } from '../router.js';
+import { showToast } from '../shared/utils/animations.js';
 import { showStudentNotifications, showStudentPinChangeModal, handleStudentLogout } from './header.js';
 
 /**
  * 네비게이션 이벤트 바인딩 (상단 탭바 + 모바일 드로어)
  */
 export function bindNavigation() {
+    // 로고/타이틀 클릭 → 홈 이동
+    const navHomeBtn = document.getElementById('navHomeBtn');
+    if (navHomeBtn) {
+        navHomeBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const isStudent = store.isStudentLoggedIn?.();
+            router.navigate(isStudent ? 'student-main' : 'dashboard');
+        });
+    }
+
     // 상단 탭바 네비게이션
     const navTabs = document.querySelectorAll('.navbar-tab');
     navTabs.forEach(tab => {
@@ -582,6 +593,25 @@ export function updateClassInfo() {
             }
         }
         if (mobileProfileName) mobileProfileName.textContent = settings?.teacherName || '선생님';
-        if (mobileProfileClass) mobileProfileClass.textContent = settings?.className || '';
+        if (mobileProfileClass) {
+            const classCode = store.getClassCode();
+            mobileProfileClass.textContent = classCode
+                ? `${settings?.className || ''} · ${classCode}`
+                : settings?.className || '';
+            // 복사 버튼 표시/숨기기
+            const copyBtn = document.getElementById('mobileCodeCopyBtn');
+            if (copyBtn) {
+                if (classCode) {
+                    copyBtn.classList.remove('hidden');
+                    copyBtn.onclick = () => {
+                        navigator.clipboard.writeText(classCode).then(() => {
+                            showToast('학급코드가 복사되었어요', 'success');
+                        }).catch(() => {});
+                    };
+                } else {
+                    copyBtn.classList.add('hidden');
+                }
+            }
+        }
     }
 }

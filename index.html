@@ -121,8 +121,10 @@
         <!-- 상단 네비바 (기본 숨김 - 플리커링 방지) -->
         <header class="top-navbar hidden">
             <div class="navbar-left">
-                <span class="navbar-logo">🐾</span>
-                <h1 class="navbar-title">클래스펫</h1>
+                <a id="navHomeBtn" class="navbar-home-link" href="#dashboard">
+                    <span class="navbar-logo">🐾</span>
+                    <h1 class="navbar-title">클래스펫</h1>
+                </a>
             </div>
             <!-- 교사용 네비게이션 -->
             <nav class="navbar-tabs" id="teacherNav">
@@ -592,7 +594,30 @@
                     <img id="mobileProfilePic" class="mobile-profile-pic" alt="" />
                     <div class="mobile-profile-text">
                         <span id="mobileProfileName" class="mobile-profile-name">선생님</span>
-                        <span id="mobileProfileClass" class="mobile-profile-class"></span>
+                        <span class="mobile-profile-class-row">
+                            <span id="mobileProfileClass" class="mobile-profile-class"></span>
+                            <button id="mobileCodeCopyBtn" class="mobile-code-copy-btn hidden" title="학급코드 복사">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                                </svg>
+                            </button>
+                        </span>
+                    </div>
+                    <div class="mobile-profile-actions">
+                        <button id="mobileSettingsBtn" class="mobile-action-btn-sm" title="설정">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3" />
+                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                            </svg>
+                        </button>
+                        <button id="mobileLogoutBtn" class="mobile-action-btn-sm mobile-action-btn-danger" title="로그아웃">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                                <polyline points="16 17 21 12 16 7" />
+                                <line x1="21" y1="12" x2="9" y2="12" />
+                            </svg>
+                        </button>
                     </div>
                 </div>
             </div>

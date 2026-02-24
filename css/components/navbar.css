@@ -229,6 +229,17 @@
     min-width: 0;
 }
 
+.navbar-home-link {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
 .navbar-logo {
     display: flex;
     align-items: center;

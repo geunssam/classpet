@@ -214,6 +214,47 @@
     background: rgba(239, 68, 68, 0.1);
 }
 
+/* 프로필 영역 내 작은 액션 버튼 */
+.mobile-profile-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+.mobile-action-btn-sm {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: #9ca3af;
+    cursor: pointer;
+    padding: 0;
+    transition: all 0.15s;
+}
+
+.mobile-action-btn-sm svg {
+    width: 14px;
+    height: 14px;
+}
+
+.mobile-action-btn-sm:active {
+    background: #f3f4f6;
+}
+
+.mobile-action-btn-sm.mobile-action-btn-danger {
+    color: #ef4444;
+}
+
+.mobile-action-btn-sm.mobile-action-btn-danger:active {
+    background: rgba(239, 68, 68, 0.1);
+}
+
 .mobile-drawer-tools.hidden {
     display: none !important;
 }
@@ -255,10 +296,38 @@
     text-overflow: ellipsis;
 }
 
+.mobile-profile-class-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+}
+
 .mobile-profile-class {
     font-size: 12px;
     color: #9ca3af;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.mobile-code-copy-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    border: none;
+    background: transparent;
+    color: #9ca3af;
+    cursor: pointer;
+    flex-shrink: 0;
+    padding: 0;
+    transition: all 0.15s;
+}
+
+.mobile-code-copy-btn:active {
+    color: var(--primary);
+    background: rgba(124, 158, 245, 0.1);
 }

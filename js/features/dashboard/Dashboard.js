@@ -7,7 +7,7 @@ import { store, PET_TYPES, EMOTION_TYPES } from '../../store.js';
 import { PRAISE_CATEGORIES } from '../../shared/constants/index.js';
 import { router } from '../../router.js';
 import { getPetEmoji, getExpProgress, getGrowthStage } from '../../shared/utils/petLogic.js';
-import { fadeInCards } from '../../shared/utils/animations.js';
+import { fadeInCards, showToast } from '../../shared/utils/animations.js';
 import { showQuickPraise } from '../praise/QuickPraise.js';
 const DEFAULT_CAT_ORDER = Object.keys(PRAISE_CATEGORIES);
 
@@ -54,30 +54,39 @@ export function render() {
 
     return `
         <div class="space-y-4">
-            <!-- 현재 학급 정보 + QR 코드 -->
-            <div class="card border border-gray-100 py-3" style="background: #ffffff !important;">
-                <div class="flex items-center justify-between gap-4">
-                    <!-- 좌측: 학급 정보 (2행 구조) -->
-                    <div class="flex flex-col gap-1 min-w-0">
-                        <!-- 1열: 학급명 + 전환버튼 -->
-                        <div class="flex items-center gap-2">
-                            <span class="text-lg">🏫</span>
-                            <p class="font-bold text-gray-800 text-lg truncate">${settings?.className || '학급 이름 없음'}</p>
-                            ${isGoogleTeacher ? `
-                            <span class="text-gray-300 text-lg">|</span>
-                            <button id="switchClassBtn" class="liquid-btn-small">
-                                전환
-                            </button>
-                            ` : ''}
+            <!-- 현재 학급 정보 -->
+            <div class="card border border-gray-100" style="background: #ffffff !important; padding-top: 4px; padding-bottom: 4px;">
+                <div class="flex items-center">
+                    <!-- 서브타이틀 (좌측 고정, section-title 크기) -->
+                    <h3 class="section-title m-0 flex-shrink-0 px-2 flex items-center gap-1.5" style="white-space:nowrap; position:relative; top:3px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block;flex-shrink:0"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-4h6v4"/><line x1="10" y1="11" x2="14" y2="11"/></svg>학급 정보</h3>
+                    <!-- 나머지 3항목: 3등분 그리드 -->
+                    <div class="flex-1 grid grid-cols-3 items-center text-center ml-4">
+                        <!-- 학급명 -->
+                        <div>
+                            <p class="text-sm font-semibold text-gray-600 mb-0.5">학급명</p>
+                            <div class="flex items-center justify-center gap-1">
+                                <p class="font-bold text-gray-800 truncate">${settings?.className || '미설정'}</p>
+                                ${isGoogleTeacher ? `<button id="switchClassBtn" class="liquid-btn-small" style="font-size:11px; padding:1px 6px;">전환</button>` : ''}
+                            </div>
                         </div>
-                        <!-- 2열: 학급코드 -->
-                        <p class="text-lg text-sky-500">
-                            학급코드: <span class="font-mono font-bold text-primary">${settings?.classCode || '------'}</span>
-                        </p>
-                    </div>
-                    <!-- 우측: QR 코드 (클릭하면 전체화면) -->
-                    <div id="qrCodeContainer" class="w-14 h-14 bg-white rounded-lg p-0.5 shadow-sm flex items-center justify-center cursor-pointer hover:shadow-md transition-shadow flex-shrink-0" title="클릭하면 크게 보기">
-                        <!-- QR 코드가 여기에 생성됨 -->
+                        <!-- 학급코드 -->
+                        <div>
+                            <p class="text-sm font-semibold text-gray-600 mb-0.5">학급코드</p>
+                            <div class="flex items-center justify-center gap-1">
+                                <span class="font-mono font-bold text-primary">${settings?.classCode || '------'}</span>
+                                ${settings?.classCode ? `<button id="dashboardCodeCopyBtn" class="mobile-code-copy-btn" title="학급코드 복사" style="display:inline-flex; color:#9ca3af;">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12">
+                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                                    </svg>
+                                </button>` : ''}
+                            </div>
+                        </div>
+                        <!-- QR 코드 -->
+                        <div>
+                            <p class="text-sm font-semibold text-gray-600 mb-0.5">QR코드</p>
+                            <div id="qrCodeContainer" class="w-10 h-10 mx-auto bg-white rounded-lg p-0.5 shadow-sm flex items-center justify-center cursor-pointer hover:shadow-md transition-shadow" title="클릭하면 크게 보기"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -99,8 +108,7 @@ export function render() {
             <div class="card bg-gradient-to-br from-primary/10 to-success/10 py-3">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-2">
-                        <span class="text-lg">📊</span>
-                        <span class="font-semibold text-base">오늘의 학급</span>
+                        <span class="section-title m-0 flex items-center gap-1.5"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block;flex-shrink:0"><rect x="3" y="12" width="4" height="9" rx="1"/><rect x="10" y="7" width="4" height="14" rx="1"/><rect x="17" y="3" width="4" height="18" rx="1"/></svg>오늘의 학급</span>
                         <span class="text-xs text-gray-500">${todayDayKr}요일</span>
                     </div>
                     <div class="flex items-center gap-3 text-sm">
@@ -139,11 +147,10 @@ export function render() {
             ` : ''}
 
             <!-- 오늘의 시간표 -->
-            <div class="card py-3">
-                <div class="flex items-center justify-between mb-2">
+            <div class="card py-2">
+                <div class="flex items-center justify-between mb-1">
                     <div class="flex items-center gap-2">
-                        <span class="text-lg">📅</span>
-                        <span class="font-semibold text-base">오늘의 수업</span>
+                        <span class="section-title m-0 flex items-center gap-1.5"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block;flex-shrink:0"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>오늘의 수업</span>
                     </div>
                     <button onclick="window.classpet.router.navigate('timetable')" class="liquid-btn-small">
                         전체보기
@@ -174,9 +181,9 @@ export function render() {
             </div>
 
             <!-- 펫 농장 미리보기 -->
-            <div class="dash-section-transparent">
-                <div class="flex items-center justify-between mb-3">
-                    <h3 class="section-title m-0">🐾 우리 반 펫들</h3>
+            <div class="card border border-gray-100 py-2" style="background: #ffffff !important;">
+                <div class="flex items-center justify-between mb-1">
+                    <h3 class="section-title m-0 flex items-center gap-1.5"><svg width="20" height="20" viewBox="0 0 24 24" fill="#9ca3af" stroke="none" style="display:block;flex-shrink:0"><ellipse cx="8.5" cy="6.5" rx="2.2" ry="3"/><ellipse cx="15.5" cy="6.5" rx="2.2" ry="3"/><ellipse cx="4.5" cy="13" rx="2" ry="2.5"/><ellipse cx="19.5" cy="13" rx="2" ry="2.5"/><path d="M12 20c-3 0-5.5-2.5-5.5-5 0-1.5 1-3 2.5-3.5 1-.5 2-.5 3-.5s2 0 3 .5c1.5.5 2.5 2 2.5 3.5 0 2.5-2.5 5-5.5 5z"/></svg>우리 반 펫들</h3>
                     <button onclick="window.classpet.router.navigate('petfarm')" class="liquid-btn-small">
                         전체보기
                     </button>
@@ -215,11 +222,10 @@ export function render() {
             ` : ''}
 
             <!-- 카테고리별 칭찬 통계 -->
-            <div class="dash-section-transparent">
-                <div class="flex items-center justify-between mb-2">
+            <div class="card border border-gray-100 py-2" style="background: #ffffff !important;">
+                <div class="flex items-center justify-between mb-1">
                     <div class="flex items-center gap-2">
-                        <span class="text-lg">📈</span>
-                        <span class="font-semibold text-base">칭찬 통계</span>
+                        <span class="section-title m-0 flex items-center gap-1.5"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block;flex-shrink:0"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>칭찬 통계</span>
                     </div>
                     <button id="dashboardPraiseBtn" class="liquid-btn-small">
                         칭찬하기
@@ -262,6 +268,17 @@ export function afterRender() {
     if (switchClassBtn) {
         switchClassBtn.addEventListener('click', () => {
             router.navigate('class-select');
+        });
+    }
+
+    // 학급코드 복사 버튼
+    const codeCopyBtn = document.getElementById('dashboardCodeCopyBtn');
+    if (codeCopyBtn) {
+        const classCode = store.getSettings()?.classCode;
+        codeCopyBtn.addEventListener('click', () => {
+            navigator.clipboard.writeText(classCode).then(() => {
+                showToast('학급코드가 복사되었어요', 'success');
+            }).catch(() => {});
         });
     }
 
