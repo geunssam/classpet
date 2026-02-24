@@ -105,16 +105,26 @@ export function render() {
             </div>
 
             <!-- 오늘의 요약 카드 -->
-            <div class="card bg-gradient-to-br from-primary/10 to-success/10 py-3">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-2">
-                        <span class="section-title m-0 flex items-center gap-1.5"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block;flex-shrink:0"><rect x="3" y="12" width="4" height="9" rx="1"/><rect x="10" y="7" width="4" height="14" rx="1"/><rect x="17" y="3" width="4" height="18" rx="1"/></svg>오늘의 학급</span>
-                        <span class="text-xs text-gray-500">${todayDayKr}요일</span>
-                    </div>
-                    <div class="flex items-center gap-3 text-sm">
-                        <span class="flex items-center gap-1"><span class="font-bold text-primary">${stats.totalStudents}</span><span class="text-xs text-gray-500">명</span></span>
-                        <span class="flex items-center gap-1"><span class="font-bold text-secondary">${stats.todayPraises}</span><span class="text-xs text-gray-500">칭찬</span></span>
-                        <span class="flex items-center gap-1"><span class="font-bold text-success">${stats.todayEmotionChecked}</span><span class="text-xs text-gray-500">감정</span></span>
+            <div class="card border border-gray-100" style="background: #ffffff !important; padding-top: 4px; padding-bottom: 4px;">
+                <div class="flex items-center">
+                    <h3 class="section-title m-0 flex-shrink-0 px-2 flex items-center gap-1.5" style="white-space:nowrap;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block;flex-shrink:0"><rect x="3" y="12" width="4" height="9" rx="1"/><rect x="10" y="7" width="4" height="14" rx="1"/><rect x="17" y="3" width="4" height="18" rx="1"/></svg>오늘의 학급</h3>
+                    <div class="flex-1 grid grid-cols-4 items-center text-center ml-4">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-800 mb-0.5">${today.getMonth() + 1}월 ${today.getDate()}일</p>
+                            <p class="font-bold text-gray-800">${todayDayKr}요일</p>
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold text-gray-600 mb-0.5">인원</p>
+                            <p class="font-bold text-primary">${stats.totalStudents}<span class="text-xs font-semibold text-gray-400 ml-0.5">명</span></p>
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold text-gray-600 mb-0.5">칭찬</p>
+                            <p class="font-bold text-secondary">${stats.todayPraises}<span class="text-xs font-semibold text-gray-400 ml-0.5">건</span></p>
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold text-gray-600 mb-0.5">감정</p>
+                            <p class="font-bold text-success">${stats.todayEmotionChecked}<span class="text-xs font-semibold text-gray-400 ml-0.5">명</span></p>
+                        </div>
                     </div>
                 </div>
             </div>
