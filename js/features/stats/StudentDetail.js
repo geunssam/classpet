@@ -107,7 +107,7 @@ export function render(params) {
                     <div class="flex flex-col items-center justify-center gap-2 py-4 px-3 border-l border-gray-200/50">
                         <div class="flex items-center gap-2">
                             <span class="level-badge">Lv.${student.level || 1}</span>
-                            <span class="text-sm font-bold" style="color: #F59E0B">${stage === 'adult' ? '최종' : (stage === 'growing' ? '성장중' : '아기')}</span>
+                            <span class="text-sm font-bold" style="color: #F59E0B">${stage === 'adult' ? '성체' : (stage === 'teen' ? '청소년' : (stage === 'child' ? '어린이' : '아기'))}</span>
                         </div>
                         <div class="exp-bar-xl w-full" style="height: 28px; border-radius: 14px;">
                             <div class="exp-bar-fill-xl" style="width: ${Math.max(expProgress, 15)}%; border-radius: 14px;"></div>

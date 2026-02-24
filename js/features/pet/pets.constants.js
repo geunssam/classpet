@@ -6,80 +6,86 @@ export const PET_TYPES = {
     dog: {
         name: '강아지',
         category: 'mammal',
-        stages: { egg: '🎁', baby: '🐕', growing: '🐕', adult: '🦮' },
+        stages: { baby: '🐕', child: '🐕', teen: '🐕', adult: '🦮' },
         images: {
-            egg: 'pet-assets/dog/png/dog_stage1_newborn.png',
-            baby: 'pet-assets/dog/png/dog_stage2_baby_v2.png',
-            growing: 'pet-assets/dog/png/dog_stage3_growing.png',
+            baby: 'pet-assets/dog/png/dog_stage1_newborn.png',
+            child: 'pet-assets/dog/png/dog_stage2_baby_v2.png',
+            teen: 'pet-assets/dog/png/dog_stage3_growing.png',
             adult: 'pet-assets/dog/png/dog_stage4_adult.png'
         }
     },
     cat: {
         name: '고양이',
         category: 'mammal',
-        stages: { egg: '🎁', baby: '🐱', growing: '🐱', adult: '🐈' },
+        stages: { baby: '🐱', child: '🐱', teen: '🐱', adult: '🐈' },
         images: {
-            egg: 'pet-assets/cat/png/cat_stage1_newborn.png',
-            baby: 'pet-assets/cat/png/cat_stage2_baby.png',
-            growing: 'pet-assets/cat/png/cat_stage3_growing.png',
+            baby: 'pet-assets/cat/png/cat_stage1_newborn.png',
+            child: 'pet-assets/cat/png/cat_stage2_baby.png',
+            teen: 'pet-assets/cat/png/cat_stage3_growing.png',
             adult: 'pet-assets/cat/png/cat_stage4_adult.png'
         }
     },
     rabbit: {
         name: '토끼',
         category: 'mammal',
-        stages: { egg: '🎁', baby: '🐰', growing: '🐰', adult: '🐇' },
+        stages: { baby: '🐰', child: '🐰', teen: '🐰', adult: '🐇' },
         images: {
-            egg: 'pet-assets/rabbit/png/rabbit_stage1_newborn.png',
-            baby: 'pet-assets/rabbit/png/rabbit_stage2_baby.png',
-            growing: 'pet-assets/rabbit/png/rabbit_stage3_growing.png',
+            baby: 'pet-assets/rabbit/png/rabbit_stage1_newborn.png',
+            child: 'pet-assets/rabbit/png/rabbit_stage2_baby.png',
+            teen: 'pet-assets/rabbit/png/rabbit_stage3_growing.png',
             adult: 'pet-assets/rabbit/png/rabbit_stage4_adult.png'
         }
     },
     hamster: {
         name: '햄스터',
         category: 'mammal',
-        stages: { egg: '🎁', baby: '🐹', growing: '🐹', adult: '🐹' }
+        stages: { baby: '🐹', child: '🐹', teen: '🐹', adult: '🐹' }
     },
     fox: {
         name: '여우',
         category: 'mammal',
-        stages: { egg: '🎁', baby: '🦊', growing: '🦊', adult: '🦊' }
+        stages: { baby: '🦊', child: '🦊', teen: '🦊', adult: '🦊' }
     },
     bear: {
         name: '곰',
         category: 'mammal',
-        stages: { egg: '🎁', baby: '🐻', growing: '🐻', adult: '🐻' }
+        stages: { baby: '🐻', child: '🐻', teen: '🐻', adult: '🐻' }
     },
     panda: {
         name: '판다',
         category: 'mammal',
-        stages: { egg: '🎁', baby: '🐼', growing: '🐼', adult: '🐼' }
+        stages: { baby: '🐼', child: '🐼', teen: '🐼', adult: '🐼' }
     },
     lion: {
         name: '사자',
         category: 'mammal',
-        stages: { egg: '🎁', baby: '🦁', growing: '🦁', adult: '🦁' }
+        stages: { baby: '🦁', child: '🦁', teen: '🦁', adult: '🦁' }
     },
     chick: {
         name: '병아리',
         category: 'bird',
-        stages: { egg: '🥚', baby: '🐣', growing: '🐤', adult: '🐓' }
+        stages: { baby: '🐣', child: '🐣', teen: '🐤', adult: '🐓' }
     },
     penguin: {
         name: '펭귄',
         category: 'bird',
-        stages: { egg: '🥚', baby: '🐧', growing: '🐧', adult: '🐧' }
+        stages: { baby: '🐧', child: '🐧', teen: '🐧', adult: '🐧' }
     },
     turtle: {
         name: '거북이',
         category: 'reptile',
-        stages: { egg: '🥚', baby: '🐢', growing: '🐢', adult: '🐢' }
+        stages: { baby: '🐢', child: '🐢', teen: '🐢', adult: '🐢' }
     },
     dragon: {
         name: '드래곤',
         category: 'fantasy',
-        stages: { egg: '✨', baby: '🐉', growing: '🐉', adult: '🐉' }
+        stages: { baby: '🐉', child: '🐉', teen: '🐉', adult: '🐉' },
+        images: {
+            baby: 'pet-assets/dragon/png/dragon_stage1_newborn.png',
+            child: 'pet-assets/dragon/png/dragon_stage2_baby.png',
+            teen: 'pet-assets/dragon/png/dragon_stage3_growing.png',
+            adult: 'pet-assets/dragon/png/dragon_stage4_adult.png'
+        }
     }
 };
 

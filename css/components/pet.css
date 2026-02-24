@@ -243,15 +243,15 @@
     transition: all 0.3s ease;
 }
 
-.pet-emoji.level-egg {
+.pet-emoji.level-baby {
     font-size: 32px;
 }
 
-.pet-emoji.level-baby {
+.pet-emoji.level-child {
     font-size: 40px;
 }
 
-.pet-emoji.level-growing {
+.pet-emoji.level-teen {
     font-size: 52px;
 }
 
@@ -381,6 +381,13 @@
 .circle-center-content .pet-img {
     width: 44px;
     height: 44px;
+}
+
+/* 성장 미리보기 — 원형 크게 */
+#petGrowthPreview .pet-img {
+    width: 160px;
+    height: 160px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
 }
 
 /* 펫 선택 그리드 이미지 */

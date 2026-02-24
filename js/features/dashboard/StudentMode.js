@@ -78,7 +78,7 @@ export function render() {
                         <!-- 상단: 레벨 + 단계 -->
                         <div class="flex items-center gap-3 mb-4">
                             <span class="level-badge-lg">Lv.${student.level || 1}</span>
-                            <span class="pet-stage-text">${petStage === 'adult' ? '최종' : (petStage === 'growing' ? '성장중' : '아기')}</span>
+                            <span class="pet-stage-text">${petStage === 'adult' ? '성체' : (petStage === 'teen' ? '청소년' : (petStage === 'child' ? '어린이' : '아기'))}</span>
                         </div>
                         <!-- 하단: 경험치바 (% 내부 중앙) -->
                         <div class="exp-bar-xl">
@@ -520,7 +520,7 @@ function refreshPetDisplay() {
 
     // 성장 단계 텍스트 업데이트
     const stageText = document.querySelector('.pet-stage-text');
-    if (stageText) stageText.textContent = petStage === 'adult' ? '최종' : (petStage === 'growing' ? '성장중' : '아기');
+    if (stageText) stageText.textContent = petStage === 'adult' ? '성체' : (petStage === 'teen' ? '청소년' : (petStage === 'child' ? '어린이' : '아기'));
 
     // 펫 이미지/이모지 업데이트
     const petEmojiEl = document.getElementById('petEmoji');

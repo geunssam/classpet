@@ -26,9 +26,9 @@ const LEVEL_EXP_TABLE = [
 
 // 성장 단계 기준 레벨
 const GROWTH_STAGES = {
-    egg: { minLevel: 1, maxLevel: 1 },
-    baby: { minLevel: 2, maxLevel: 4 },
-    growing: { minLevel: 5, maxLevel: 9 },
+    baby: { minLevel: 1, maxLevel: 1 },
+    child: { minLevel: 2, maxLevel: 4 },
+    teen: { minLevel: 5, maxLevel: 9 },
     adult: { minLevel: 10, maxLevel: 15 }
 };
 
@@ -77,9 +77,9 @@ export function getExpProgress(exp, level) {
  * 성장 단계 계산
  */
 export function getGrowthStage(level) {
-    if (level <= GROWTH_STAGES.egg.maxLevel) return 'egg';
     if (level <= GROWTH_STAGES.baby.maxLevel) return 'baby';
-    if (level <= GROWTH_STAGES.growing.maxLevel) return 'growing';
+    if (level <= GROWTH_STAGES.child.maxLevel) return 'child';
+    if (level <= GROWTH_STAGES.teen.maxLevel) return 'teen';
     return 'adult';
 }
 
@@ -88,10 +88,10 @@ export function getGrowthStage(level) {
  */
 export function getPetEmoji(petType, level) {
     const pet = PET_TYPES[petType];
-    if (!pet) return '🥚';
+    if (!pet) return '🐾';
 
     const stage = getGrowthStage(level);
-    return pet.stages[stage] || '🥚';
+    return pet.stages[stage] || '🐾';
 }
 
 /**
@@ -137,7 +137,7 @@ export function getPetStageImageHTML(petType, stage, size = 'md') {
     if (imagePath) {
         return `<img src="${imagePath}" alt="" class="pet-img pet-img-${size}" draggable="false">`;
     }
-    return `<span class="pet-emoji-text pet-emoji-${size}">${pet.stages[stage] || '🥚'}</span>`;
+    return `<span class="pet-emoji-text pet-emoji-${size}">${pet.stages[stage] || '🐾'}</span>`;
 }
 
 /**
@@ -233,9 +233,9 @@ export function getLevelsToNextStage(level) {
     const stage = getGrowthStage(level);
 
     switch (stage) {
-        case 'egg': return 2 - level;
-        case 'baby': return 5 - level;
-        case 'growing': return 10 - level;
+        case 'baby': return 2 - level;
+        case 'child': return 5 - level;
+        case 'teen': return 10 - level;
         case 'adult': return 0;
         default: return 0;
     }

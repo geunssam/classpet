@@ -73,7 +73,7 @@ export function render(params = {}) {
                                     data-pet-emoji="${petEmoji}"
                                 >
                                     <span class="text-lg font-bold text-gray-700">${student.number}</span>
-                                    <span class="text-xs text-gray-400">${student.petType ? getPetStageImageHTML(student.petType, 'baby', 'xs') : '🐾'}</span>
+                                    <span class="text-xs text-gray-400">${student.petType ? getPetStageImageHTML(student.petType, 'child', 'xs') : '🐾'}</span>
                                 </button>
                             `;
                         }).join('')}

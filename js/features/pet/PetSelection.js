@@ -83,7 +83,7 @@ export function render() {
                             <!-- 펫 이미지와 이름 -->
                             <div class="text-center">
                                 <div class="mb-2 group-hover:scale-110 transition-transform flex justify-center">
-                                    ${getPetStageImageHTML(type, 'egg', 'lg')}
+                                    ${getPetStageImageHTML(type, 'baby', 'lg')}
                                 </div>
                                 <p class="font-bold text-gray-800 text-sm">${pet.name}</p>
                             </div>
@@ -98,23 +98,22 @@ export function render() {
 
                 <!-- 안내 문구 -->
                 <p class="text-center text-xs text-gray-400 mt-4">
-                    선택한 펫은 칭찬을 받을수록 성장해요! 🌟
+                    선택한 펫은 칭찬을 받거나 대화할수록 성장해요! 🌟
                 </p>
             </div>
         </div>
 
         <!-- 이름 짓기 모달 -->
         <div id="namePetModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
-            <div class="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl text-center">
-                <div id="namePetEmoji" class="mb-3">🐕</div>
+            <div class="bg-white rounded-3xl p-6 w-full max-w-2xl shadow-2xl text-center">
                 <h3 class="text-lg font-bold text-gray-800 mb-1">
                     <span id="namePetTypeName">강아지</span>의 이름을 지어주세요!
                 </h3>
 
                 <!-- 4단계 성장 미리보기 -->
-                <div id="petGrowthPreview" class="flex items-end justify-center gap-2 my-4 py-3 bg-gray-50 rounded-xl">
+                <div id="petGrowthPreview" class="flex items-center justify-center gap-3 my-4 py-4 bg-gray-50 rounded-xl">
                 </div>
-                <p class="text-xs text-gray-400 mb-3">칭찬을 받으면 이렇게 성장해요!</p>
+                <p class="text-xs text-gray-400 mb-3">칭찬을 받거나 펫과 대화하면 이렇게 성장해요!</p>
 
                 <!-- 이름 입력 -->
                 <div class="mb-4">
@@ -211,7 +210,7 @@ function selectPet(petType) {
     const confirmBtn = document.getElementById('confirmPetBtn');
     if (confirmBtn) {
         confirmBtn.disabled = false;
-        confirmBtn.innerHTML = `${getPetStageImageHTML(selectedPetType, 'egg', 'xs')} ${pet.name} 선택하기`;
+        confirmBtn.innerHTML = `${getPetStageImageHTML(selectedPetType, 'baby', 'xs')} ${pet.name} 선택하기`;
     }
 }
 
@@ -224,20 +223,17 @@ function openNameModal() {
     const pet = PET_TYPES[selectedPetType];
     const modal = document.getElementById('namePetModal');
 
-    document.getElementById('namePetEmoji').innerHTML = getPetStageImageHTML(selectedPetType, 'egg', 'xl');
     document.getElementById('namePetTypeName').textContent = pet.name;
 
     // 4단계 성장 미리보기
-    const stages = ['egg', 'baby', 'growing', 'adult'];
-    const stageLabels = ['알', '아기', '성장', '성체'];
+    const stages = ['baby', 'child', 'teen', 'adult'];
     const preview = document.getElementById('petGrowthPreview');
     if (preview) {
         preview.innerHTML = stages.map((stage, i) => `
-            <div class="flex flex-col items-center gap-1">
-                ${getPetStageImageHTML(selectedPetType, stage, 'lg')}
-                <span class="text-xs text-gray-500">${stageLabels[i]}</span>
+            <div class="flex flex-col items-center">
+                ${getPetStageImageHTML(selectedPetType, stage, 'xl')}
             </div>
-            ${i < stages.length - 1 ? '<span class="text-gray-300 text-sm mb-4">→</span>' : ''}
+            ${i < stages.length - 1 ? '<span class="text-2xl text-gray-400 mx-1">→</span>' : ''}
         `).join('');
     }
 
@@ -269,7 +265,7 @@ function openConfirmModal() {
     const pet = PET_TYPES[selectedPetType];
     const modal = document.getElementById('confirmPetModal');
 
-    document.getElementById('confirmPetEmoji').innerHTML = getPetStageImageHTML(selectedPetType, 'egg', 'xl');
+    document.getElementById('confirmPetEmoji').innerHTML = getPetStageImageHTML(selectedPetType, 'baby', 'xl');
     document.getElementById('confirmPetName').textContent = inputPetName.trim();
 
     closeNameModal();
@@ -290,7 +286,7 @@ function openWelcomeModal() {
     const pet = PET_TYPES[selectedPetType];
     const modal = document.getElementById('welcomePetModal');
 
-    document.getElementById('welcomePetEmoji').innerHTML = getPetStageImageHTML(selectedPetType, 'baby', '2xl');
+    document.getElementById('welcomePetEmoji').innerHTML = getPetStageImageHTML(selectedPetType, 'child', '2xl');
     document.getElementById('welcomePetName').textContent = inputPetName.trim();
 
     modal.classList.remove('hidden');

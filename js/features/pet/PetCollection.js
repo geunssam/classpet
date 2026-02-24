@@ -144,7 +144,7 @@ function renderPetCard(petKey, pet, status, currentLevel, completedPet) {
         <div class="${cardClass} ${borderClass} bg-white rounded-xl p-3 relative transition-all duration-300"
              data-pet="${petKey}" data-status="${status}">
             <div class="text-center flex flex-col items-center">
-                <span class="inline-block ${status === 'locked' ? 'grayscale opacity-50' : ''}">${getPetStageImageHTML(petKey, 'baby', 'lg')}</span>
+                <span class="inline-block ${status === 'locked' ? 'grayscale opacity-50' : ''}">${getPetStageImageHTML(petKey, 'child', 'lg')}</span>
                 <p class="text-xs mt-1 font-medium ${status === 'locked' ? 'text-gray-400' : 'text-gray-700'}">${name}</p>
             </div>
             ${overlayContent}
@@ -199,18 +199,18 @@ function showPetDetail(petKey, status) {
     const stagesHtml = `
         <div class="flex justify-center gap-4 my-4 items-end">
             <div class="text-center">
-                ${getPetStageImageHTML(petKey, 'egg', 'sm')}
-                <p class="text-xs text-gray-400">시작</p>
-            </div>
-            <span class="text-gray-300 self-center">→</span>
-            <div class="text-center">
                 ${getPetStageImageHTML(petKey, 'baby', 'sm')}
                 <p class="text-xs text-gray-400">아기</p>
             </div>
             <span class="text-gray-300 self-center">→</span>
             <div class="text-center">
-                ${getPetStageImageHTML(petKey, 'growing', 'sm')}
-                <p class="text-xs text-gray-400">성장</p>
+                ${getPetStageImageHTML(petKey, 'child', 'sm')}
+                <p class="text-xs text-gray-400">어린이</p>
+            </div>
+            <span class="text-gray-300 self-center">→</span>
+            <div class="text-center">
+                ${getPetStageImageHTML(petKey, 'teen', 'sm')}
+                <p class="text-xs text-gray-400">청소년</p>
             </div>
             <span class="text-gray-300 self-center">→</span>
             <div class="text-center">
