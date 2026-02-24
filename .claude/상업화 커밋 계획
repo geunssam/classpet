@@ -1,0 +1,104 @@
+Classpet 상업화 커밋 분리 계획                                                                                                                                                                  │
+│                                                                                                                                                                                                 │
+│ Context                                                                                                                                                                                         │
+│                                                                                                                                                                                                 │
+│ main 브랜치에 상업화 관련 커밋 3개(결제 인프라, 구독 플랜, 보안 강화)가 비상업화 커밋들과 섞여 있음. main은 상업화 이전 상태로 되돌리고, 전체 이력은 commercialize 브랜치에 보존. GitHub push와 │
+│  Netlify 배포는 main만 진행.                                                                                                                                                                    │
+│                                                                                                                                                                                                 │
+│ 실행 계획                                                                                                                                                                                       │
+│                                                                                                                                                                                                 │
+│ Step 1: 안전장치 설정                                                                                                                                                                           │
+│                                                                                                                                                                                                 │
+│ git stash save "pre-split working changes"   # modified service-worker.js 보관                                                                                                                  │
+│ git tag backup-before-split 3f0467a          # 롤백용 태그                                                                                                                                      │
+│ git branch commercialize main                # 현재 main 전체를 보존                                                                                                                            │
+│                                                                                                                                                                                                 │
+│ Step 2: main을 상업화 이전으로 reset                                                                                                                                                            │
+│                                                                                                                                                                                                 │
+│ git reset --hard e39eef9   # "온도계 모달" 커밋 (상업화 이전 마지막)                                                                                                                            │
+│                                                                                                                                                                                                 │
+│ Step 3: 비상업화 커밋 10개 cherry-pick                                                                                                                                                          │
+│                                                                                                                                                                                                 │
+│ 순서대로 하나씩:                                                                                                                                                                                │
+│ 1. b04c4b9 - 알림장 기능 구현 + CSP (충돌 해결 핵심)                                                                                                                                            │
+│ 2. 24bab05 - 알림장 모달 버그 수정                                                                                                                                                              │
+│ 3. 5c4b796 - 알림장 칠판 스타일 + 학생 공유                                                                                                                                                     │
+│ 4. fd1bed0 - 학생 알림장 페이지                                                                                                                                                                 │
+│ 5. 208f93e - 알림장 3종 버그 수정                                                                                                                                                               │
+│ 6. 5960179 - 알림장 3종 재수정                                                                                                                                                                  │
+│ 7. 583fbaa - 학생 모바일 알림 배지                                                                                                                                                              │
+│ 8. 696827e - 학생 햄버거 전환                                                                                                                                                                   │
+│ 9. 0da0c4c - 교사/학생 반응형 수정                                                                                                                                                              │
+│ 10. 3f0467a - 모바일 칭찬 통계 오버플로우                                                                                                                                                       │
+│                                                                                                                                                                                                 │
+│ 건너뛰는 커밋:                                                                                                                                                                                  │
+│ - baa7cac ❌ 상업 전환 기반 구축                                                                                                                                                                │
+│ - f9f89b3 ❌ 구독 플랜 전환기                                                                                                                                                                   │
+│ - fc37fe8 ❌ 보안 강화 5종                                                                                                                                                                      │
+│ - d7fbc20 ❌ 인프라 강화 (세션 타임아웃만 Step 4에서 수동 추가)                                                                                                                                 │
+│ - c744368 ❌ 베타 게이트 + Node.js 20                                                                                                                                                           │
+│                                                                                                                                                                                                 │
+│ Step 3 충돌 해결 전략                                                                                                                                                                           │
+│                                                                                                                                                                                                 │
+│ 첫 번째 cherry-pick(b04c4b9)에서 충돌 집중 예상. 원칙: "상업화 추가분은 제거, 알림장 추가분은 유지"                                                                                             │
+│                                                                                                                                                                                                 │
+│ ┌──────────────────────┬──────────────────────────────────────────────────────────────────────────────────────────────────────┐                                                                 │
+│ │         파일         │                                              해결 방법                                               │                                                                 │
+│ ├──────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────┤                                                                 │
+│ │ service-worker.js    │ e39eef9 기반 유지 + 알림장 캐시 항목만 추가. 상업화 항목(Pricing.js, payment.js, consent.js 등) 제거 │                                                                 │
+│ ├──────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────┤                                                                 │
+│ │ js/app/routes.js     │ e39eef9 기반 + notice/student-notice 라우트만 추가. pricing/subscription/privacy/terms 라우트 제거   │                                                                 │
+│ ├──────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────┤                                                                 │
+│ │ index.html           │ e39eef9 기반 + 알림장 버튼/모달 HTML만 추가. 동의 게이트/결제 모달/Sentry 스크립트 제거              │                                                                 │
+│ ├──────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────┤                                                                 │
+│ │ firestore.rules      │ e39eef9 기반 + notices 규칙만 추가. 결제/동의 규칙 제거                                              │                                                                 │
+│ ├──────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────┤                                                                 │
+│ │ js/app/navigation.js │ 알림장 탭 추가분만 유지. pricing/subscription 라우트 참조 제거                                       │                                                                 │
+│ ├──────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────┤                                                                 │
+│ │ netlify.toml         │ e39eef9 기반 + CSP 알림장 관련만 적용                                                                │                                                                 │
+│ ├──────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────┤                                                                 │
+│ │ CSS 파일들           │ 알림장 스타일만 유지                                                                                 │                                                                 │
+│ └──────────────────────┴──────────────────────────────────────────────────────────────────────────────────────────────────────┘                                                                 │
+│                                                                                                                                                                                                 │
+│ Step 4: 세션 타임아웃 수동 추가                                                                                                                                                                 │
+│                                                                                                                                                                                                 │
+│ git show commercialize:js/utils/sessionTimeout.js > js/utils/sessionTimeout.js                                                                                                                  │
+│ # init.js에 import + initSessionTimeout(store) 호출 추가                                                                                                                                        │
+│ # service-worker.js에 캐시 항목 추가                                                                                                                                                            │
+│ git commit -m "infra: 세션 타임아웃 추가 (교사 2시간/학생 30분 자동 로그아웃)"                                                                                                                  │
+│                                                                                                                                                                                                 │
+│ Step 5: .gitignore 업데이트                                                                                                                                                                     │
+│                                                                                                                                                                                                 │
+│ 추가 항목:                                                                                                                                                                                      │
+│ COMMERCIAL-CONSULTING-REPORT.md                                                                                                                                                                 │
+│ DESIGN-DNA.md                                                                                                                                                                                   │
+│ classpet-domain-analysis.md                                                                                                                                                                     │
+│ design-screenshots/                                                                                                                                                                             │
+│ .bkit/                                                                                                                                                                                          │
+│                                                                                                                                                                                                 │
+│ Step 6: 검증                                                                                                                                                                                    │
+│                                                                                                                                                                                                 │
+│ - 상업화 파일 부재 확인: Pricing.js, Subscription.js, payment.js, subscription.js, betaGate.js, consent.js 등                                                                                   │
+│ - 알림장 파일 존재 확인: Notice.js, StudentNotice.js, notices.js, noticeMixin.js                                                                                                                │
+│ - 코드에서 상업화 import 잔존 검색: grep -r "Pricing\|Subscription\|payment\.js\|betaGate\|ConsentGate" js/ -l                                                                                  │
+│ - 브라우저에서 index.html 열어 기본 동작 확인                                                                                                                                                   │
+│                                                                                                                                                                                                 │
+│ Step 7: Force Push                                                                                                                                                                              │
+│                                                                                                                                                                                                 │
+│ git push origin main --force                                                                                                                                                                    │
+│                                                                                                                                                                                                 │
+│ 롤백 계획                                                                                                                                                                                       │
+│                                                                                                                                                                                                 │
+│ 어느 단계에서든 실패 시:                                                                                                                                                                        │
+│ git cherry-pick --abort        # cherry-pick 중이면                                                                                                                                             │
+│ git reset --hard backup-before-split   # 원래 상태로 복원                                                                                                                                       │
+│ git push origin main --force   # push 후 문제 발견 시                                                                                                                                           │
+│                                                                                                                                                                                                 │
+│ 주요 파일                                                                                                                                                                                       │
+│                                                                                                                                                                                                 │
+│ - service-worker.js - 충돌 해결 핵심                                                                                                                                                            │
+│ - js/app/routes.js - 상업화 라우트 제거                                                                                                                                                         │
+│ - index.html - 상업화 UI 제거                                                                                                                                                                   │
+│ - js/app/init.js - 세션 타임아웃 추가 대상                                                                                                                                                      │
+│ - firestore.rules - 결제 규칙 제거                                                                                                                                                              │
+│ - .gitignore - 계획 문서 제외 추가                                                                                                                                                              
