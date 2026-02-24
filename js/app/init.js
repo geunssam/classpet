@@ -11,6 +11,7 @@ import { bindHeaderButtons, updateCurrentDate } from './header.js';
 import { registerGlobalFunctions, refreshCurrentView } from './globalFunctions.js';
 import { startEmotionSubscription, stopEmotionSubscription } from '../services/EmotionService.js';
 import { startPetSubscription, stopPetSubscription } from '../services/PetService.js';
+import { initSessionTimeout } from '../utils/sessionTimeout.js';
 
 /**
  * Firebase 서비스 구독 시작 + store에 정리 함수 등록
@@ -139,6 +140,9 @@ async function initApp() {
 
     // Firebase 인증 상태 리스너 설정 (지속적 감시용)
     setupAuthStateListener();
+
+    // 세션 타임아웃 설정 (교사 2시간/학생 30분 자동 로그아웃)
+    initSessionTimeout(store);
 
     console.log('🐾 클래스펫이 시작되었습니다!');
 }

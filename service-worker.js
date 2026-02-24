@@ -94,6 +94,7 @@ const STATIC_ASSETS = [
     '/js/firebase/notices.js',
     '/js/store/noticeMixin.js',
     '/js/utils/htmlSanitizer.js',
+    '/js/utils/sessionTimeout.js',
     '/manifest.json'
 ];
 
