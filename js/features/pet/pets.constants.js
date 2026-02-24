@@ -39,17 +39,35 @@ export const PET_TYPES = {
     hamster: {
         name: '햄스터',
         category: 'mammal',
-        stages: { baby: '🐹', child: '🐹', teen: '🐹', adult: '🐹' }
+        stages: { baby: '🐹', child: '🐹', teen: '🐹', adult: '🐹' },
+        images: {
+            baby: 'pet-assets/hamster/png/hamster_stage1_newborn.png',
+            child: 'pet-assets/hamster/png/hamster_stage2_baby.png',
+            teen: 'pet-assets/hamster/png/hamster_stage3_growing.png',
+            adult: 'pet-assets/hamster/png/hamster_stage4_adult.png'
+        }
     },
     fox: {
         name: '여우',
         category: 'mammal',
-        stages: { baby: '🦊', child: '🦊', teen: '🦊', adult: '🦊' }
+        stages: { baby: '🦊', child: '🦊', teen: '🦊', adult: '🦊' },
+        images: {
+            baby: 'pet-assets/fox/png/fox_stage1_newborn.png',
+            child: 'pet-assets/fox/png/fox_stage2_baby.png',
+            teen: 'pet-assets/fox/png/fox_stage3_growing.png',
+            adult: 'pet-assets/fox/png/fox_stage4_adult.png'
+        }
     },
     bear: {
         name: '곰',
         category: 'mammal',
-        stages: { baby: '🐻', child: '🐻', teen: '🐻', adult: '🐻' }
+        stages: { baby: '🐻', child: '🐻', teen: '🐻', adult: '🐻' },
+        images: {
+            baby: 'pet-assets/bear/png/bear_stage1_newborn.png',
+            child: 'pet-assets/bear/png/bear_stage2_baby.png',
+            teen: 'pet-assets/bear/png/bear_stage3_growing.png',
+            adult: 'pet-assets/bear/png/bear_stage4_adult.png'
+        }
     },
     panda: {
         name: '판다',

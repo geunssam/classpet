@@ -137,7 +137,19 @@ const STATIC_ASSETS = [
     '/pet-assets/dragon/png/dragon_stage1_newborn.png',
     '/pet-assets/dragon/png/dragon_stage2_baby.png',
     '/pet-assets/dragon/png/dragon_stage3_growing.png',
-    '/pet-assets/dragon/png/dragon_stage4_adult.png'
+    '/pet-assets/dragon/png/dragon_stage4_adult.png',
+    '/pet-assets/hamster/png/hamster_stage1_newborn.png',
+    '/pet-assets/hamster/png/hamster_stage2_baby.png',
+    '/pet-assets/hamster/png/hamster_stage3_growing.png',
+    '/pet-assets/hamster/png/hamster_stage4_adult.png',
+    '/pet-assets/fox/png/fox_stage1_newborn.png',
+    '/pet-assets/fox/png/fox_stage2_baby.png',
+    '/pet-assets/fox/png/fox_stage3_growing.png',
+    '/pet-assets/fox/png/fox_stage4_adult.png',
+    '/pet-assets/bear/png/bear_stage1_newborn.png',
+    '/pet-assets/bear/png/bear_stage2_baby.png',
+    '/pet-assets/bear/png/bear_stage3_growing.png',
+    '/pet-assets/bear/png/bear_stage4_adult.png'
 ];
 
 // 캐시하지 않을 URL 패턴들 (Firebase API 요청만 - SDK는 캐시 허용)
