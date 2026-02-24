@@ -16,3 +16,10 @@ css/output.css
 .env
 .env.local
 .env.*.local
+
+# Project docs (not for git)
+COMMERCIAL-CONSULTING-REPORT.md
+DESIGN-DNA.md
+classpet-domain-analysis.md
+design-screenshots/
+.bkit/
