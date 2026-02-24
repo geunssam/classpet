@@ -6,7 +6,7 @@
 import { store, PET_TYPES, EMOTION_TYPES } from '../../store.js';
 import { PRAISE_CATEGORIES } from '../../shared/constants/index.js';
 import { router } from '../../router.js';
-import { getPetEmoji, getExpProgress, getGrowthStage } from '../../shared/utils/petLogic.js';
+import { getPetEmoji, getPetImageHTML, getExpProgress, getGrowthStage } from '../../shared/utils/petLogic.js';
 import { fadeInCards, showToast } from '../../shared/utils/animations.js';
 import { showQuickPraise } from '../praise/QuickPraise.js';
 const DEFAULT_CAT_ORDER = Object.keys(PRAISE_CATEGORIES);
@@ -139,7 +139,7 @@ export function render() {
                 <div class="flex items-center gap-4 cursor-pointer"
                      onclick="window.classpet.router.navigate('student', { id: ${mvpStudent.id} })">
                     <div class="relative">
-                        <span class="text-5xl pet-emoji ${getGrowthStage(mvpStudent.level)}">${getPetEmoji(mvpStudent.petType, mvpStudent.level)}</span>
+                        ${getPetImageHTML(mvpStudent.petType, mvpStudent.level, 'lg')}
                         <span class="mvp-badge">👑</span>
                     </div>
                     <div class="flex-1">
@@ -203,7 +203,7 @@ export function render() {
                     ${students.map(student => `
                     <div class="dash-pill-item cursor-pointer"
                          onclick="window.classpet.router.navigate('student', { id: '${student.id}' })">
-                        <span class="dash-pill-icon">${getPetEmoji(student.petType, student.level || 1)}</span>
+                        <span class="dash-pill-icon">${getPetImageHTML(student.petType, student.level || 1, 'xs')}</span>
                         <span class="dash-pill-label">${student.name}</span>
                         <span class="dash-pill-level">Lv.${student.level || 1}</span>
                     </div>
@@ -222,7 +222,7 @@ export function render() {
                     ${almostLevelUp.map(student => `
                     <div class="flex items-center gap-2 bg-white rounded-full px-3 py-1 cursor-pointer hover:bg-gray-50"
                          onclick="window.classpet.router.navigate('student', { id: '${student.id}' })">
-                        <span class="text-lg">${getPetEmoji(student.petType, student.level)}</span>
+                        ${getPetImageHTML(student.petType, student.level, 'xs')}
                         <span class="text-sm font-medium">${student.name}</span>
                         <span class="text-xs text-gray-400">${getExpProgress(student.exp, student.level)}%</span>
                     </div>

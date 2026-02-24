@@ -259,6 +259,142 @@
     font-size: 64px;
 }
 
+/* ======================================
+   펫 이미지 스타일 (이모지 → 이미지 교체용)
+   ====================================== */
+.pet-img {
+    display: inline-block;
+    object-fit: cover;
+    border-radius: 50%;
+    vertical-align: middle;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 크기별 */
+.pet-img-xs {
+    width: 28px;
+    height: 28px;
+}
+
+.pet-img-sm {
+    width: 36px;
+    height: 36px;
+}
+
+.pet-img-md {
+    width: 52px;
+    height: 52px;
+}
+
+.pet-img-lg {
+    width: 80px;
+    height: 80px;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.1);
+}
+
+.pet-img-xl {
+    width: 120px;
+    height: 120px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+.pet-img-2xl {
+    width: 160px;
+    height: 160px;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+}
+
+/* 이모지 폴백 텍스트 크기 */
+.pet-emoji-text {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    vertical-align: middle;
+}
+
+.pet-emoji-xs {
+    font-size: 22px;
+    width: 28px;
+    height: 28px;
+}
+
+.pet-emoji-sm {
+    font-size: 28px;
+    width: 36px;
+    height: 36px;
+}
+
+.pet-emoji-md {
+    font-size: 40px;
+    width: 52px;
+    height: 52px;
+}
+
+.pet-emoji-lg {
+    font-size: 60px;
+    width: 80px;
+    height: 80px;
+}
+
+.pet-emoji-xl {
+    font-size: 88px;
+    width: 120px;
+    height: 120px;
+}
+
+.pet-emoji-2xl {
+    font-size: 120px;
+    width: 160px;
+    height: 160px;
+}
+
+/* 학생 모드 메인 펫 이미지 — 크고 사각형 */
+.pet-emoji-large .pet-img {
+    width: 200px;
+    height: 200px;
+    border-radius: 28px;
+    object-fit: cover;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+    animation: inherit;
+}
+
+/* 학생 모드 이모지 폴백도 크게 */
+.pet-emoji-large .pet-emoji-text {
+    font-size: 120px;
+    width: auto;
+    height: auto;
+}
+
+/* 사각형 옵션 (둥근 모서리) */
+.pet-img-rect {
+    border-radius: 16px;
+    object-fit: cover;
+}
+
+/* 교사 학생상세 펫 이미지 */
+#petEmojiContainer .pet-img-xl {
+    border-radius: 18px;
+}
+
+/* 펫 농장 원형 카드 안 이미지 */
+.circle-center-content .pet-img {
+    width: 44px;
+    height: 44px;
+}
+
+/* 펫 선택 그리드 이미지 */
+.pet-option-btn .pet-img {
+    width: 72px;
+    height: 72px;
+}
+
+/* 펫 도감 카드 이미지 */
+.pet-collection-card .pet-img {
+    width: 64px;
+    height: 64px;
+}
+
 /* 경험치 바 */
 .exp-bar {
     height: 8px;

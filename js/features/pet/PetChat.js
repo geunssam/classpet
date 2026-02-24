@@ -5,7 +5,7 @@
 
 import { store, PET_TYPES, EMOTION_TYPES, PET_REACTIONS } from '../../store.js';
 import { router } from '../../router.js';
-import { getPetEmoji, getGrowthStage } from '../../shared/utils/petLogic.js';
+import { getPetEmoji, getPetImageHTML, getGrowthStage } from '../../shared/utils/petLogic.js';
 
 /**
  * 렌더링
@@ -44,7 +44,7 @@ export function render() {
 
             <!-- 펫 미니 프로필 -->
             <div class="flex items-center gap-3 bg-cream rounded-2xl p-3 mb-6">
-                <span class="text-4xl">${petEmoji}</span>
+                ${getPetImageHTML(student.petType, student.level, 'md')}
                 <div>
                     <p class="font-bold text-gray-800">${petType?.name || '펫'}</p>
                     <p class="text-sm text-gray-500">${student.name}의 친구</p>

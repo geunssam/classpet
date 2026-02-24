@@ -6,17 +6,35 @@ export const PET_TYPES = {
     dog: {
         name: '강아지',
         category: 'mammal',
-        stages: { egg: '🎁', baby: '🐕', growing: '🐕', adult: '🦮' }
+        stages: { egg: '🎁', baby: '🐕', growing: '🐕', adult: '🦮' },
+        images: {
+            egg: 'pet-assets/dog/png/dog_stage1_newborn.png',
+            baby: 'pet-assets/dog/png/dog_stage2_baby_v2.png',
+            growing: 'pet-assets/dog/png/dog_stage3_growing.png',
+            adult: 'pet-assets/dog/png/dog_stage4_adult.png'
+        }
     },
     cat: {
         name: '고양이',
         category: 'mammal',
-        stages: { egg: '🎁', baby: '🐱', growing: '🐱', adult: '🐈' }
+        stages: { egg: '🎁', baby: '🐱', growing: '🐱', adult: '🐈' },
+        images: {
+            egg: 'pet-assets/cat/png/cat_stage1_newborn.png',
+            baby: 'pet-assets/cat/png/cat_stage2_baby.png',
+            growing: 'pet-assets/cat/png/cat_stage3_growing.png',
+            adult: 'pet-assets/cat/png/cat_stage4_adult.png'
+        }
     },
     rabbit: {
         name: '토끼',
         category: 'mammal',
-        stages: { egg: '🎁', baby: '🐰', growing: '🐰', adult: '🐇' }
+        stages: { egg: '🎁', baby: '🐰', growing: '🐰', adult: '🐇' },
+        images: {
+            egg: 'pet-assets/rabbit/png/rabbit_stage1_newborn.png',
+            baby: 'pet-assets/rabbit/png/rabbit_stage2_baby.png',
+            growing: 'pet-assets/rabbit/png/rabbit_stage3_growing.png',
+            adult: 'pet-assets/rabbit/png/rabbit_stage4_adult.png'
+        }
     },
     hamster: {
         name: '햄스터',

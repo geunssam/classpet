@@ -6,7 +6,7 @@
 
 import { store, EMOTION_TYPES } from '../../store.js';
 import { router } from '../../router.js';
-import { getPetEmoji } from '../../shared/utils/petLogic.js';
+import { getPetEmoji, getPetImageHTML } from '../../shared/utils/petLogic.js';
 import { showToast } from '../../shared/utils/animations.js';
 import { onEmotionUpdate } from './EmotionService.js';
 import { toDateString } from '../../shared/utils/dateUtils.js';
@@ -109,12 +109,12 @@ export function render() {
                                 <div class="rounded-2xl py-1.5 px-2.5 flex items-center gap-1.5 cursor-pointer transition-colors" style="background-color: rgba(124,158,245,0.18);"
                                      onmouseenter="this.style.backgroundColor='rgba(124,158,245,0.3)'" onmouseleave="this.style.backgroundColor='rgba(124,158,245,0.18)'"
                                      data-action="open-chat" data-student-id="${student.id}">
-                                    <span class="dash-pill-icon">${getPetEmoji(student.petType, student.level)}</span>
+                                    <span class="dash-pill-icon">${getPetImageHTML(student.petType, student.level, 'xs')}</span>
                                     <span class="dash-pill-label">${student.number || ''}. ${student.name}</span>
                                     <span class="dash-pill-icon">${eInfo ? eInfo.icon : ''}</span>
                                 </div>` : `
                                 <div class="rounded-2xl py-1.5 px-2.5 flex items-center gap-1.5 opacity-60" style="background-color: rgba(245,124,124,0.18);">
-                                    <span class="dash-pill-icon">${getPetEmoji(student.petType, student.level)}</span>
+                                    <span class="dash-pill-icon">${getPetImageHTML(student.petType, student.level, 'xs')}</span>
                                     <span class="dash-pill-label">${student.number || ''}. ${student.name}</span>
                                     <span class="dash-pill-icon" style="visibility:hidden;">·</span>
                                 </div>`;
@@ -143,7 +143,7 @@ export function render() {
                         <div class="bg-white rounded-xl p-3 cursor-pointer hover:bg-gray-50"
                              data-action="open-detail" data-student-id="${student.id}">
                             <div class="flex items-center gap-3">
-                                <span class="text-2xl">${getPetEmoji(student.petType, student.level)}</span>
+                                ${getPetImageHTML(student.petType, student.level, 'sm')}
                                 <div class="flex-1">
                                     <div class="font-medium">${student.name}</div>
                                 </div>
@@ -248,7 +248,7 @@ function renderChatRoomList(students) {
                     <div class="flex items-center gap-3 bg-white rounded-xl p-3 cursor-pointer hover:bg-gray-50 active:bg-gray-100 transition-colors"
                          data-action="open-chat" data-student-id="${student.id}">
                         <div class="relative flex-shrink-0">
-                            <span class="text-3xl">${getPetEmoji(student.petType, student.level)}</span>
+                            ${getPetImageHTML(student.petType, student.level, 'md')}
                             ${emotionInfo ? `<span class="absolute -bottom-1 -right-1 text-sm">${emotionInfo.icon}</span>` : ''}
                         </div>
                         <div class="flex-1 min-w-0">
@@ -322,7 +322,7 @@ function renderChatRoom(students) {
                 <button id="backToChatListBtn" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-600 text-lg">
                     ←
                 </button>
-                <span class="text-2xl">${getPetEmoji(student.petType, student.level)}</span>
+                ${getPetImageHTML(student.petType, student.level, 'sm')}
                 <span class="font-bold">${student.name}</span>
             </div>
 

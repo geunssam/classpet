@@ -5,7 +5,7 @@
 
 import { store, PET_TYPES, EMOTION_TYPES, PET_REACTIONS, PET_SPEECH_STYLES, convertToPetSpeech } from '../../store.js';
 import { router } from '../../router.js';
-import { getPetEmoji, getGrowthStage, getExpProgress, getCurrentLevelExp, getExpForNextLevel, isMaxLevel } from '../../shared/utils/petLogic.js';
+import { getPetEmoji, getPetImageHTML, getPetImage, getGrowthStage, getExpProgress, getCurrentLevelExp, getExpForNextLevel, isMaxLevel } from '../../shared/utils/petLogic.js';
 import { showToast } from '../../shared/utils/animations.js';
 import { getNameWithSuffix } from '../../shared/utils/nameUtils.js';
 
@@ -47,6 +47,7 @@ export function render() {
     const petType = PET_TYPES[student.petType];
     const petStage = getGrowthStage(student.level);
     const petEmoji = petType?.stages[petStage] || '🐾';
+    const petImageHTML = getPetImageHTML(student.petType, student.level, 'xl');
     const petName = student.petName || petType?.name || '펫';
 
     // 경험치 계산
@@ -66,7 +67,7 @@ export function render() {
                     <!-- 왼쪽: 펫 이모지 + 이름 -->
                     <div class="pet-left-column">
                         <div id="petEmojiContainer" class="relative">
-                            <span id="petEmoji" class="pet-emoji-large inline-block pet-pulse">${petEmoji}</span>
+                            <span id="petEmoji" class="pet-emoji-large inline-block pet-pulse">${petImageHTML}</span>
                             <span id="reactionEmoji" class="absolute -top-3 -right-3 text-2xl opacity-0 transition-all duration-500"></span>
                         </div>
                         <h2 class="text-2xl font-bold text-gray-800 mt-3">${petName}</h2>
@@ -153,7 +154,7 @@ export function render() {
 
             <!-- 기록 보기 탭 -->
             <div id="historyContent" class="${currentStudentTab !== 'history' ? 'hidden' : ''}">
-                ${renderHistoryTab(student, petEmoji, petName)}
+                ${renderHistoryTab(student, petEmoji, petName, getPetImageHTML(student.petType, student.level, 'sm'))}
             </div>
 
             ${isMaxLevel(student.level) ? `
@@ -409,7 +410,8 @@ function setupStudentEmotionSubscription() {
                 const student = store.getCurrentStudent();
                 const petEmoji = getPetEmoji(student.petType, student.level);
                 const petName = student.petName || PET_TYPES[student.petType]?.name || '펫';
-                historyContent.innerHTML = renderHistoryTab(student, petEmoji, petName);
+                const petImageSm = getPetImageHTML(student.petType, student.level, 'sm');
+                historyContent.innerHTML = renderHistoryTab(student, petEmoji, petName, petImageSm);
                 // 날짜 네비게이션 이벤트만 재바인딩
                 document.getElementById('historyPrevDay')?.addEventListener('click', () => {
                     historyDate.setDate(historyDate.getDate() - 1);
@@ -520,12 +522,10 @@ function refreshPetDisplay() {
     const stageText = document.querySelector('.pet-stage-text');
     if (stageText) stageText.textContent = petStage === 'adult' ? '최종' : (petStage === 'growing' ? '성장중' : '아기');
 
-    // 펫 이모지 업데이트
-    const petEmoji = document.getElementById('petEmoji');
-    if (petEmoji) {
-        const petType = PET_TYPES[student.petType];
-        const newEmoji = petType?.stages[petStage] || '🐾';
-        petEmoji.textContent = newEmoji;
+    // 펫 이미지/이모지 업데이트
+    const petEmojiEl = document.getElementById('petEmoji');
+    if (petEmojiEl) {
+        petEmojiEl.innerHTML = getPetImageHTML(student.petType, student.level, 'xl');
     }
 }
 
@@ -798,7 +798,10 @@ function showNewPetSelectionModal() {
                     ${availablePets.map(([key, pet]) => `
                         <button class="new-pet-option p-3 rounded-xl border-2 border-gray-200 hover:border-primary transition-all text-center"
                                 data-pet-type="${key}">
-                            <span class="text-3xl block">${pet.stages.egg}</span>
+                            ${pet.images?.egg
+                                ? `<img src="${pet.images.egg}" alt="" class="pet-img pet-img-md mx-auto" draggable="false">`
+                                : `<span class="text-3xl block">${pet.stages.egg}</span>`
+                            }
                             <span class="text-xs text-gray-600 mt-1 block">${pet.name}</span>
                         </button>
                     `).join('')}
@@ -894,7 +897,7 @@ function showNewPetSelectionModal() {
 /**
  * 기록 보기 탭 렌더링 (카톡 스타일)
  */
-function renderHistoryTab(student, petEmoji, petName) {
+function renderHistoryTab(student, petEmoji, petName, petImageSm) {
     // 로컬 시간대 기준 날짜 문자열 (UTC가 아닌 사용자 시간대)
     const month = historyDate.getMonth() + 1;
     const date = historyDate.getDate();
@@ -970,7 +973,7 @@ function renderHistoryTab(student, petEmoji, petName) {
                     const petSpeech = convertToPetSpeech(c.teacherReply, student.petType, petName);
                     html += `
                                     <div class="flex justify-start gap-2">
-                                        <span class="text-2xl flex-shrink-0 mt-1">${petEmoji}</span>
+                                        <span class="flex-shrink-0 mt-1">${petImageSm || petEmoji}</span>
                                         <div class="flex flex-col">
                                             <div class="bg-white rounded-2xl rounded-tl-sm p-3 max-w-[75%] shadow-sm border border-gray-100">
                                                 <p class="text-sm text-gray-700">${petSpeech.petMessage}</p>
@@ -1006,7 +1009,7 @@ function renderHistoryTab(student, petEmoji, petName) {
                         </div>
                         ${hasReply ? `
                             <div class="flex justify-start gap-2">
-                                <span class="text-2xl flex-shrink-0 mt-1">${petEmoji}</span>
+                                <span class="flex-shrink-0 mt-1">${petImageSm || petEmoji}</span>
                                 <div class="flex flex-col">
                                     <div class="bg-white rounded-2xl rounded-tl-sm p-3 max-w-[75%] shadow-sm border border-gray-100">
                                         <p class="text-sm text-gray-700">${petSpeech.petMessage}</p>

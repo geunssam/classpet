@@ -15,7 +15,7 @@ import { toDateString } from '../shared/utils/dateUtils.js';
 import { bindToolbarToggle, bindMobileDrawer, updateNotificationBadge, updateStudentNotificationBadge } from './navigation.js';
 import { setStudentTab, setHistoryDate } from '../features/dashboard/StudentMode.js';
 import { showQuickPraise } from '../features/praise/QuickPraise.js';
-import { getPetEmoji } from '../shared/utils/petLogic.js';
+import { getPetEmoji, getPetImageHTML } from '../shared/utils/petLogic.js';
 import { DEFAULT_THERMOSTAT } from '../features/praise/thermostatMixin.js';
 
 /**
@@ -257,7 +257,7 @@ function showStudentPickerModal(selectedDate) {
                 ${students.map(student => `
                     <button class="student-picker-btn flex flex-col items-center p-2 rounded-xl border-2 border-transparent hover:border-primary/50 hover:bg-primary/5 transition-all"
                             data-student-id="${student.id}">
-                        <span class="text-2xl">${getPetEmoji(student.petType, student.level)}</span>
+                        ${getPetImageHTML(student.petType, student.level, 'sm')}
                         <span class="text-xs mt-1 truncate w-full text-center">${student.name}</span>
                     </button>
                 `).join('')}

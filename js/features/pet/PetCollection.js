@@ -6,6 +6,7 @@
 import { store, PET_TYPES } from '../../store.js';
 import { router } from '../../router.js';
 import { showToast } from '../../shared/utils/animations.js';
+import { getPetStageImageHTML } from '../../shared/utils/petLogic.js';
 
 /**
  * 렌더링
@@ -142,8 +143,8 @@ function renderPetCard(petKey, pet, status, currentLevel, completedPet) {
     return `
         <div class="${cardClass} ${borderClass} bg-white rounded-xl p-3 relative transition-all duration-300"
              data-pet="${petKey}" data-status="${status}">
-            <div class="text-center">
-                <span class="text-4xl inline-block ${status === 'locked' ? 'grayscale opacity-50' : ''}">${emoji}</span>
+            <div class="text-center flex flex-col items-center">
+                <span class="inline-block ${status === 'locked' ? 'grayscale opacity-50' : ''}">${getPetStageImageHTML(petKey, 'baby', 'lg')}</span>
                 <p class="text-xs mt-1 font-medium ${status === 'locked' ? 'text-gray-400' : 'text-gray-700'}">${name}</p>
             </div>
             ${overlayContent}
@@ -196,24 +197,24 @@ function showPetDetail(petKey, status) {
 
     // 성장 단계 표시
     const stagesHtml = `
-        <div class="flex justify-center gap-4 my-4">
+        <div class="flex justify-center gap-4 my-4 items-end">
             <div class="text-center">
-                <span class="text-2xl">${pet.stages.egg}</span>
+                ${getPetStageImageHTML(petKey, 'egg', 'sm')}
                 <p class="text-xs text-gray-400">시작</p>
             </div>
             <span class="text-gray-300 self-center">→</span>
             <div class="text-center">
-                <span class="text-2xl">${pet.stages.baby}</span>
+                ${getPetStageImageHTML(petKey, 'baby', 'sm')}
                 <p class="text-xs text-gray-400">아기</p>
             </div>
             <span class="text-gray-300 self-center">→</span>
             <div class="text-center">
-                <span class="text-2xl">${pet.stages.growing}</span>
+                ${getPetStageImageHTML(petKey, 'growing', 'sm')}
                 <p class="text-xs text-gray-400">성장</p>
             </div>
             <span class="text-gray-300 self-center">→</span>
             <div class="text-center">
-                <span class="text-2xl">${pet.stages.adult}</span>
+                ${getPetStageImageHTML(petKey, 'adult', 'sm')}
                 <p class="text-xs text-gray-400">성체</p>
             </div>
         </div>

@@ -5,7 +5,7 @@
 
 import { store, PET_TYPES } from '../../store.js';
 import { PRAISE_CATEGORIES } from '../../shared/constants/index.js';
-import { getPetEmoji, calculateLevel, getLevelUpMessage, isMaxLevel } from '../../shared/utils/petLogic.js';
+import { getPetEmoji, getPetImageHTML, calculateLevel, getLevelUpMessage, isMaxLevel } from '../../shared/utils/petLogic.js';
 import { showToast, setModalContent, openModal, closeModal, createPraiseParticles } from '../../shared/utils/animations.js';
 
 const DEFAULT_CAT_ORDER = Object.keys(PRAISE_CATEGORIES);
@@ -39,7 +39,7 @@ export function showQuickPraise() {
                     ${students.map(student => `
                         <button class="student-select-btn flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg border border-gray-300 hover:border-primary transition-all bg-white"
                                 data-student-id="${student.id}">
-                            <span class="text-lg">${getPetEmoji(student.petType, student.level)}</span>
+                            ${getPetImageHTML(student.petType, student.level, 'xs')}
                             <span class="text-xs truncate">${student.name}</span>
                         </button>
                     `).join('')}

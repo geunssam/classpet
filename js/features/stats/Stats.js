@@ -5,7 +5,7 @@
 
 import { store, PET_TYPES } from '../../store.js';
 import { PRAISE_CATEGORIES } from '../../shared/constants/index.js';
-import { getPetEmoji, calculateRank, getRankTier, getGrowthStage } from '../../shared/utils/petLogic.js';
+import { getPetEmoji, getPetImageHTML, calculateRank, getRankTier, getGrowthStage } from '../../shared/utils/petLogic.js';
 import { showToast, setModalContent, openModal, closeModal, showLoading, hideLoading } from '../../shared/utils/animations.js';
 const DEFAULT_CAT_ORDER = Object.keys(PRAISE_CATEGORIES);
 
@@ -72,7 +72,7 @@ export function render() {
                         return `
                         <div class="ranking-card" onclick="window.classpet.router.navigate('student', { id: '${student.id}' })">
                             <span class="ranking-col-rank text-xl">${index < 3 ? medals[index] : (index + 1)}</span>
-                            <span class="ranking-col-emoji text-xl">${getPetEmoji(student.petType, student.level)}</span>
+                            <span class="ranking-col-emoji">${getPetImageHTML(student.petType, student.level, 'sm')}</span>
                             <span class="ranking-col-number">${student.number}</span>
                             <span class="ranking-col-name">${student.name}</span>
                             <span class="ranking-col-praise">${store.getPraisesByStudent(student.id).length}</span>

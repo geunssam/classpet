@@ -10,6 +10,7 @@ import { router } from '../../router.js';
 const DEFAULT_CAT_ORDER = Object.keys(PRAISE_CATEGORIES);
 import {
     getPetEmoji,
+    getPetImageHTML,
     getExpProgress,
     getGrowthStage,
     getCurrentLevelExp,
@@ -119,7 +120,7 @@ function renderPetHybridCard(student, stats) {
                 </svg>
 
                 <div class="circle-center-content">
-                    <span class="text-2xl pet-emoji level-${stage}">${getPetEmoji(student.petType, level)}</span>
+                    ${getPetImageHTML(student.petType, level, 'md')}
                     <span class="level-badge-inside">Lv.${level}</span>
                 </div>
             </div>
@@ -157,7 +158,7 @@ function showQuickPraiseForStudent(studentId) {
             </div>
 
             <div class="text-center py-4">
-                <span class="text-6xl pet-emoji">${getPetEmoji(student.petType, student.level)}</span>
+                ${getPetImageHTML(student.petType, student.level, 'xl')}
                 <div class="mt-2">
                     <span class="level-badge">Lv.${student.level || 1}</span>
                 </div>

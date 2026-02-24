@@ -5,6 +5,7 @@
 
 import { store, PET_TYPES } from '../../store.js';
 import { router } from '../../router.js';
+import { getPetStageImageHTML, getPetImageHTML } from '../../shared/utils/petLogic.js';
 
 // 현재 선택된 학생 정보
 let selectedStudent = null;
@@ -72,7 +73,7 @@ export function render(params = {}) {
                                     data-pet-emoji="${petEmoji}"
                                 >
                                     <span class="text-lg font-bold text-gray-700">${student.number}</span>
-                                    <span class="text-xs text-gray-400">${petEmoji}</span>
+                                    <span class="text-xs text-gray-400">${student.petType ? getPetStageImageHTML(student.petType, 'baby', 'xs') : '🐾'}</span>
                                 </button>
                             `;
                         }).join('')}
@@ -155,10 +156,12 @@ function openPinModal(student, petEmoji) {
     const hintEl = document.getElementById('pinHint');
     const errorEl = document.getElementById('pinError');
 
-    // 학생 정보 표시
+    // 학생 정보 표시 (이미지 지원)
     nameEl.textContent = student.name;
     numberEl.textContent = student.number;
-    emojiEl.textContent = petEmoji;
+    emojiEl.innerHTML = student.petType
+        ? getPetImageHTML(student.petType, student.level || 1, 'lg')
+        : petEmoji;
     hintEl.textContent = String(student.number).padStart(4, '0');
 
     // 에러 숨기기

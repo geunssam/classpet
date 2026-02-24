@@ -7,6 +7,7 @@ import { store, PET_TYPES, EMOTION_TYPES } from '../../store.js';
 import { router } from '../../router.js';
 import {
     getPetEmoji,
+    getPetImageHTML,
     getPetName,
     getExpProgress,
     getGrowthStage,
@@ -92,7 +93,7 @@ export function render(params) {
                     <!-- 1열: 펫 이모지 + 이름 + 랭크 -->
                     <div class="flex flex-col items-center justify-center py-4 px-2">
                         <div id="petEmojiContainer" class="relative">
-                            <span id="petEmoji" class="pet-emoji level-${stage} text-6xl cursor-pointer">${getPetEmoji(student.petType, student.level)}</span>
+                            <span id="petEmoji" class="cursor-pointer">${getPetImageHTML(student.petType, student.level, 'xl')}</span>
                             ${rankTier.tier === 'S' ? '<span class="absolute -bottom-0 -right-1 text-lg">👑</span>' : ''}
                         </div>
                         <h2 class="text-xl font-bold mt-1">${student.name}</h2>

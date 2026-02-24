@@ -95,6 +95,52 @@ export function getPetEmoji(petType, level) {
 }
 
 /**
+ * 펫 이미지 경로 가져오기 (없으면 null)
+ */
+export function getPetImage(petType, level) {
+    const pet = PET_TYPES[petType];
+    if (!pet?.images) return null;
+    const stage = getGrowthStage(level);
+    return pet.images[stage] || null;
+}
+
+/**
+ * 펫 이미지 경로 (특정 단계)
+ */
+export function getPetStageImage(petType, stage) {
+    const pet = PET_TYPES[petType];
+    if (!pet?.images) return null;
+    return pet.images[stage] || null;
+}
+
+/**
+ * 펫 이미지 HTML 반환 (이미지 있으면 <img>, 없으면 이모지 <span>)
+ * @param {string} petType - 펫 종류
+ * @param {number} level - 현재 레벨
+ * @param {string} size - 크기: 'xs'(20px), 'sm'(28px), 'md'(40px), 'lg'(64px), 'xl'(96px), '2xl'(120px)
+ */
+export function getPetImageHTML(petType, level, size = 'md') {
+    const imagePath = getPetImage(petType, level);
+    if (imagePath) {
+        return `<img src="${imagePath}" alt="" class="pet-img pet-img-${size}" draggable="false">`;
+    }
+    return `<span class="pet-emoji-text pet-emoji-${size}">${getPetEmoji(petType, level)}</span>`;
+}
+
+/**
+ * 특정 단계의 펫 이미지 HTML (펫 선택, 도감 등에서 사용)
+ */
+export function getPetStageImageHTML(petType, stage, size = 'md') {
+    const pet = PET_TYPES[petType];
+    if (!pet) return '<span>🥚</span>';
+    const imagePath = pet.images?.[stage];
+    if (imagePath) {
+        return `<img src="${imagePath}" alt="" class="pet-img pet-img-${size}" draggable="false">`;
+    }
+    return `<span class="pet-emoji-text pet-emoji-${size}">${pet.stages[stage] || '🥚'}</span>`;
+}
+
+/**
  * 펫 이름 가져오기
  */
 export function getPetName(petType) {

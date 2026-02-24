@@ -9,7 +9,7 @@ import { Sound } from './sound.js';
 import { Timer, formatTime } from './timer.js';
 import { Whistle } from './whistle.js';
 import { showToast } from '../../shared/utils/animations.js';
-import { getPetEmoji } from '../../shared/utils/petLogic.js';
+import { getPetEmoji, getPetImageHTML } from '../../shared/utils/petLogic.js';
 
 // ========== 상태 ==========
 let currentPhase = 'mode-select';
@@ -81,11 +81,11 @@ function getStudentMap() {
 function renderResultChip(label, type) {
     const studentMap = getStudentMap();
     const s = studentMap[label];
-    const petEmoji = s ? getPetEmoji(s.petType, s.level) : '🥚';
+    const petImg = s ? getPetImageHTML(s.petType, s.level, 'xs') : '🥚';
     const chipType = type === 'it' ? 'chip-result-it' : 'chip-result-angel';
     return `
         <div class="picker-student-chip picker-result-chip ${chipType}">
-            <span class="chip-pet">${petEmoji}</span>
+            <span class="chip-pet">${petImg}</span>
             <span class="chip-number">${s?.number || ''}</span>
             <span class="chip-name">${s?.name || label}</span>
             <span class="chip-level">Lv.${s?.level || 1}</span>
@@ -237,10 +237,10 @@ function renderStudentChips(excluded) {
         <div class="picker-participant-count">참가: ${activeCount}명 / 전체: ${students.length}명</div>
         <div class="picker-students-grid">
             ${students.map(s => {
-                const petEmoji = getPetEmoji(s.petType, s.level);
+                const petImg = getPetImageHTML(s.petType, s.level, 'xs');
                 return `
                 <div class="picker-student-chip ${excluded.has(s.id) ? 'excluded' : ''}" data-student-id="${s.id}">
-                    <span class="chip-pet">${petEmoji}</span>
+                    <span class="chip-pet">${petImg}</span>
                     <span class="chip-number">${s.number}</span>
                     <span class="chip-name">${s.name}</span>
                     <span class="chip-level">Lv.${s.level}</span>
@@ -316,11 +316,11 @@ function renderTagSettings() {
 function renderFoldingChip(label, type) {
     const studentMap = getStudentMap();
     const s = studentMap[label];
-    const petEmoji = s ? getPetEmoji(s.petType, s.level) : '🥚';
+    const petImg = s ? getPetImageHTML(s.petType, s.level, 'xs') : '🥚';
     const colorClass = type === 'it' ? 'chip-folding-it' : type === 'angel' ? 'chip-folding-angel' : 'chip-folding-history';
     return `
         <div class="picker-student-chip picker-folding-chip ${colorClass}">
-            <span class="chip-pet">${petEmoji}</span>
+            <span class="chip-pet">${petImg}</span>
             <span class="chip-number">${s?.number || ''}</span>
             <span class="chip-name">${s?.name || label}</span>
             <span class="chip-level">Lv.${s?.level || 1}</span>
@@ -481,10 +481,10 @@ function renderGroupSettings() {
 function renderGroupMemberChip(label) {
     const studentMap = getStudentMap();
     const s = studentMap[label];
-    const petEmoji = s ? getPetEmoji(s.petType, s.level) : '🥚';
+    const petImg = s ? getPetImageHTML(s.petType, s.level, 'xs') : '🥚';
     return `
         <div class="picker-student-chip picker-group-member-chip">
-            <span class="chip-pet">${petEmoji}</span>
+            <span class="chip-pet">${petImg}</span>
             <span class="chip-number">${s?.number || ''}</span>
             <span class="chip-name">${s?.name || label}</span>
             <span class="chip-level">Lv.${s?.level || 1}</span>
