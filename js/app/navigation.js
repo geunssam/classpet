@@ -83,6 +83,9 @@ export function bindToolbarToggle() {
     const iconSpan = toggleBtn.querySelector('.toggle-icon');
     const textSpan = toggleBtn.querySelector('.toggle-text');
 
+    // 핑퐁 방향 추적: 'up' = 펼치는 중, 'down' = 접는 중
+    let toolbarDirection = 'up';
+
     /**
      * 툴바 상태 설정
      * @param {'minimized' | 'collapsed' | 'expanded'} state
@@ -92,28 +95,23 @@ export function bindToolbarToggle() {
 
         if (state === 'minimized') {
             toolbar.classList.add('minimized');
+            toolbarDirection = 'up'; // 바닥 → 다음은 올라감
         } else if (state === 'collapsed') {
             toolbar.classList.add('collapsed');
+        } else {
+            // expanded 도달 → 다음은 내려감
+            toolbarDirection = 'down';
         }
-        // expanded = 클래스 없음
 
-        // 화살표 방향 업데이트
-        // 기본 SVG = < (왼쪽 화살표), rotate(180deg) = > (오른쪽 화살표)
-        // minimized: < (열기 = 왼쪽으로 펼침)
-        // collapsed 모바일: > (닫기 = 오른쪽으로 접기)
-        // collapsed 데스크탑: < (더 펼치기)
-        // expanded: > (접기)
+        // 화살표 방향: 다음에 접을 건지 펼칠 건지
+        const willCollapse =
+            state === 'expanded' || (state === 'collapsed' && toolbarDirection === 'down');
+
         if (iconSpan) {
-            if (state === 'minimized') {
-                iconSpan.style.transform = 'rotate(0deg)'; // <
-            } else if (state === 'collapsed') {
-                iconSpan.style.transform = isMobile() ? 'rotate(180deg)' : 'rotate(0deg)';
-            } else {
-                iconSpan.style.transform = 'rotate(180deg)'; // >
-            }
+            iconSpan.style.transform = willCollapse ? 'rotate(180deg)' : 'rotate(0deg)';
         }
         if (textSpan) {
-            textSpan.textContent = state === 'expanded' ? '접기' : '펼치기';
+            textSpan.textContent = willCollapse ? '접기' : '펼치기';
         }
     };
 
@@ -141,16 +139,20 @@ export function bindToolbarToggle() {
 
     initToolbarState();
 
-    // 토글 이벤트: 3단 순환
-    toggleBtn.addEventListener('click', () => {
+    // 토글 이벤트: 핑퐁 순환 (minimized → collapsed → expanded → collapsed → minimized)
+    toggleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
         const current = getState();
 
-        if (isMobile()) {
-            // 모바일: minimized ↔ collapsed (2단)
-            setToolbarState(current === 'minimized' ? 'collapsed' : 'minimized');
+        if (current === 'minimized') {
+            setToolbarState('collapsed');
+        } else if (current === 'collapsed') {
+            // 방향에 따라 올라감/내려감
+            setToolbarState(toolbarDirection === 'up' ? 'expanded' : 'minimized');
         } else {
-            // 데스크탑/태블릿: collapsed ↔ expanded (2단)
-            setToolbarState(current === 'expanded' ? 'collapsed' : 'expanded');
+            // expanded → 한 단계씩 내려감
+            toolbarDirection = 'down';
+            setToolbarState('collapsed');
         }
     });
 
