@@ -93,8 +93,8 @@ export const studentMixin = {
         if (this.isOnline) {
             try {
                 const result = await firebase.saveStudent(teacherUid, classId, studentData);
-                // Firestore 자동생성 ID가 로컬 ID와 다르면 로컬 업데이트
-                if (result && result.id !== student.id) {
+                // Firestore 문서 ID가 로컬 ID와 다르면 로컬 업데이트 (문자열 비교)
+                if (result && String(result.id) !== String(student.id)) {
                     const students = this.getStudents() || [];
                     const idx = students.findIndex(s => String(s.id) === String(student.id));
                     if (idx !== -1) {

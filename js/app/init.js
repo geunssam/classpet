@@ -124,7 +124,7 @@ async function initApp() {
             startFirebaseServices();
 
             const currentRoute = window.location.hash.slice(1).split('/')[0].split('?')[0];
-            const skipRoutes = ['login', 'teacher-login', 'class-select', 'student-login'];
+            const skipRoutes = ['login', 'teacher-login', 'class-select', 'student-login', 'pet-selection'];
             if (!skipRoutes.includes(currentRoute)) {
                 console.log('📦 데이터 로드 완료 → 화면 갱신:', currentRoute);
                 refreshCurrentView();

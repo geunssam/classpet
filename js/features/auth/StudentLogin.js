@@ -287,7 +287,11 @@ export function afterRender() {
     if (!dataRefreshed && store.isFirebaseEnabled() && store.getClassCode() && !store.isTeacherLoggedIn()) {
         dataRefreshed = true;
         store.loadClassDataFromFirebase().then(() => {
-            router.handleRoute();
+            // 학생이 이미 다른 페이지로 이동했으면 handleRoute 스킵 (race condition 방지)
+            const currentHash = window.location.hash.slice(1).split('?')[0];
+            if (currentHash === 'student-login') {
+                router.handleRoute();
+            }
         }).catch(err => console.warn('학생 목록 새로고침 실패:', err));
     }
 

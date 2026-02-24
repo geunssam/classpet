@@ -35,12 +35,12 @@ export async function saveStudent(teacherUid, classId, student) {
         const studentsRef = collection(db, 'teachers', uid, 'classes', cId, 'students');
         const { id, ...dataWithoutId } = student;
 
-        // 기존 Firestore 문서 ID(문자열)가 있으면 그대로 사용, 없거나 숫자면 자동생성
+        // ID가 있으면 문자열로 변환하여 문서 ID로 사용, 없으면 자동생성
         let studentRef;
-        if (id != null && typeof id === 'string' && !/^\d+$/.test(id)) {
-            studentRef = doc(studentsRef, id);
+        if (id != null) {
+            studentRef = doc(studentsRef, String(id));
         } else {
-            studentRef = doc(studentsRef); // 자동생성 ID
+            studentRef = doc(studentsRef); // 자동생성 ID (id가 없는 경우만)
         }
 
         await setDoc(studentRef, {
