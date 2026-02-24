@@ -3,7 +3,7 @@
  * 레벨업, 경험치 계산, 성장 단계 등
  */
 
-import { PET_TYPES } from '../store.js';
+import { PET_TYPES } from '../../store.js';
 
 // 레벨별 필요 경험치 (누적) - 최대 레벨 15
 const LEVEL_EXP_TABLE = [
