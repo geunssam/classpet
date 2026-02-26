@@ -1,5 +1,5 @@
 // 클래스펫 Service Worker
-const CACHE_NAME = 'classpet-v1771941430401';
+const CACHE_NAME = 'classpet-v1772072235';
 const OFFLINE_URL = '/offline.html';
 
 // 캐시할 정적 파일들 (앱 셸)
@@ -149,7 +149,27 @@ const STATIC_ASSETS = [
     '/pet-assets/bear/png/bear_stage1_newborn.png',
     '/pet-assets/bear/png/bear_stage2_baby.png',
     '/pet-assets/bear/png/bear_stage3_growing.png',
-    '/pet-assets/bear/png/bear_stage4_adult.png'
+    '/pet-assets/bear/png/bear_stage4_adult.png',
+    '/pet-assets/panda/png/panda_stage1_newborn.png',
+    '/pet-assets/panda/png/panda_stage2_baby.png',
+    '/pet-assets/panda/png/panda_stage3_growing.png',
+    '/pet-assets/panda/png/panda_stage4_adult.png',
+    '/pet-assets/lion/png/lion_stage1_newborn.png',
+    '/pet-assets/lion/png/lion_stage2_baby.png',
+    '/pet-assets/lion/png/lion_stage3_growing.png',
+    '/pet-assets/lion/png/lion_stage4_adult.png',
+    '/pet-assets/chick/png/chick_stage1_newborn.png',
+    '/pet-assets/chick/png/chick_stage2_baby.png',
+    '/pet-assets/chick/png/chick_stage3_growing.png',
+    '/pet-assets/chick/png/chick_stage4_adult.png',
+    '/pet-assets/penguin/png/penguin_stage1_newborn.png',
+    '/pet-assets/penguin/png/penguin_stage2_baby.png',
+    '/pet-assets/penguin/png/penguin_stage3_growing.png',
+    '/pet-assets/penguin/png/penguin_stage4_adult.png',
+    '/pet-assets/turtle/png/turtle_stage1_newborn.png',
+    '/pet-assets/turtle/png/turtle_stage2_baby.png',
+    '/pet-assets/turtle/png/turtle_stage3_growing.png',
+    '/pet-assets/turtle/png/turtle_stage4_adult.png'
 ];
 
 // 캐시하지 않을 URL 패턴들 (Firebase API 요청만 - SDK는 캐시 허용)

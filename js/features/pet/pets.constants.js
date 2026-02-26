@@ -72,27 +72,57 @@ export const PET_TYPES = {
     panda: {
         name: '판다',
         category: 'mammal',
-        stages: { baby: '🐼', child: '🐼', teen: '🐼', adult: '🐼' }
+        stages: { baby: '🐼', child: '🐼', teen: '🐼', adult: '🐼' },
+        images: {
+            baby: 'pet-assets/panda/png/panda_stage1_newborn.png',
+            child: 'pet-assets/panda/png/panda_stage2_baby.png',
+            teen: 'pet-assets/panda/png/panda_stage3_growing.png',
+            adult: 'pet-assets/panda/png/panda_stage4_adult.png'
+        }
     },
     lion: {
         name: '사자',
         category: 'mammal',
-        stages: { baby: '🦁', child: '🦁', teen: '🦁', adult: '🦁' }
+        stages: { baby: '🦁', child: '🦁', teen: '🦁', adult: '🦁' },
+        images: {
+            baby: 'pet-assets/lion/png/lion_stage1_newborn.png',
+            child: 'pet-assets/lion/png/lion_stage2_baby.png',
+            teen: 'pet-assets/lion/png/lion_stage3_growing.png',
+            adult: 'pet-assets/lion/png/lion_stage4_adult.png'
+        }
     },
     chick: {
         name: '병아리',
         category: 'bird',
-        stages: { baby: '🐣', child: '🐣', teen: '🐤', adult: '🐓' }
+        stages: { baby: '🐣', child: '🐣', teen: '🐤', adult: '🐓' },
+        images: {
+            baby: 'pet-assets/chick/png/chick_stage1_newborn.png',
+            child: 'pet-assets/chick/png/chick_stage2_baby.png',
+            teen: 'pet-assets/chick/png/chick_stage3_growing.png',
+            adult: 'pet-assets/chick/png/chick_stage4_adult.png'
+        }
     },
     penguin: {
         name: '펭귄',
         category: 'bird',
-        stages: { baby: '🐧', child: '🐧', teen: '🐧', adult: '🐧' }
+        stages: { baby: '🐧', child: '🐧', teen: '🐧', adult: '🐧' },
+        images: {
+            baby: 'pet-assets/penguin/png/penguin_stage1_newborn.png',
+            child: 'pet-assets/penguin/png/penguin_stage2_baby.png',
+            teen: 'pet-assets/penguin/png/penguin_stage3_growing.png',
+            adult: 'pet-assets/penguin/png/penguin_stage4_adult.png'
+        }
     },
     turtle: {
         name: '거북이',
         category: 'reptile',
-        stages: { baby: '🐢', child: '🐢', teen: '🐢', adult: '🐢' }
+        stages: { baby: '🐢', child: '🐢', teen: '🐢', adult: '🐢' },
+        images: {
+            baby: 'pet-assets/turtle/png/turtle_stage1_newborn.png',
+            child: 'pet-assets/turtle/png/turtle_stage2_baby.png',
+            teen: 'pet-assets/turtle/png/turtle_stage3_growing.png',
+            adult: 'pet-assets/turtle/png/turtle_stage4_adult.png'
+        }
     },
     dragon: {
         name: '드래곤',
