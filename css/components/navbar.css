@@ -386,6 +386,36 @@
     display: none;
 }
 
+/* 학생 프로필 (네비바 우측) */
+.student-profile {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.student-profile.hidden {
+    display: none;
+}
+
+.student-profile-pet {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(124, 158, 245, 0.1);
+    flex-shrink: 0;
+    font-size: 16px;
+    overflow: hidden;
+}
+
+.student-profile-pet .pet-img {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+}
+
 .hamburger-btn {
     display: none;
     padding: 8px;

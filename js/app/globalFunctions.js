@@ -64,8 +64,8 @@ export function registerGlobalFunctions() {
         },
 
         // 교사 모드
-        teacherLogout: () => {
-            store.teacherLogout();
+        teacherLogout: async () => {
+            await store.signOut();
             router.navigate('login');
         },
 

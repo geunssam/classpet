@@ -7,6 +7,7 @@ import { store } from '../store.js';
 import { router } from '../router.js';
 import { showToast } from '../shared/utils/animations.js';
 import { showStudentNotifications, showStudentPinChangeModal, handleStudentLogout } from './header.js';
+import { getPetEmoji, getPetImageHTML } from '../shared/utils/petLogic.js';
 
 /**
  * 네비게이션 이벤트 바인딩 (상단 탭바 + 모바일 드로어)
@@ -235,13 +236,13 @@ export function bindMobileDrawer(showNotificationsFn, showQuickPraiseFn) {
 
     const mobileLogoutBtn = document.getElementById('mobileLogoutBtn');
     if (mobileLogoutBtn) {
-        mobileLogoutBtn.addEventListener('click', () => {
+        mobileLogoutBtn.addEventListener('click', async () => {
             closeMobileDrawer();
             if (isStudentMode()) {
                 handleStudentLogout();
             } else {
                 if (confirm('로그아웃 하시겠습니까?')) {
-                    store.teacherLogout();
+                    await store.signOut();
                     router.navigate('login');
                 }
             }
@@ -317,7 +318,7 @@ export function updateStudentNotificationBadge() {
     const btn = document.getElementById('studentNotificationBtn');
     const settingsBtn = document.getElementById('studentSettingsBtn');
     const logoutBtn = document.getElementById('studentLogoutBtn');
-    const studentClassInfo = document.getElementById('studentClassInfo');
+    const studentProfile = document.getElementById('studentProfile');
     const teacherClassInfo = document.getElementById('classInfo');
 
     // 학생 로그인 상태가 아니면 버튼 숨김
@@ -325,7 +326,7 @@ export function updateStudentNotificationBadge() {
         if (btn) btn.classList.add('hidden');
         if (settingsBtn) settingsBtn.classList.add('hidden');
         if (logoutBtn) logoutBtn.classList.add('hidden');
-        if (studentClassInfo) studentClassInfo.classList.add('hidden');
+        if (studentProfile) studentProfile.classList.add('hidden');
         if (teacherClassInfo) teacherClassInfo.classList.remove('hidden');
         return;
     }
@@ -335,7 +336,7 @@ export function updateStudentNotificationBadge() {
         if (btn) btn.classList.add('hidden');
         if (settingsBtn) settingsBtn.classList.add('hidden');
         if (logoutBtn) logoutBtn.classList.add('hidden');
-        if (studentClassInfo) studentClassInfo.classList.add('hidden');
+        if (studentProfile) studentProfile.classList.add('hidden');
         return;
     }
 
@@ -344,11 +345,10 @@ export function updateStudentNotificationBadge() {
     if (settingsBtn) settingsBtn.classList.remove('hidden');
     if (logoutBtn) logoutBtn.classList.remove('hidden');
 
-    // 학급정보 표시 (학생용)
-    if (studentClassInfo) {
-        const settings = store.getSettings();
-        studentClassInfo.textContent = settings?.className || '우리반';
-        studentClassInfo.classList.remove('hidden');
+    // 학생 프로필 업데이트 (펫 이미지 + 학급·이름)
+    if (studentProfile) {
+        updateNavStudentProfile();
+        studentProfile.classList.remove('hidden');
     }
     if (teacherClassInfo) teacherClassInfo.classList.add('hidden');
 
@@ -448,9 +448,14 @@ export function updateUIVisibility(route) {
         if (mobileStudentNav) mobileStudentNav.classList.remove('hidden');
         if (mobileStudentActions) mobileStudentActions.classList.remove('hidden');
 
-        // 교사 프로필 숨김
+        // 교사 프로필 숨김, 학생 프로필 표시
         const mobileDrawerProfile = document.getElementById('mobileDrawerProfile');
+        const mobileStudentProfile = document.getElementById('mobileStudentProfile');
         if (mobileDrawerProfile) mobileDrawerProfile.classList.add('hidden');
+        if (mobileStudentProfile) {
+            mobileStudentProfile.classList.remove('hidden');
+            updateMobileStudentProfile();
+        }
 
         // 학생 알림/로그아웃 버튼 표시
         updateStudentNotificationBadge();
@@ -484,6 +489,9 @@ export function updateUIVisibility(route) {
         if (mobileTeacherNav) mobileTeacherNav.classList.remove('hidden');
         if (mobileStudentNav) mobileStudentNav.classList.add('hidden');
         if (mobileStudentActions) mobileStudentActions.classList.add('hidden');
+        // 학생 프로필 숨김
+        const mobileStudentProfile2 = document.getElementById('mobileStudentProfile');
+        if (mobileStudentProfile2) mobileStudentProfile2.classList.add('hidden');
         updateClassInfo();
     }
 }
@@ -494,41 +502,40 @@ export function updateUIVisibility(route) {
 export function updateHeaderForStudentMode(isStudentMode, isLoggedIn) {
     const headerTitle = document.querySelector('.navbar-title');
     const classInfo = document.getElementById('classInfo');
+    const studentClassInfo = document.getElementById('studentClassInfo');
     const settingsBtn = document.getElementById('settingsBtn');
-    const navbarTabs = document.querySelector('.navbar-tabs');
     const rightToolbar = document.getElementById('rightToolbar');
+    const profilePic = document.getElementById('teacherProfilePic');
+    const navHomeBtn = document.getElementById('navHomeBtn');
 
     if (isStudentMode) {
-        if (isLoggedIn) {
-            // 로그인 후: 학생 이름 표시
-            const student = store.getCurrentStudent();
-            if (headerTitle && student) {
-                headerTitle.textContent = `${student.name}의 페이지`;
-            }
-            if (classInfo) {
-                const settings = store.getSettings();
-                classInfo.textContent = settings?.className || '우리반';
-            }
-        } else {
-            // 로그인 전
-            if (headerTitle) {
-                headerTitle.textContent = '클래스펫';
-            }
-            if (classInfo) {
-                classInfo.textContent = '학생 모드';
-            }
-        }
+        // 타이틀은 교사와 동일하게 "클래스펫"
+        if (headerTitle) headerTitle.textContent = '클래스펫';
 
-        // 학생 모드에서 탭바와 툴바 숨기기
-        if (navbarTabs) navbarTabs.classList.add('hidden');
+        // 홈 링크를 학생 메인으로
+        if (navHomeBtn) navHomeBtn.href = '#student-main';
+
+        // 교사 정보 숨기기
+        if (classInfo) classInfo.classList.add('hidden');
+        if (profilePic) profilePic.classList.add('hidden');
         if (rightToolbar) rightToolbar.classList.add('hidden');
         if (settingsBtn) settingsBtn.classList.add('hidden');
+
+        // 학생 프로필 표시 (우측: 펫 이미지 + 학급·이름)
+        const studentProfile = document.getElementById('studentProfile');
+        if (isLoggedIn && studentProfile) {
+            updateNavStudentProfile();
+            studentProfile.classList.remove('hidden');
+        } else if (studentProfile) {
+            studentProfile.classList.add('hidden');
+        }
     } else {
         // 교사 모드: 원래대로
-        if (headerTitle) {
-            headerTitle.textContent = '클래스펫';
-        }
-        if (navbarTabs) navbarTabs.classList.remove('hidden');
+        if (headerTitle) headerTitle.textContent = '클래스펫';
+        if (navHomeBtn) navHomeBtn.href = '#dashboard';
+        if (classInfo) classInfo.classList.remove('hidden');
+        const studentProfile2 = document.getElementById('studentProfile');
+        if (studentProfile2) studentProfile2.classList.add('hidden');
         if (rightToolbar) rightToolbar.classList.remove('hidden');
         if (settingsBtn) settingsBtn.classList.remove('hidden');
         updateClassInfo();
@@ -536,9 +543,68 @@ export function updateHeaderForStudentMode(isStudentMode, isLoggedIn) {
 }
 
 /**
+ * 학생 모바일 드로어 프로필 업데이트
+ */
+function updateMobileStudentProfile() {
+    const petIcon = document.getElementById('mobileStudentPetIcon');
+    const nameEl = document.getElementById('mobileStudentName');
+    const classEl = document.getElementById('mobileStudentClass');
+
+    const student = store.getCurrentStudent();
+    const settings = store.getSettings();
+
+    if (nameEl) nameEl.textContent = student?.name || '학생';
+    if (classEl) classEl.textContent = settings?.className || '우리반';
+
+    // 펫 아이콘 표시
+    if (petIcon && student?.petType) {
+        const imgHtml = getPetImageHTML(student.petType, student.level || 1, 'xs');
+        if (imgHtml.includes('<img')) {
+            petIcon.innerHTML = imgHtml;
+        } else {
+            petIcon.textContent = getPetEmoji(student.petType, student.level || 1);
+        }
+    }
+}
+
+/**
+ * 네비바 학생 프로필 업데이트 (펫 이미지 + 학급·이름)
+ */
+function updateNavStudentProfile() {
+    const petEl = document.getElementById('studentProfilePet');
+    const classInfoEl = document.getElementById('studentClassInfo');
+
+    const student = store.getCurrentStudent();
+    const session = store.getStudentSession();
+    const settings = store.getSettings();
+
+    // 학급 · 학생이름
+    if (classInfoEl) {
+        const className = settings?.className || '우리반';
+        const studentName = student?.name || session?.studentName || '';
+        classInfoEl.textContent = studentName ? `${className} · ${studentName}` : className;
+    }
+
+    // 펫 이미지
+    const petType = student?.petType;
+    const level = student?.level || 1;
+    if (petEl && petType) {
+        const imgHtml = getPetImageHTML(petType, level, 'xs');
+        if (imgHtml.includes('<img')) {
+            petEl.innerHTML = imgHtml;
+        } else {
+            petEl.textContent = getPetEmoji(petType, level);
+        }
+    }
+}
+
+/**
  * 학급 정보 업데이트
  */
 export function updateClassInfo() {
+    // 학생 모드에서는 교사 정보를 업데이트하지 않음
+    if (document.body.classList.contains('student-mode')) return;
+
     const classInfoEl = document.getElementById('classInfo');
     const profilePic = document.getElementById('teacherProfilePic');
     if (!classInfoEl) return;

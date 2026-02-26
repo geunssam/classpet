@@ -84,10 +84,29 @@ export function bindHeaderButtons() {
         });
     }
 
+    // 드로어 하단 학생 프로필 버튼
+    const mobileStudentSettingsBtnDrawer = document.getElementById('mobileStudentSettingsBtnDrawer');
+    if (mobileStudentSettingsBtnDrawer) {
+        mobileStudentSettingsBtnDrawer.addEventListener('click', () => {
+            document.getElementById('mobileDrawer')?.classList.remove('open');
+            document.getElementById('mobileDrawerOverlay')?.classList.remove('open');
+            showStudentPinChangeModal();
+        });
+    }
+
+    const mobileStudentLogoutBtnDrawer = document.getElementById('mobileStudentLogoutBtnDrawer');
+    if (mobileStudentLogoutBtnDrawer) {
+        mobileStudentLogoutBtnDrawer.addEventListener('click', () => {
+            document.getElementById('mobileDrawer')?.classList.remove('open');
+            document.getElementById('mobileDrawerOverlay')?.classList.remove('open');
+            handleStudentLogout();
+        });
+    }
+
     // 로그아웃 버튼 (헤더 + 기존 숨김 버튼)
-    const logoutHandler = () => {
+    const logoutHandler = async () => {
         if (confirm('로그아웃 하시겠습니까?')) {
-            store.teacherLogout();
+            await store.signOut();
             router.navigate('login');
         }
     };

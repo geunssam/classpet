@@ -249,8 +249,11 @@
                 </button>
             </nav>
             <div class="navbar-right">
-                <!-- 학생용 학급정보 -->
-                <span id="studentClassInfo" class="navbar-class-info hidden"></span>
+                <!-- 학생 프로필 (펫 이미지 + 학급·이름) -->
+                <div id="studentProfile" class="student-profile hidden">
+                    <span id="studentProfilePet" class="student-profile-pet">🐾</span>
+                    <span id="studentClassInfo" class="navbar-class-info"></span>
+                </div>
                 <!-- 교사용 학급정보 -->
                 <span id="classInfo" class="navbar-class-info"></span>
                 <!-- 교사 프로필 사진 (Google 로그인 시) -->
@@ -588,7 +591,32 @@
                     로그아웃
                 </button>
             </div>
-            <!-- 프로필 (하단) -->
+            <!-- 학생 프로필 (하단) -->
+            <div class="mobile-drawer-profile hidden" id="mobileStudentProfile">
+                <div class="mobile-profile-info">
+                    <span id="mobileStudentPetIcon" class="mobile-student-pet-icon">🐾</span>
+                    <div class="mobile-profile-text">
+                        <span id="mobileStudentName" class="mobile-profile-name">학생</span>
+                        <span id="mobileStudentClass" class="mobile-profile-class">우리반</span>
+                    </div>
+                    <div class="mobile-profile-actions">
+                        <button id="mobileStudentSettingsBtnDrawer" class="mobile-action-btn-sm" title="PIN 변경">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3" />
+                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                            </svg>
+                        </button>
+                        <button id="mobileStudentLogoutBtnDrawer" class="mobile-action-btn-sm mobile-action-btn-danger" title="로그아웃">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                                <polyline points="16 17 21 12 16 7" />
+                                <line x1="21" y1="12" x2="9" y2="12" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <!-- 교사 프로필 (하단) -->
             <div class="mobile-drawer-profile hidden" id="mobileDrawerProfile">
                 <div class="mobile-profile-info">
                     <img id="mobileProfilePic" class="mobile-profile-pic" alt="" />

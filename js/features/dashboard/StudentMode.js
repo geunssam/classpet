@@ -798,9 +798,9 @@ function showNewPetSelectionModal() {
                     ${availablePets.map(([key, pet]) => `
                         <button class="new-pet-option p-3 rounded-xl border-2 border-gray-200 hover:border-primary transition-all text-center"
                                 data-pet-type="${key}">
-                            ${pet.images?.egg
-                                ? `<img src="${pet.images.egg}" alt="" class="pet-img pet-img-md mx-auto" draggable="false">`
-                                : `<span class="text-3xl block">${pet.stages.egg}</span>`
+                            ${pet.images?.baby
+                                ? `<img src="${pet.images.baby}" alt="" class="pet-img pet-img-md mx-auto" draggable="false">`
+                                : `<span class="text-3xl block">${pet.stages.baby}</span>`
                             }
                             <span class="text-xs text-gray-600 mt-1 block">${pet.name}</span>
                         </button>

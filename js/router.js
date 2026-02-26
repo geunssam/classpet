@@ -362,7 +362,7 @@ class Router {
                 <div class="empty-state-icon">🔍</div>
                 <h3 class="text-lg font-semibold text-gray-700 mb-2">페이지를 찾을 수 없어요</h3>
                 <p class="text-gray-500 mb-4">요청하신 페이지가 존재하지 않습니다.</p>
-                <button onclick="router.navigate('login')" class="btn btn-primary">
+                <button onclick="window.__classpetRouter?.navigate('login')" class="btn btn-primary">
                     홈으로 돌아가기
                 </button>
             </div>
@@ -378,7 +378,7 @@ class Router {
                 <div class="empty-state-icon">⚠️</div>
                 <h3 class="text-lg font-semibold text-gray-700 mb-2">오류가 발생했어요</h3>
                 <p class="text-gray-500 mb-4">${error.message || '알 수 없는 오류'}</p>
-                <button onclick="router.navigate('login')" class="btn btn-primary">
+                <button onclick="window.__classpetRouter?.navigate('login')" class="btn btn-primary">
                     홈으로 돌아가기
                 </button>
             </div>
@@ -388,5 +388,8 @@ class Router {
 
 // 싱글톤 인스턴스
 const router = new Router();
+
+// 에러/404 페이지의 인라인 onclick에서 접근 가능하도록 글로벌 등록
+window.__classpetRouter = router;
 
 export { router };

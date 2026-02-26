@@ -203,6 +203,7 @@ export function initRouter() {
         // 학생 모드 라우트
         'student-login': {
             render: (params) => {
+                updateHeaderForStudentMode(true, false);
                 const html = StudentLogin.render(params);
                 setTimeout(() => StudentLogin.afterRender?.(), 0);
                 return html;
@@ -233,6 +234,7 @@ export function initRouter() {
                     setTimeout(() => router.navigate('student-login'), 0);
                     return '<div class="text-center p-8">로그인이 필요합니다...</div>';
                 }
+                updateHeaderForStudentMode(true, true);
                 const html = PetSelection.render();
                 setTimeout(() => PetSelection.afterRender?.(), 0);
                 return html;
@@ -299,9 +301,14 @@ export function initRouter() {
     // 라우트 변경 시 헤더 업데이트
     router.onRouteChange = (route, params) => {
         const isStudentRoute = ['student-login', 'student-main', 'student-chat', 'pet-selection', 'pet-collection', 'student-timetable', 'student-praise', 'student-notice'].includes(route);
-        const isLoginRoute = ['login', 'teacher-login', 'student-login', 'class-select'].includes(route);
+        const isLoginRoute = ['login', 'teacher-login', 'class-select'].includes(route);
 
-        if (!isStudentRoute && !isLoginRoute) {
+        if (isStudentRoute) {
+            // 학생 라우트: 학생 모드 헤더 적용 (로그인 여부에 따라)
+            const isStudentLoggedIn = store.isStudentLoggedIn();
+            updateHeaderForStudentMode(true, isStudentLoggedIn);
+        } else if (!isLoginRoute) {
+            // 교사 라우트: 교사 모드 헤더 복원
             updateHeaderForStudentMode(false, false);
         }
 

@@ -171,9 +171,9 @@ export function getPetStatusText(level, exp) {
     const progress = getExpProgress(exp, level);
 
     const statusTexts = {
-        egg: ['따뜻하게 품어주세요 🥚', '곧 깨어날 것 같아요 ✨'],
         baby: ['아장아장 걷고 있어요 🐾', '귀여운 아기 펫이에요 💕', '먹이를 주세요! 🍼'],
-        growing: ['쑥쑥 자라고 있어요 🌿', '활발하게 움직여요 💫', '칭찬을 좋아해요 ⭐'],
+        child: ['쑥쑥 자라고 있어요 🌿', '활발하게 움직여요 💫', '칭찬을 좋아해요 ⭐'],
+        teen: ['멋지게 성장 중이에요 🌟', '자신감이 넘쳐요 💪', '뭐든 잘 해내요 🔥'],
         adult: ['든든한 친구가 되었어요 🏆', '최고의 파트너예요 👑', '빛나는 모습이에요 ✨']
     };
 

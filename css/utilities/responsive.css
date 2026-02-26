@@ -236,7 +236,8 @@
     }
 
     body.student-mode .navbar-class-info,
-    body.student-mode .teacher-profile-pic {
+    body.student-mode .teacher-profile-pic,
+    body.student-mode .student-profile {
         display: none !important;
     }
 
