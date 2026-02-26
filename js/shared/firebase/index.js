@@ -31,7 +31,9 @@ export {
     onAuthChange,
     isTeacherUser,
     createOrUpdateTeacherProfile,
-    getTeacherProfile
+    getTeacherProfile,
+    saveTermsAgreement,
+    hasAgreedToTerms
 } from '../../features/auth/auth.firebase.js';
 
 // classes.js - 학급 관리

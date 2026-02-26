@@ -6,6 +6,7 @@
 import { store, PET_TYPES, COLOR_PRESETS } from '../../store.js';
 import { router } from '../../router.js';
 import { showToast, setModalContent, openModal, closeModal } from '../../shared/utils/animations.js';
+import { getTermsHTML, getPrivacyPolicyHTML } from '../../shared/utils/termsContent.js';
 
 /**
  * 렌더링
@@ -254,6 +255,22 @@ export function render() {
                     `}
                 </div>
             </section>
+
+            <!-- 앱 정보 푸터 -->
+            <div class="mt-8 pt-5 pb-2">
+                <div class="text-center space-y-1.5">
+                    <div class="flex items-center justify-center gap-3">
+                        <button id="termsBtn" class="text-xs text-gray-400 hover:text-primary transition-colors underline underline-offset-2 decoration-gray-300 hover:decoration-primary">
+                            이용약관
+                        </button>
+                        <span class="text-gray-300">|</span>
+                        <button id="privacyPolicyBtn" class="text-xs text-gray-400 hover:text-primary transition-colors underline underline-offset-2 decoration-gray-300 hover:decoration-primary">
+                            개인정보처리방침
+                        </button>
+                    </div>
+                    <p class="text-[11px] text-gray-400">클래스펫 v1.0.0 © 2026 | 문의: classpet_help@gmail.com</p>
+                </div>
+            </div>
 
         </div>
     `;
@@ -1160,4 +1177,64 @@ export function afterRender() {
     if (migrateToFirebaseBtn) {
         migrateToFirebaseBtn.addEventListener('click', showMigrationConfirm);
     }
+
+    // 이용약관
+    const termsBtn = document.getElementById('termsBtn');
+    if (termsBtn) {
+        termsBtn.addEventListener('click', showTerms);
+    }
+
+    // 개인정보처리방침
+    const privacyPolicyBtn = document.getElementById('privacyPolicyBtn');
+    if (privacyPolicyBtn) {
+        privacyPolicyBtn.addEventListener('click', showPrivacyPolicy);
+    }
+}
+
+/**
+ * 개인정보 처리방침 모달
+ */
+function showPrivacyPolicy() {
+    const modalContent = `
+        <div class="text-left">
+            <h3 class="text-base font-bold text-gray-800 mb-4 text-center">개인정보 처리방침</h3>
+            <div class="space-y-3 text-sm text-gray-600 max-h-[60vh] overflow-y-auto pr-1">
+                ${getPrivacyPolicyHTML()}
+            </div>
+            <div class="mt-4">
+                <button id="closePrivacyBtn" class="btn btn-primary w-full">확인</button>
+            </div>
+        </div>
+    `;
+
+    setModalContent(modalContent);
+    openModal();
+
+    setTimeout(() => {
+        document.getElementById('closePrivacyBtn')?.addEventListener('click', () => closeModal());
+    }, 50);
+}
+
+/**
+ * 이용약관 모달
+ */
+function showTerms() {
+    const modalContent = `
+        <div class="text-left">
+            <h3 class="text-base font-bold text-gray-800 mb-4 text-center">이용약관</h3>
+            <div class="space-y-3 text-sm text-gray-600 max-h-[60vh] overflow-y-auto pr-1">
+                ${getTermsHTML()}
+            </div>
+            <div class="mt-4">
+                <button id="closeTermsBtn" class="btn btn-primary w-full">확인</button>
+            </div>
+        </div>
+    `;
+
+    setModalContent(modalContent);
+    openModal();
+
+    setTimeout(() => {
+        document.getElementById('closeTermsBtn')?.addEventListener('click', () => closeModal());
+    }, 50);
 }

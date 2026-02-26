@@ -32,10 +32,12 @@ const googleProvider = new GoogleAuthProvider();
 async function processGoogleSignInResult(result) {
     const user = result.user;
 
-    await createOrUpdateTeacherProfile(user);
+    const profile = await createOrUpdateTeacherProfile(user);
     setCurrentTeacherUid(user.uid);
 
-    console.log('✅ Google 로그인 성공:', user.email);
+    // 약관 동의 여부 확인 (termsAgreed !== true → 모달 필요)
+    const needsTermsAgreement = profile?.termsAgreed !== true;
+    console.log(`✅ Google 로그인 성공: ${user.email} (약관동의: ${!needsTermsAgreement})`);
 
     const userData = {
         uid: user.uid,
@@ -46,7 +48,7 @@ async function processGoogleSignInResult(result) {
         isAnonymous: user.isAnonymous
     };
 
-    return { success: true, user: userData };
+    return { success: true, user: userData, needsTermsAgreement };
 }
 
 /**
@@ -160,6 +162,7 @@ export function isTeacherUser() {
 
 /**
  * 교사 프로필 생성/업데이트
+ * @returns {{ uid, termsAgreed, ...profileData }}
  */
 export async function createOrUpdateTeacherProfile(user) {
     const db = getDb();
@@ -168,6 +171,10 @@ export async function createOrUpdateTeacherProfile(user) {
     try {
         const teacherRef = doc(db, 'teachers', user.uid);
         const teacherDoc = await getDoc(teacherRef);
+
+        // 기존 문서의 termsAgreed 값 보존
+        const existingData = teacherDoc.exists() ? teacherDoc.data() : {};
+        const termsAgreed = existingData.termsAgreed === true;
 
         const profileData = {
             email: user.email,
@@ -181,10 +188,48 @@ export async function createOrUpdateTeacherProfile(user) {
         }
 
         await setDoc(teacherRef, profileData, { merge: true });
-        return { uid: user.uid, ...profileData };
+        return { uid: user.uid, termsAgreed, ...profileData };
     } catch (error) {
         console.error('교사 프로필 저장 실패:', error);
         return null;
+    }
+}
+
+/**
+ * 약관 동의 저장
+ */
+export async function saveTermsAgreement(uid) {
+    const db = getDb();
+    if (!db || !uid) return false;
+
+    try {
+        const teacherRef = doc(db, 'teachers', uid);
+        await setDoc(teacherRef, {
+            termsAgreed: true,
+            termsAgreedAt: serverTimestamp()
+        }, { merge: true });
+        console.log('✅ 약관 동의 저장 완료');
+        return true;
+    } catch (error) {
+        console.error('약관 동의 저장 실패:', error);
+        return false;
+    }
+}
+
+/**
+ * 약관 동의 여부 확인
+ */
+export async function hasAgreedToTerms(uid) {
+    const db = getDb();
+    if (!db || !uid) return false;
+
+    try {
+        const teacherRef = doc(db, 'teachers', uid);
+        const teacherDoc = await getDoc(teacherRef);
+        return teacherDoc.exists() && teacherDoc.data().termsAgreed === true;
+    } catch (error) {
+        console.error('약관 동의 확인 실패:', error);
+        return false;
     }
 }
 

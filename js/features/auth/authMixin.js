@@ -41,7 +41,7 @@ export const authMixin = {
                 this.notify('auth', { isLoggedIn: true, user: user });
                 this.notify('teacherLogin', teacherSession);
 
-                return { success: true, user: user };
+                return { success: true, user: user, needsTermsAgreement: result.needsTermsAgreement ?? false };
             }
 
             // 리다이렉트 중인 경우 (pending 상태)
@@ -81,7 +81,7 @@ export const authMixin = {
                 this.notify('teacherLogin', teacherSession);
 
                 console.log('✅ 리다이렉트 로그인 완료:', user.email);
-                return { success: true, user: user };
+                return { success: true, user: user, needsTermsAgreement: result.needsTermsAgreement ?? false };
             }
             return null;
         } catch (error) {

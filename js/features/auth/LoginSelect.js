@@ -3,13 +3,15 @@
  * 교사/학생 로그인 선택 화면
  *
  * 새로운 흐름:
- * - 교사: Google 로그인 → 학급 선택/생성 → 대시보드
+ * - 교사: Google 로그인 → (신규 시 약관 동의) → 학급 선택/생성 → 대시보드
  * - 학생: 학급코드 입력 → 번호 선택 → PIN → 학생 메인
  */
 
 import { store } from '../../store.js';
 import { router } from '../../router.js';
 import { showToast } from '../../shared/utils/animations.js';
+import { getTermsHTML, getPrivacyPolicyHTML } from '../../shared/utils/termsContent.js';
+import { saveTermsAgreement } from '../../firebase-config.js';
 
 /**
  * 렌더링
@@ -116,9 +118,18 @@ async function handleGoogleLogin() {
         const result = await store.signInWithGoogle();
 
         if (result.success) {
-            showToast(`환영합니다, ${result.user.displayName || '선생님'}! 🎉`, 'success');
+            // 약관 미동의 사용자 → 약관 동의 모달
+            if (result.needsTermsAgreement) {
+                // 로딩 숨기기
+                if (loadingOverlay) {
+                    loadingOverlay.classList.add('hidden');
+                }
+                showTermsAgreementModal(result.user);
+                return;
+            }
 
-            // 학급 선택 화면으로 이동
+            // 기존 사용자 → 바로 학급 선택
+            showToast(`환영합니다, ${result.user.displayName || '선생님'}! 🎉`, 'success');
             router.navigate('class-select');
         } else {
             throw new Error(result.error || '로그인에 실패했습니다');
@@ -138,4 +149,223 @@ async function handleGoogleLogin() {
             loadingOverlay.classList.add('hidden');
         }
     }
+}
+
+/**
+ * 약관 동의 모달 표시 (신규 사용자)
+ * 디자인: 글라스모피즘 + 파스텔 블루 (#7C9EF5)
+ */
+function showTermsAgreementModal(user) {
+    // 스타일 삽입 (한 번만)
+    if (!document.getElementById('termsModalStyle')) {
+        const style = document.createElement('style');
+        style.id = 'termsModalStyle';
+        style.textContent = `
+            @keyframes termsModalIn {
+                from { opacity: 0; transform: scale(0.95); }
+                to   { opacity: 1; transform: scale(1); }
+            }
+            @keyframes termsOverlayIn {
+                from { opacity: 0; }
+                to   { opacity: 1; }
+            }
+            .terms-overlay {
+                animation: termsOverlayIn 0.25s ease-out;
+            }
+            .terms-modal {
+                animation: termsModalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            }
+            .terms-checkbox {
+                width: 20px; height: 20px;
+                border: 2px solid #cbd5e1; border-radius: 4px;
+                appearance: none; -webkit-appearance: none;
+                cursor: pointer; transition: all 0.15s;
+                flex-shrink: 0;
+            }
+            .terms-checkbox:checked {
+                background: #7C9EF5; border-color: #7C9EF5;
+                background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3E%3C/svg%3E");
+                background-size: 14px; background-position: center; background-repeat: no-repeat;
+            }
+            .terms-btn-active {
+                background: linear-gradient(135deg, #7C9EF5 0%, #6B8DE8 100%);
+                cursor: pointer; box-shadow: 0 4px 14px rgba(124,158,245,0.4);
+            }
+            .terms-btn-active:hover {
+                box-shadow: 0 6px 20px rgba(124,158,245,0.5);
+                transform: translateY(-1px);
+            }
+            .terms-content-panel {
+                max-height: 0; overflow: hidden;
+                transition: max-height 0.3s ease;
+            }
+            .terms-content-panel.open {
+                max-height: 240px; overflow-y: auto;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    const overlay = document.createElement('div');
+    overlay.id = 'termsAgreementOverlay';
+    overlay.className = 'terms-overlay';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.4);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:9999;padding:16px;';
+
+    overlay.innerHTML = `
+        <div class="terms-modal" style="
+            width:100%; max-width:400px; max-height:85vh;
+            background:#fff; border-radius:20px;
+            box-shadow:0 24px 48px rgba(0,0,0,0.15);
+            display:flex; flex-direction:column; overflow:hidden;
+        ">
+            <!-- 헤더 -->
+            <div style="text-align:center; padding:28px 24px 20px; border-bottom:1px solid rgba(124,158,245,0.08);">
+                <div style="font-size:48px; margin-bottom:12px;">🐾</div>
+                <h2 style="font-size:20px; font-weight:700; color:#1e293b; margin:0 0 6px;">클래스펫에 오신 것을 환영합니다!</h2>
+                <p style="font-size:14px; color:#94a3b8; margin:0;">서비스 이용을 위해 아래 약관에 동의해 주세요.</p>
+            </div>
+
+            <!-- 바디 -->
+            <div style="flex:1; overflow-y:auto; padding:20px 24px;">
+                <!-- 전체 동의 -->
+                <div id="termsAllAgreeCard" style="
+                    background:rgba(124,158,245,0.08); border-radius:8px; padding:12px 14px;
+                    display:flex; align-items:center; gap:10px; cursor:pointer; margin-bottom:16px;
+                ">
+                    <input type="checkbox" id="termsAllCheck" class="terms-checkbox">
+                    <span style="font-size:15px; font-weight:600; color:#1e293b;">전체 동의</span>
+                </div>
+
+                <!-- 구분선 -->
+                <div style="height:1px; background:rgba(124,158,245,0.08); margin-bottom:14px;"></div>
+
+                <!-- 이용약관 -->
+                <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 0;">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <input type="checkbox" id="termsCheck" class="terms-checkbox">
+                        <span style="font-size:13px; font-weight:600; color:#7C9EF5;">[필수]</span>
+                        <span style="font-size:14px; color:#334155;">이용약관</span>
+                    </div>
+                    <button id="termsToggle" style="font-size:13px; color:#94a3b8; text-decoration:underline; background:none; border:none; cursor:pointer; padding:4px;">보기</button>
+                </div>
+                <div id="termsContent" class="terms-content-panel" style="
+                    background:#f8fafc; border-radius:8px; padding:0 14px;
+                    border:1px solid rgba(124,158,245,0.08);
+                ">
+                    <div style="padding:14px 0;">
+                        <div style="display:flex; flex-direction:column; gap:12px; font-size:13px; color:#64748b;">
+                            ${getTermsHTML()}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 개인정보처리방침 -->
+                <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 0; margin-top:4px;">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <input type="checkbox" id="privacyCheck" class="terms-checkbox">
+                        <span style="font-size:13px; font-weight:600; color:#7C9EF5;">[필수]</span>
+                        <span style="font-size:14px; color:#334155;">개인정보처리방침</span>
+                    </div>
+                    <button id="privacyToggle" style="font-size:13px; color:#94a3b8; text-decoration:underline; background:none; border:none; cursor:pointer; padding:4px;">보기</button>
+                </div>
+                <div id="privacyContent" class="terms-content-panel" style="
+                    background:#f8fafc; border-radius:8px; padding:0 14px;
+                    border:1px solid rgba(124,158,245,0.08);
+                ">
+                    <div style="padding:14px 0;">
+                        <div style="display:flex; flex-direction:column; gap:12px; font-size:13px; color:#64748b;">
+                            ${getPrivacyPolicyHTML()}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 푸터 -->
+            <div style="padding:16px 24px 24px;">
+                <button id="termsAgreeBtn" disabled style="
+                    width:100%; padding:14px 0; border:none; border-radius:12px;
+                    font-size:16px; font-weight:700; color:#fff;
+                    background:#cbd5e1; cursor:not-allowed;
+                    transition: all 0.2s ease;
+                ">동의하고 시작하기</button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    // 요소 참조
+    const allCheck = document.getElementById('termsAllCheck');
+    const termsCheck = document.getElementById('termsCheck');
+    const privacyCheck = document.getElementById('privacyCheck');
+    const agreeBtn = document.getElementById('termsAgreeBtn');
+    const termsToggle = document.getElementById('termsToggle');
+    const privacyToggle = document.getElementById('privacyToggle');
+    const termsContent = document.getElementById('termsContent');
+    const privacyContent = document.getElementById('privacyContent');
+    const allAgreeCard = document.getElementById('termsAllAgreeCard');
+
+    // 버튼 활성화 상태 업데이트
+    function updateAgreeButton() {
+        const allChecked = termsCheck.checked && privacyCheck.checked;
+        allCheck.checked = allChecked;
+        agreeBtn.disabled = !allChecked;
+        if (allChecked) {
+            agreeBtn.className = 'terms-btn-active';
+            agreeBtn.style.cssText = 'width:100%;padding:14px 0;border:none;border-radius:12px;font-size:16px;font-weight:700;color:#fff;transition:all 0.2s ease;background:linear-gradient(135deg,#7C9EF5 0%,#6B8DE8 100%);cursor:pointer;box-shadow:0 4px 14px rgba(124,158,245,0.4);';
+        } else {
+            agreeBtn.className = '';
+            agreeBtn.style.cssText = 'width:100%;padding:14px 0;border:none;border-radius:12px;font-size:16px;font-weight:700;color:#fff;transition:all 0.2s ease;background:#cbd5e1;cursor:not-allowed;';
+        }
+    }
+
+    // 전체 동의 카드 클릭
+    allAgreeCard.addEventListener('click', (e) => {
+        if (e.target === allCheck) return; // 체크박스 직접 클릭은 아래에서 처리
+        allCheck.checked = !allCheck.checked;
+        termsCheck.checked = allCheck.checked;
+        privacyCheck.checked = allCheck.checked;
+        updateAgreeButton();
+    });
+
+    allCheck.addEventListener('change', () => {
+        termsCheck.checked = allCheck.checked;
+        privacyCheck.checked = allCheck.checked;
+        updateAgreeButton();
+    });
+
+    termsCheck.addEventListener('change', updateAgreeButton);
+    privacyCheck.addEventListener('change', updateAgreeButton);
+
+    // 보기 토글
+    function togglePanel(panel, btn) {
+        const isOpen = panel.classList.contains('open');
+        panel.classList.toggle('open');
+        btn.textContent = isOpen ? '보기' : '접기';
+    }
+
+    termsToggle.addEventListener('click', () => togglePanel(termsContent, termsToggle));
+    privacyToggle.addEventListener('click', () => togglePanel(privacyContent, privacyToggle));
+
+    // 동의 버튼 클릭
+    agreeBtn.addEventListener('click', async () => {
+        if (agreeBtn.disabled) return;
+
+        agreeBtn.disabled = true;
+        agreeBtn.textContent = '처리 중...';
+        agreeBtn.style.opacity = '0.7';
+
+        try {
+            await saveTermsAgreement(user.uid);
+            overlay.remove();
+            showToast(`환영합니다, ${user.displayName || '선생님'}! 🎉`, 'success');
+            router.navigate('class-select');
+        } catch (error) {
+            console.error('약관 동의 저장 실패:', error);
+            showToast('약관 동의 저장에 실패했습니다. 다시 시도해주세요.', 'error');
+            agreeBtn.disabled = false;
+            agreeBtn.textContent = '동의하고 시작하기';
+            agreeBtn.style.opacity = '1';
+        }
+    });
 }

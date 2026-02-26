@@ -12,6 +12,7 @@ import { registerGlobalFunctions, refreshCurrentView } from './globalFunctions.j
 import { startEmotionSubscription, stopEmotionSubscription } from '../features/emotion/EmotionService.js';
 import { startPetSubscription, stopPetSubscription } from '../features/pet/PetService.js';
 import { initSessionTimeout } from '../features/emotion/sessionTimeout.js';
+import { hasAgreedToTerms } from '../firebase-config.js';
 
 /**
  * Firebase 서비스 구독 시작 + store에 정리 함수 등록
@@ -61,6 +62,20 @@ async function initApp() {
     const currentHash = window.location.hash.slice(1).split('?')[0];
 
     if (authUser && store.isTeacherLoggedIn()) {
+        // 약관 동의 여부 확인 (미동의 시 로그아웃 후 로그인 화면으로)
+        const agreed = await hasAgreedToTerms(authUser.uid);
+        if (!agreed) {
+            console.log('⚠️ 약관 미동의 사용자 → 로그아웃 처리');
+            await store.signOut();
+            window.location.hash = 'login';
+            hideAuthLoadingScreen();
+            initRouter();
+            bindNavigation();
+            bindHeaderButtons();
+            registerGlobalFunctions();
+            return;
+        }
+
         // Firebase에서 학급 데이터 로드 (칭찬/감정 포함)
         const currentClassId = store.getCurrentClassId();
         if (currentClassId) {
