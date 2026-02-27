@@ -388,37 +388,81 @@ function bindEmotionSendEvents() {
     }
 
     /**
-     * 감정 선택 후 상세 영역 (정의 + 메모 + 전송)
+     * 감정 선택 → 마음보내기 모달
      */
     function renderEmotionDetail(emotionKey) {
-        const container = document.getElementById('emotionDetailContainer');
-        if (!container) return;
+        // 기존 인라인 컨테이너 비움
+        const inlineContainer = document.getElementById('emotionDetailContainer');
+        if (inlineContainer) inlineContainer.innerHTML = '';
 
         const info = EMOTION_TYPES[emotionKey];
         if (!info) return;
 
-        container.innerHTML = `
-            <div class="emotion-detail-area">
-                <div class="emotion-detail-card" style="border-top: 3px solid ${info.color};">
-                    <p class="emotion-definition">"${info.definition}"</p>
-                    <div class="mb-4">
-                        <textarea
-                            id="petMemo"
-                            class="w-full p-4 border-2 border-gray-200 rounded-2xl resize-none focus:border-primary focus:ring-0 transition-colors text-sm"
-                            rows="3"
-                            placeholder="${info.name}한 이유가 뭐야? 왜 그런 감정을 느꼈어?"
-                        ></textarea>
+        // 기존 모달 제거
+        const existing = document.getElementById('emotionSendModal');
+        if (existing) existing.remove();
+
+        const modal = document.createElement('div');
+        modal.id = 'emotionSendModal';
+        modal.className = 'emotion-send-modal-overlay';
+        modal.innerHTML = `
+            <div class="emotion-send-modal">
+                <!-- 닫기 버튼 -->
+                <button id="emotionModalClose" class="emotion-modal-close">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+
+                <!-- 감정 카드 영역 -->
+                <div class="emotion-modal-card" style="background: ${info.color}15; border: 2px solid ${info.color}30;">
+                    <div class="emotion-modal-image">
+                        ${getEmotionImageHTML(emotionKey, 'xl')}
                     </div>
-                    <button
-                        id="sendEmotionBtn"
-                        class="w-full liquid-btn-student"
-                        disabled
-                    >
-                        펫에게 마음 보내기
-                    </button>
+                    <span class="emotion-modal-name" style="color: ${info.color};">${info.name}</span>
+                    <p class="emotion-modal-definition">"${info.definition}"</p>
                 </div>
+
+                <!-- 편지지 영역 -->
+                <div class="emotion-letter-area">
+                    <div class="emotion-letter-header">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${info.color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                        <span>펫에게 마음 편지</span>
+                    </div>
+                    <textarea
+                        id="petMemo"
+                        class="emotion-letter-textarea"
+                        rows="4"
+                        placeholder="${info.name}한 이유가 뭐야? 왜 그런 감정을 느꼈어?"
+                    ></textarea>
+                </div>
+
+                <!-- 전송 버튼 -->
+                <button id="sendEmotionBtn" class="w-full liquid-btn-student" disabled>
+                    펫에게 마음 보내기
+                </button>
             </div>
         `;
+
+        document.body.appendChild(modal);
+
+        // 등장 애니메이션
+        requestAnimationFrame(() => modal.classList.add('active'));
+
+        // 닫기
+        const closeModal = () => {
+            modal.classList.remove('active');
+            setTimeout(() => modal.remove(), 300);
+            selectedEmotion = null;
+            // 카드 선택 해제
+            document.querySelectorAll('.emotion-card').forEach(c => {
+                c.classList.remove('selected');
+                c.style.borderColor = 'transparent';
+            });
+        };
+
+        document.getElementById('emotionModalClose').addEventListener('click', closeModal);
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
 
         // 메모 입력 → 전송 버튼 활성화
         const memoTextarea = document.getElementById('petMemo');
@@ -429,8 +473,7 @@ function bindEmotionSendEvents() {
                 const isValid = memoTextarea.value.trim().length > 0;
                 if (sendBtn) sendBtn.disabled = !isValid;
             });
-            // 포커스
-            setTimeout(() => memoTextarea.focus(), 100);
+            setTimeout(() => memoTextarea.focus(), 400);
         }
 
         if (sendBtn) {
@@ -444,6 +487,12 @@ function bindEmotionSendEvents() {
                 sendBtn.disabled = true;
                 sendBtn.textContent = '전송 중...';
 
+                // 모달 닫고 날아가는 애니메이션
+                modal.classList.remove('active');
+                setTimeout(() => modal.remove(), 200);
+
+                await flyEmotionToPet(selectedEmotion);
+
                 try {
                     await store.addEmotion({
                         studentId: student.id,
@@ -453,19 +502,11 @@ function bindEmotionSendEvents() {
                         memo: memo,
                         source: 'student'
                     });
-                    // 알림 생성은 교사 탭의 Firebase 구독에서 처리
                     const petResult = await store.addPetExp(student.id, 5);
                     showPetReaction(selectedEmotion);
-
-                    let resultMessage = '펫에게 마음을 전달했어요! +5 EXP';
-                    if (petResult && petResult.levelUp) {
-                        resultMessage = `레벨업! Lv.${petResult.newLevel} +5 EXP`;
-                    }
-                    sendBtn.textContent = resultMessage;
                 } catch (error) {
                     console.error('감정 저장 실패:', error);
-                    sendBtn.disabled = false;
-                    sendBtn.textContent = '다시 시도하기';
+                    showToast('전송에 실패했어요. 다시 시도해주세요.', 'error');
                 }
             });
         }
@@ -809,6 +850,59 @@ function previewPetReaction(emotion) {
         petEmoji.classList.remove('pet-wiggle');
         petEmoji.classList.add('pet-pulse');
     }, 300);
+}
+
+/**
+ * 감정 카드가 펫으로 날아가는 애니메이션
+ */
+function flyEmotionToPet(emotionKey) {
+    return new Promise(resolve => {
+        const selectedCard = document.querySelector(`.emotion-card.selected`);
+        const petEmoji = document.getElementById('petEmoji');
+        if (!selectedCard || !petEmoji) { resolve(); return; }
+
+        const cardRect = selectedCard.getBoundingClientRect();
+        const petRect = petEmoji.getBoundingClientRect();
+
+        // 카드 복제 → fixed 위치에 배치 (원래 클래스 유지 + fly 클래스 추가)
+        const flyEl = selectedCard.cloneNode(true);
+        flyEl.classList.add('emotion-fly-element');
+        flyEl.style.position = 'fixed';
+        flyEl.style.zIndex = '9999';
+        flyEl.style.pointerEvents = 'none';
+        flyEl.style.left = `${cardRect.left}px`;
+        flyEl.style.top = `${cardRect.top}px`;
+        flyEl.style.width = `${cardRect.width}px`;
+        flyEl.style.height = `${cardRect.height}px`;
+        flyEl.style.boxShadow = '0 4px 20px rgba(0,0,0,0.15)';
+        flyEl.style.margin = '0';
+        document.body.appendChild(flyEl);
+
+        // 목표 좌표 (펫 중앙)
+        const targetX = petRect.left + petRect.width / 2 - cardRect.width / 2;
+        const targetY = petRect.top + petRect.height / 2 - cardRect.height / 2;
+
+        // 애니메이션 시작
+        requestAnimationFrame(() => {
+            flyEl.style.transition = 'all 3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+            flyEl.style.left = `${targetX}px`;
+            flyEl.style.top = `${targetY}px`;
+            flyEl.style.opacity = '0';
+            flyEl.style.transform = 'scale(0.3)';
+        });
+
+        // 펫 도착 시 바운스
+        setTimeout(() => {
+            petEmoji.classList.add('pet-receive-bounce');
+            setTimeout(() => petEmoji.classList.remove('pet-receive-bounce'), 500);
+        }, 2700);
+
+        // 정리
+        setTimeout(() => {
+            flyEl.remove();
+            resolve();
+        }, 3100);
+    });
 }
 
 /**
