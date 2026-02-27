@@ -66,9 +66,17 @@ export const notificationMixin = {
         return notifications.filter(n => !n.read && n.timestamp.startsWith(today));
     },
 
-    createEmotionNotification(studentId, emotion, memo) {
+    createEmotionNotification(studentId, emotion, memo, firebaseId) {
         const student = this.getStudent(studentId);
         if (!student) return null;
+
+        // firebaseId 기반 중복 방지
+        if (firebaseId) {
+            const existing = (this.getNotifications() || []).some(
+                n => n.emotionFirebaseId === firebaseId
+            );
+            if (existing) return null;
+        }
 
         const emotionType = EMOTION_TYPES[emotion];
         const notification = {
@@ -79,6 +87,7 @@ export const notificationMixin = {
             emotionIcon: emotionType?.icon || '😊',
             emotionName: emotionType?.name || '기분',
             memo: memo || null,
+            emotionFirebaseId: firebaseId || null,
             message: `${student.name}이(가) 오늘의 기분을 알려줬어요! ${emotionType?.icon || '😊'}`
         };
 

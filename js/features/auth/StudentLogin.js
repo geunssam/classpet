@@ -220,8 +220,8 @@ function verifyAndLogin() {
 
             setTimeout(() => {
                 if (hasPet) {
-                    // 펫이 있으면 메인 화면으로
-                    router.navigate('student-main');
+                    // 펫이 있으면 홈 화면으로
+                    router.navigate('student-home');
                 } else {
                     // 펫이 없으면 펫 선택 화면으로
                     router.navigate('pet-selection');

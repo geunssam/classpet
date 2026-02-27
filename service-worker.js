@@ -1,5 +1,5 @@
 // 클래스펫 Service Worker
-const CACHE_NAME = 'classpet-v1772183300887';
+const CACHE_NAME = 'classpet-v1772189071640';
 const OFFLINE_URL = '/offline.html';
 
 // 캐시할 정적 파일들 (앱 셸)
@@ -53,6 +53,7 @@ const STATIC_ASSETS = [
     '/js/shared/constants/index.js',
     '/js/shared/constants/storageKeys.js',
     '/js/shared/constants/settings.js',
+    '/js/shared/constants/quotes.js',
     // shared/utils/
     '/js/shared/utils/animations.js',
     '/js/shared/utils/petLogic.js',
@@ -92,6 +93,7 @@ const STATIC_ASSETS = [
     '/js/features/praise/praises.firebase.js',
     '/js/features/praise/praise.constants.js',
     // features/emotion/
+    '/js/features/emotion/StudentEmotion.js',
     '/js/features/emotion/Emotion.js',
     '/js/features/emotion/emotionMixin.js',
     '/js/features/emotion/EmotionService.js',
@@ -120,7 +122,7 @@ const STATIC_ASSETS = [
     '/js/features/stats/StudentDetail.js',
     // features/dashboard/
     '/js/features/dashboard/Dashboard.js',
-    '/js/features/dashboard/StudentMode.js',
+    '/js/features/dashboard/StudentHome.js',
     '/manifest.json',
     // pet-assets (이미지)
     '/pet-assets/dog/png/dog_stage1_newborn.png',

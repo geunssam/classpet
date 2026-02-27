@@ -194,6 +194,14 @@
             </nav>
             <!-- 학생용 네비게이션 (기본 숨김) -->
             <nav class="navbar-tabs hidden justify-center" id="studentNav">
+                <button data-route="student-home" class="navbar-tab">
+                    <span class="nav-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M3 12L5 10M5 10L12 3L19 10M5 10V20C5 20.55 5.45 21 6 21H9M19 10L21 12M19 10V20C19 20.55 18.55 21 18 21H15M9 21C9.55 21 10 20.55 10 20V16C10 15.45 10.45 15 11 15H13C13.55 15 14 15.45 14 16V20C14 20.55 14.45 21 15 21M9 21H15" />
+                        </svg>
+                    </span>
+                    <span>홈</span>
+                </button>
                 <button data-route="student-main" class="navbar-tab">
                     <span class="nav-icon">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -202,16 +210,7 @@
                             <path d="M12 8v4M10 10h4" stroke-width="1.2" />
                         </svg>
                     </span>
-                    <span>마음</span>
-                </button>
-                <button data-route="student-praise" class="navbar-tab">
-                    <span class="nav-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                            <polygon
-                                points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-                        </svg>
-                    </span>
-                    <span>받은 칭찬</span>
+                    <span>마음보내기</span>
                 </button>
                 <button data-route="student-timetable" class="navbar-tab">
                     <span class="nav-icon">
@@ -224,7 +223,7 @@
                                 stroke="none">17</text>
                         </svg>
                     </span>
-                    <span>주간 시간표</span>
+                    <span>시간표</span>
                 </button>
                 <button data-route="student-notice" class="navbar-tab">
                     <span class="nav-icon">
@@ -236,16 +235,6 @@
                         </svg>
                     </span>
                     <span>알림장</span>
-                </button>
-                <button data-route="pet-collection" class="navbar-tab">
-                    <span class="nav-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-                            <circle cx="12" cy="10" r="3" />
-                        </svg>
-                    </span>
-                    <span>펫도감</span>
                 </button>
             </nav>
             <div class="navbar-right">
@@ -505,6 +494,14 @@
             </div>
             <!-- 학생용 네비게이션 (기본 숨김) -->
             <div class="mobile-drawer-nav hidden" id="mobileStudentNav">
+                <button data-route="student-home" class="mobile-nav-item">
+                    <span class="mobile-nav-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M3 12L5 10M5 10L12 3L19 10M5 10V20C5 20.55 5.45 21 6 21H9M19 10L21 12M19 10V20C19 20.55 18.55 21 18 21H15M9 21C9.55 21 10 20.55 10 20V16C10 15.45 10.45 15 11 15H13C13.55 15 14 15.45 14 16V20C14 20.55 14.45 21 15 21M9 21H15" />
+                        </svg>
+                    </span>
+                    <span>홈</span>
+                </button>
                 <button data-route="student-main" class="mobile-nav-item">
                     <span class="mobile-nav-icon">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -513,16 +510,7 @@
                             <path d="M12 8v4M10 10h4" stroke-width="1.2" />
                         </svg>
                     </span>
-                    <span>마음</span>
-                </button>
-                <button data-route="student-praise" class="mobile-nav-item">
-                    <span class="mobile-nav-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                            <polygon
-                                points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-                        </svg>
-                    </span>
-                    <span>받은 칭찬</span>
+                    <span>마음보내기</span>
                 </button>
                 <button data-route="student-timetable" class="mobile-nav-item">
                     <span class="mobile-nav-icon">
@@ -535,7 +523,7 @@
                                 stroke="none">17</text>
                         </svg>
                     </span>
-                    <span>주간 시간표</span>
+                    <span>시간표</span>
                 </button>
                 <button data-route="student-notice" class="mobile-nav-item">
                     <span class="mobile-nav-icon">
@@ -547,16 +535,6 @@
                         </svg>
                     </span>
                     <span>알림장</span>
-                </button>
-                <button data-route="pet-collection" class="mobile-nav-item">
-                    <span class="mobile-nav-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-                            <circle cx="12" cy="10" r="3" />
-                        </svg>
-                    </span>
-                    <span>펫도감</span>
                 </button>
             </div>
             <!-- 학생용 액션 버튼 (모바일 드로어) -->

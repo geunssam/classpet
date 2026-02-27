@@ -36,6 +36,26 @@ async function initApp() {
     if (rightToolbar) rightToolbar.style.display = 'none';
     if (mobileDrawer) mobileDrawer.style.display = 'none';
 
+    // /student 또는 /s 경로 → 학생 로그인 직행
+    const pathname = window.location.pathname;
+    if (pathname === '/student' || pathname === '/s') {
+        const urlParams = new URLSearchParams(window.location.search);
+        const codeParam = urlParams.get('code');
+        if (codeParam) {
+            store.setClassCode(codeParam.toUpperCase());
+        }
+        window.history.replaceState({}, '', '/');
+        hideAuthLoadingScreen();
+        setTimeout(() => {
+            initRouter();
+            bindNavigation();
+            bindHeaderButtons();
+            registerGlobalFunctions();
+            router.navigate('student-login');
+        }, 0);
+        return;
+    }
+
     // URL 파라미터로 학급 코드 자동 설정 (QR 스캔 시)
     const urlParams = new URLSearchParams(window.location.search);
     const codeParam = urlParams.get('code');

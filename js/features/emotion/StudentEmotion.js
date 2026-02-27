@@ -373,7 +373,7 @@ function bindEmotionSendEvents() {
                     memo: memo,
                     source: 'student'
                 });
-                store.createEmotionNotification(student.id, selectedEmotion, memo);
+                // 알림 생성은 교사 탭의 Firebase 구독에서 처리 (학생 탭에서는 불필요)
                 const petResult = await store.addPetExp(student.id, 5);
                 showPetReaction(selectedEmotion);
 

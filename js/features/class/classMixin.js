@@ -274,6 +274,53 @@ export const classMixin = {
     },
 
     /**
+     * 오늘의 한마디 가져오기
+     */
+    getDailyMessage() {
+        return this.currentClassData?.dailyMessage?.text || '';
+    },
+
+    /**
+     * 오늘의 한마디 설정 (Firebase class 문서에 저장)
+     */
+    async setDailyMessage(text) {
+        const teacherUid = this.getCurrentTeacherUid();
+        const classId = this.getCurrentClassId();
+        if (!teacherUid || !classId || !this.firebaseEnabled) return false;
+
+        try {
+            const update = text
+                ? { dailyMessage: { text, updatedAt: new Date().toISOString() } }
+                : { dailyMessage: null };
+            await firebase.updateClass(teacherUid, classId, update);
+            // 로컬 캐시도 업데이트
+            if (this.currentClassData) {
+                this.currentClassData.dailyMessage = text ? update.dailyMessage : null;
+            }
+            return true;
+        } catch (error) {
+            console.error('한마디 저장 실패:', error);
+            return false;
+        }
+    },
+
+    /**
+     * 학급 문서 실시간 구독 (학생 모드에서 한마디 등 실시간 반영)
+     */
+    subscribeToClassDoc(callback) {
+        const teacherUid = this.getCurrentTeacherUid();
+        const classId = this.getCurrentClassId();
+        if (!teacherUid || !classId || !this.firebaseEnabled) return null;
+        return firebase.subscribeToClassDoc(teacherUid, classId, (classData) => {
+            // 로컬 캐시 업데이트
+            if (classData) {
+                this.currentClassData = { ...this.currentClassData, ...classData };
+            }
+            if (callback) callback(classData);
+        });
+    },
+
+    /**
      * Firebase에서 현재 학급 데이터 로드 (학생 목록 등) - 계층 구조
      */
     async loadClassDataFromFirebase() {

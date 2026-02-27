@@ -26,7 +26,8 @@ import * as ClassSelect from '../features/class/ClassSelect.js';
 
 // 학생 모드 컴포넌트
 import * as StudentLogin from '../features/auth/StudentLogin.js';
-import * as StudentMode from '../features/dashboard/StudentMode.js';
+import * as StudentHome from '../features/dashboard/StudentHome.js';
+import * as StudentEmotion from '../features/emotion/StudentEmotion.js';
 import * as PetChat from '../features/pet/PetChat.js';
 import * as PetSelection from '../features/pet/PetSelection.js';
 import * as PetCollection from '../features/pet/PetCollection.js';
@@ -34,7 +35,10 @@ import * as StudentTimetable from '../features/timetable/StudentTimetable.js';
 import * as StudentPraise from '../features/praise/StudentPraise.js';
 import * as StudentNotice from '../features/notice/StudentNotice.js';
 
-import { updateHeaderForStudentMode, syncActiveTab, updateNotificationBadge, updateUIVisibility } from './navigation.js';
+import { updateHeaderForStudentMode, syncActiveTab, updateNotificationBadge, updateStudentNotificationBadge, updateUIVisibility } from './navigation.js';
+
+// 학생 모드 글로벌 알림장 구독 (StudentNotice 페이지 밖에서도 배지 갱신)
+let studentNoticeUnsubscribe = null;
 
 /**
  * 라우터 초기화
@@ -210,14 +214,27 @@ export function initRouter() {
             },
             unmount: () => StudentLogin.unmount?.()
         },
+        'student-home': {
+            render: () => {
+                if (!store.isStudentLoggedIn()) {
+                    setTimeout(() => router.navigate('student-login'), 0);
+                    return '<div class="text-center p-8">로그인이 필요합니다...</div>';
+                }
+                updateHeaderForStudentMode(true, true);
+                const html = StudentHome.render();
+                setTimeout(() => StudentHome.afterRender?.(), 0);
+                return html;
+            },
+            unmount: () => StudentHome.unmount?.()
+        },
         'student-main': {
             render: () => {
                 updateHeaderForStudentMode(true, true);
-                const html = StudentMode.render();
-                setTimeout(() => StudentMode.afterRender?.(), 0);
+                const html = StudentEmotion.render();
+                setTimeout(() => StudentEmotion.afterRender?.(), 0);
                 return html;
             },
-            unmount: () => StudentMode.unmount?.()
+            unmount: () => StudentEmotion.unmount?.()
         },
         'student-chat': {
             render: () => {
@@ -300,16 +317,31 @@ export function initRouter() {
 
     // 라우트 변경 시 헤더 업데이트
     router.onRouteChange = (route, params) => {
-        const isStudentRoute = ['student-login', 'student-main', 'student-chat', 'pet-selection', 'pet-collection', 'student-timetable', 'student-praise', 'student-notice'].includes(route);
+        const isStudentRoute = ['student-login', 'student-home', 'student-main', 'student-chat', 'pet-selection', 'pet-collection', 'student-timetable', 'student-praise', 'student-notice'].includes(route);
         const isLoginRoute = ['login', 'teacher-login', 'class-select'].includes(route);
 
         if (isStudentRoute) {
             // 학생 라우트: 학생 모드 헤더 적용 (로그인 여부에 따라)
             const isStudentLoggedIn = store.isStudentLoggedIn();
             updateHeaderForStudentMode(true, isStudentLoggedIn);
-        } else if (!isLoginRoute) {
-            // 교사 라우트: 교사 모드 헤더 복원
-            updateHeaderForStudentMode(false, false);
+
+            // 학생 라우트 진입 시 글로벌 알림장 구독 (배지 실시간 갱신)
+            if (isStudentLoggedIn && !studentNoticeUnsubscribe) {
+                studentNoticeUnsubscribe = store.subscribeToNoticesRealtime(() => {
+                    updateStudentNotificationBadge();
+                });
+            }
+        } else {
+            // 학생 라우트를 벗어나면 알림장 구독 해제
+            if (studentNoticeUnsubscribe) {
+                studentNoticeUnsubscribe();
+                studentNoticeUnsubscribe = null;
+            }
+
+            if (!isLoginRoute) {
+                // 교사 라우트: 교사 모드 헤더 복원
+                updateHeaderForStudentMode(false, false);
+            }
         }
 
         syncActiveTab(route);

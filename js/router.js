@@ -4,7 +4,7 @@
  */
 
 // 학생 모드 라우트 목록
-const STUDENT_MODE_ROUTES = ['student-login', 'student-main', 'student-chat', 'pet-selection', 'pet-collection', 'student-timetable', 'student-praise'];
+const STUDENT_MODE_ROUTES = ['student-login', 'student-home', 'student-main', 'student-chat', 'pet-selection', 'pet-collection', 'student-timetable', 'student-praise', 'student-notice'];
 
 // 로그인 관련 라우트 목록 (하단 네비 숨김)
 const LOGIN_ROUTES = ['login', 'teacher-login', 'student-login', 'class-select'];

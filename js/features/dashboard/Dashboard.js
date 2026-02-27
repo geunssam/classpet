@@ -104,6 +104,17 @@ export function render() {
                 </div>
             </div>
 
+            <!-- 오늘의 한마디 -->
+            <div class="card border border-gray-100" style="background: #ffffff !important; padding-top: 4px; padding-bottom: 8px;">
+                <h3 class="section-title m-0 mb-2 flex items-center gap-1.5 px-2"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block;flex-shrink:0"><path d="M12 2L15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>오늘의 한마디</h3>
+                <div class="flex items-center gap-2 px-2">
+                    <input type="text" id="dailyMessageInput" class="flex-1 text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-primary/50" placeholder="학생에게 보여줄 한마디를 입력하세요" value="${store.getDailyMessage() || ''}" maxlength="60" />
+                    <button id="dailyMessageSaveBtn" class="liquid-btn-small">저장</button>
+                    <button id="dailyMessageClearBtn" class="liquid-btn-small" style="background: #f3f4f6; color: #6b7280;">지우기</button>
+                </div>
+                <p class="text-xs text-gray-400 mt-1 px-2">비어있으면 랜덤 명언이 학생에게 표시됩니다</p>
+            </div>
+
             <!-- 오늘의 요약 카드 -->
             <div class="card border border-gray-100" style="background: #ffffff !important; padding-top: 4px; padding-bottom: 4px;">
                 <div class="flex items-center">
@@ -278,6 +289,36 @@ export function afterRender() {
     if (switchClassBtn) {
         switchClassBtn.addEventListener('click', () => {
             router.navigate('class-select');
+        });
+    }
+
+    // 오늘의 한마디 저장/지우기
+    const dailyMsgInput = document.getElementById('dailyMessageInput');
+    const dailyMsgSaveBtn = document.getElementById('dailyMessageSaveBtn');
+    const dailyMsgClearBtn = document.getElementById('dailyMessageClearBtn');
+
+    if (dailyMsgSaveBtn && dailyMsgInput) {
+        dailyMsgSaveBtn.addEventListener('click', async () => {
+            const text = dailyMsgInput.value.trim();
+            if (!text) {
+                showToast('한마디를 입력해주세요', 'warning');
+                return;
+            }
+            const ok = await store.setDailyMessage(text);
+            if (ok) showToast('한마디가 저장되었어요', 'success');
+            else showToast('저장에 실패했어요', 'error');
+        });
+    }
+
+    if (dailyMsgClearBtn && dailyMsgInput) {
+        dailyMsgClearBtn.addEventListener('click', async () => {
+            const ok = await store.setDailyMessage('');
+            if (ok) {
+                dailyMsgInput.value = '';
+                showToast('한마디가 삭제되었어요', 'info');
+            } else {
+                showToast('삭제에 실패했어요', 'error');
+            }
         });
     }
 

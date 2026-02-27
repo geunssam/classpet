@@ -123,6 +123,10 @@ export const emotionMixin = {
                                 read: fe.reply.read ?? false
                             };
                         }
+                        // 학생 감정인데 알림 누락된 경우 보충 (같은 브라우저 테스트 시)
+                        if (fe.source === 'student') {
+                            this.createEmotionNotification(fe.studentId, fe.emotion, noteText, fe.id);
+                        }
                     }
                 } else {
                     // 새 데이터 추가
@@ -149,9 +153,9 @@ export const emotionMixin = {
                     localLog.unshift(newEmotion);
                     hasNew = true;
 
-                    // 학생이 보낸 감정이면 알림 생성
+                    // 학생이 보낸 감정이면 알림 생성 (firebaseId로 중복 방지)
                     if (fe.source === 'student') {
-                        this.createEmotionNotification(fe.studentId, fe.emotion, noteText);
+                        this.createEmotionNotification(fe.studentId, fe.emotion, noteText, fe.id);
                     }
                 }
             });

@@ -13,7 +13,7 @@ import {
 } from '../shared/utils/animations.js';
 import { toDateString } from '../shared/utils/dateUtils.js';
 import { bindToolbarToggle, bindMobileDrawer, updateNotificationBadge, updateStudentNotificationBadge } from './navigation.js';
-import { setStudentTab, setHistoryDate } from '../features/dashboard/StudentMode.js';
+import { setStudentTab, setHistoryDate } from '../features/emotion/StudentEmotion.js';
 import { showQuickPraise } from '../features/praise/QuickPraise.js';
 import { getPetEmoji, getPetImageHTML } from '../shared/utils/petLogic.js';
 import { DEFAULT_THERMOSTAT } from '../features/praise/thermostatMixin.js';
@@ -204,7 +204,7 @@ export function bindHeaderButtons() {
         if (type === 'notifications' || type === 'studentSession') {
             updateNotificationBadge();
         }
-        if (type === 'emotionLog' || type === 'praiseLog') {
+        if (type === 'emotionLog' || type === 'praiseLog' || type === 'notices') {
             updateStudentNotificationBadge();
         }
     });

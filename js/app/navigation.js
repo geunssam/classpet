@@ -19,7 +19,7 @@ export function bindNavigation() {
         navHomeBtn.addEventListener('click', (e) => {
             e.preventDefault();
             const isStudent = store.isStudentLoggedIn?.();
-            router.navigate(isStudent ? 'student-main' : 'dashboard');
+            router.navigate(isStudent ? 'student-home' : 'dashboard');
         });
     }
 
@@ -396,7 +396,7 @@ export function updateUIVisibility(route) {
     const mobileDrawerOverlay = document.getElementById('mobileDrawerOverlay');
     const classInfoEl = document.getElementById('classInfo');
     const isLoginRoute = ['login', 'teacher-login', 'student-login', 'class-select'].includes(route);
-    const isStudentRoute = ['student-main', 'student-chat', 'pet-selection', 'pet-collection', 'student-timetable', 'student-praise', 'student-notice'].includes(route);
+    const isStudentRoute = ['student-home', 'student-main', 'student-chat', 'pet-selection', 'pet-collection', 'student-timetable', 'student-praise', 'student-notice'].includes(route);
 
     if (isLoginRoute) {
         // 모드 해제
@@ -513,7 +513,7 @@ export function updateHeaderForStudentMode(isStudentMode, isLoggedIn) {
         if (headerTitle) headerTitle.textContent = '클래스펫';
 
         // 홈 링크를 학생 메인으로
-        if (navHomeBtn) navHomeBtn.href = '#student-main';
+        if (navHomeBtn) navHomeBtn.href = '#student-home';
 
         // 교사 정보 숨기기
         if (classInfo) classInfo.classList.add('hidden');
