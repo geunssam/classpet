@@ -165,14 +165,14 @@ export function render() {
                 <div class="mt-6 px-4">
                     <div class="bg-gradient-to-r from-amber-100 to-yellow-100 rounded-2xl p-4 border-2 border-amber-300 pet-collection-sparkle-border">
                         <div class="text-center">
-                            <div class="text-3xl mb-2">🎉👑🎉</div>
+                            <div class="mb-2 flex justify-center"><svg class="w-10 h-10 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5C7 4 9 7 12 7s5-3 7.5-3a2.5 2.5 0 0 1 0 5H18"/><path d="M18 9v8a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V9"/><path d="M12 7v6"/></svg></div>
                             <h3 class="text-lg font-bold text-amber-700">축하해요!</h3>
                             <p class="text-sm text-amber-600 mt-1">
                                 ${petName}(이)가 최고 레벨에 도달했어요!<br>
                                 이제 새로운 펫을 키울 수 있어요!
                             </p>
                             <button id="selectNewPetBtn" class="mt-4 liquid-btn-student-gold">
-                                ✨ 새 펫 선택하기
+                                새 펫 선택하기
                             </button>
                         </div>
                     </div>
@@ -185,7 +185,7 @@ export function render() {
         <div id="changePinModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
             <div class="bg-white rounded-3xl p-6 w-full max-w-xs shadow-2xl">
                 <div class="text-center mb-6">
-                    <div class="text-4xl mb-2">🔐</div>
+                    <div class="mb-2 flex justify-center"><svg class="w-10 h-10 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><circle cx="12" cy="16" r="1"/></svg></div>
                     <h3 class="text-lg font-bold text-gray-800">PIN 변경</h3>
                     <p class="text-sm text-gray-500 mt-1">새로운 PIN을 설정해주세요</p>
                 </div>
@@ -799,7 +799,7 @@ function showNewPetSelectionModal() {
     modalContent.innerHTML = `
         <div class="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl max-h-[80vh] overflow-y-auto">
             <div class="text-center mb-6">
-                <div class="text-4xl mb-2">🐣✨</div>
+                <div class="mb-2 flex justify-center"><svg class="w-10 h-10 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c1.1 0 2-.9 2-2h-4a2 2 0 0 0 2 2z"/><path d="M9 12V7a3 3 0 0 1 6 0v5"/><circle cx="12" cy="12" r="8"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg></div>
                 <h3 class="text-lg font-bold text-gray-800">새 펫 선택</h3>
                 <p class="text-sm text-gray-500 mt-1">
                     ${student.petName || PET_TYPES[currentPetType]?.name}(이)가 도감에 완성으로 등록돼요!
@@ -832,9 +832,9 @@ function showNewPetSelectionModal() {
                 </button>
             ` : `
                 <div class="text-center py-8">
-                    <div class="text-4xl mb-3">🎊</div>
+                    <div class="mb-3 flex justify-center"><svg class="w-10 h-10 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5C7 4 9 7 12 7s5-3 7.5-3a2.5 2.5 0 0 1 0 5H18"/><path d="M18 9v8a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V9"/><path d="M12 7v6"/></svg></div>
                     <p class="text-gray-600">와! 모든 펫을 완성했어요!</p>
-                    <p class="text-sm text-gray-400 mt-1">대단해요! 👑</p>
+                    <p class="text-sm text-gray-400 mt-1">대단해요!</p>
                 </div>
             `}
 
@@ -1034,7 +1034,7 @@ function renderHistoryTab(student, petEmoji, petName, petImageSm) {
                     `;
     }).join('') : `
                     <div class="text-center py-12">
-                        <div class="text-4xl mb-3">📭</div>
+                        <div class="mb-3 flex justify-center"><svg class="w-10 h-10 text-gray-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg></div>
                         <p class="text-gray-400">이 날은 기록이 없어요</p>
                     </div>
                 `}

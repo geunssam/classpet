@@ -44,7 +44,7 @@ export function render() {
     return `
         <div class="student-notice-page px-4 pt-4 pb-8 max-w-2xl mx-auto">
             <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                📋 알림장
+                <svg class="w-5 h-5 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg> 알림장
                 ${notices.length > 0 ? `<span class="text-xs font-medium text-gray-400">${notices.length}개</span>` : ''}
             </h2>
             <div id="studentNoticeList">
@@ -58,7 +58,7 @@ function renderStudentNoticeList(notices) {
     if (!notices || notices.length === 0) {
         return `
             <div class="text-center py-16">
-                <div class="text-5xl mb-4">📭</div>
+                <div class="mb-4 flex justify-center"><svg class="w-12 h-12 text-gray-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg></div>
                 <p class="text-gray-500 font-medium">아직 알림장이 없어요</p>
                 <p class="text-gray-400 text-sm mt-1">선생님이 알림장을 보내면 여기에 나타나요</p>
             </div>

@@ -48,15 +48,15 @@ export function render() {
     return `
         <div class="pet-collection-container pb-8">
             <!-- 헤더 -->
-            <div class="text-center mb-6 px-4">
-                <h2 class="text-xl font-bold text-gray-800">📖 펫 도감</h2>
+            <div class="mb-6 px-4">
+                <h2 class="text-xl font-bold text-gray-800 flex items-center gap-1.5"><svg class="w-5 h-5 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg> 펫 도감</h2>
             </div>
 
             <!-- 완성 현황 -->
             <div class="px-4 mb-6">
                 <div class="bg-gradient-to-r from-amber-50 to-yellow-50 rounded-2xl p-4 text-center">
                     <div class="flex items-center justify-center gap-2 mb-2">
-                        <span class="text-2xl">✨</span>
+                        <svg class="w-6 h-6 text-amber-500" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
                         <span class="text-lg font-bold text-amber-700">완성한 펫</span>
                     </div>
                     <div class="text-3xl font-bold text-amber-600">
@@ -115,7 +115,7 @@ function renderPetCard(petKey, pet, status, currentLevel, completedPet) {
             borderClass = 'border-3 border-amber-400 pet-collection-sparkle-border';
             overlayContent = `
                 <div class="absolute -top-1 -right-1 bg-amber-400 rounded-full w-6 h-6 flex items-center justify-center shadow-md">
-                    <span class="text-white text-sm">👑</span>
+                    <svg class="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                 </div>
             `;
             break;
@@ -130,13 +130,8 @@ function renderPetCard(petKey, pet, status, currentLevel, completedPet) {
             `;
             break;
         case 'locked':
-            // 미소유: 흑백 + 자물쇠
+            // 미소유: 흑백 처리 (자물쇠 제거, 클릭하면 성장 과정 볼 수 있음)
             cardClass += ' pet-collection-locked';
-            overlayContent = `
-                <div class="absolute inset-0 flex items-center justify-center bg-black/10 rounded-xl">
-                    <span class="text-2xl opacity-60">🔒</span>
-                </div>
-            `;
             break;
     }
 
@@ -144,8 +139,8 @@ function renderPetCard(petKey, pet, status, currentLevel, completedPet) {
         <div class="${cardClass} ${borderClass} bg-white rounded-xl p-3 relative transition-all duration-300"
              data-pet="${petKey}" data-status="${status}">
             <div class="text-center flex flex-col items-center">
-                <span class="inline-block ${status === 'locked' ? 'grayscale opacity-50' : ''}">${getPetStageImageHTML(petKey, 'child', 'lg')}</span>
-                <p class="text-xs mt-1 font-medium ${status === 'locked' ? 'text-gray-400' : 'text-gray-700'}">${name}</p>
+                ${getPetStageImageHTML(petKey, 'child', 'lg')}
+                <p class="text-xs mt-1 font-medium text-gray-700">${name}</p>
             </div>
             ${overlayContent}
         </div>
@@ -168,7 +163,7 @@ export function afterRender() {
 }
 
 /**
- * 펫 상세 정보 표시
+ * 펫 상세 정보 모달 표시
  */
 function showPetDetail(petKey, status) {
     const pet = PET_TYPES[petKey];
@@ -179,46 +174,83 @@ function showPetDetail(petKey, status) {
 
     let statusText = '';
     let statusClass = '';
+    let badgeHtml = '';
 
     switch (status) {
         case 'completed':
-            statusText = `✨ 완성! (${completedPet?.completedAt || ''})`;
+            statusText = `완성! ${completedPet?.completedAt ? `(${completedPet.completedAt})` : ''}`;
             statusClass = 'text-amber-600 bg-amber-50';
+            badgeHtml = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700"><svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> 완성</span>`;
             break;
         case 'current':
-            statusText = `🐾 키우는 중 (Lv.${student.level || 1})`;
+            statusText = `키우는 중 (Lv.${student.level || 1})`;
             statusClass = 'text-blue-600 bg-blue-50';
+            badgeHtml = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">키우는 중</span>`;
             break;
         case 'locked':
-            statusText = '🔒 아직 만나지 못한 펫이에요';
+            statusText = '아직 만나지 못한 펫';
             statusClass = 'text-gray-500 bg-gray-50';
+            badgeHtml = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">미소유</span>`;
             break;
     }
 
-    // 성장 단계 표시
-    const stagesHtml = `
-        <div class="flex justify-center gap-4 my-4 items-end">
-            <div class="text-center">
-                ${getPetStageImageHTML(petKey, 'baby', 'sm')}
-                <p class="text-xs text-gray-400">아기</p>
+    const modal = document.createElement('div');
+    modal.id = 'petDetailModal';
+    modal.className = 'fixed inset-0 z-50 flex items-center justify-center px-6';
+    modal.innerHTML = `
+        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm pet-detail-backdrop" style="animation: fadeIn 0.2s ease"></div>
+        <div class="relative bg-white w-full max-w-sm rounded-2xl p-5 pb-5 shadow-xl" style="animation: scaleIn 0.25s ease">
+            <!-- 펫 이름 + 닫기 -->
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-8"></div>
+                <div class="text-center">
+                    <h3 class="text-lg font-bold text-gray-800">${pet.name}</h3>
+                    <div class="mt-1">${badgeHtml}</div>
+                </div>
+                <button id="closePetDetail" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors">
+                    <svg class="w-5 h-5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
             </div>
-            <span class="text-gray-300 self-center">→</span>
-            <div class="text-center">
-                ${getPetStageImageHTML(petKey, 'child', 'sm')}
-                <p class="text-xs text-gray-400">어린이</p>
+
+            <!-- 성장 과정 -->
+            <div class="bg-gray-50 rounded-xl p-4">
+                <p class="text-xs text-gray-400 text-center mb-3">성장 과정</p>
+                <div class="flex justify-center items-end gap-3">
+                    <div class="text-center">
+                        ${getPetStageImageHTML(petKey, 'baby', 'md')}
+                        <p class="text-xs text-gray-400 mt-1">아기</p>
+                    </div>
+                    <svg class="w-4 h-4 text-gray-300 flex-shrink-0 self-center" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                    <div class="text-center">
+                        ${getPetStageImageHTML(petKey, 'child', 'md')}
+                        <p class="text-xs text-gray-400 mt-1">어린이</p>
+                    </div>
+                    <svg class="w-4 h-4 text-gray-300 flex-shrink-0 self-center" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                    <div class="text-center">
+                        ${getPetStageImageHTML(petKey, 'teen', 'md')}
+                        <p class="text-xs text-gray-400 mt-1">청소년</p>
+                    </div>
+                    <svg class="w-4 h-4 text-gray-300 flex-shrink-0 self-center" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                    <div class="text-center">
+                        ${getPetStageImageHTML(petKey, 'adult', 'md')}
+                        <p class="text-xs text-gray-400 mt-1">성체</p>
+                    </div>
+                </div>
             </div>
-            <span class="text-gray-300 self-center">→</span>
-            <div class="text-center">
-                ${getPetStageImageHTML(petKey, 'teen', 'sm')}
-                <p class="text-xs text-gray-400">청소년</p>
-            </div>
-            <span class="text-gray-300 self-center">→</span>
-            <div class="text-center">
-                ${getPetStageImageHTML(petKey, 'adult', 'sm')}
-                <p class="text-xs text-gray-400">성체</p>
-            </div>
+
+            <!-- 상태 메시지 -->
+            <p class="text-center text-sm ${statusClass} rounded-lg py-2 mt-3">${statusText}</p>
         </div>
     `;
 
-    showToast(`${pet.name}: ${statusText.split(' ')[0]}`, 'info');
+    document.body.appendChild(modal);
+
+    // 닫기 이벤트
+    const close = () => {
+        modal.querySelector('.pet-detail-backdrop').style.animation = 'fadeOut 0.15s ease forwards';
+        modal.querySelector('.relative').style.animation = 'scaleOut 0.15s ease forwards';
+        setTimeout(() => modal.remove(), 150);
+    };
+    modal.querySelector('#closePetDetail').addEventListener('click', close);
+    modal.querySelector('.pet-detail-backdrop').addEventListener('click', close);
 }

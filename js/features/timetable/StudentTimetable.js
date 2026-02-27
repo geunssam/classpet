@@ -103,7 +103,7 @@ export function render() {
         <div class="space-y-4 pb-8">
             <!-- 헤더 -->
             <div class="flex items-center justify-center pb-2">
-                <h2 class="text-xl font-bold">📅 주간시간표</h2>
+                <h2 class="text-xl font-bold flex items-center gap-1.5"><svg class="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> 주간시간표</h2>
             </div>
 
             <!-- 시간표 그리드 -->
@@ -188,7 +188,7 @@ function renderTodaySummary(timetable, todayIndex, subjectColors) {
         return `
             <div class="mt-4 px-2">
                 <div class="bg-blue-50 rounded-2xl p-4 text-center">
-                    <div class="text-2xl mb-2">🎉</div>
+                    <div class="mb-2 flex justify-center"><svg class="w-8 h-8 text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg></div>
                     <p class="text-blue-600 font-medium">오늘은 주말이에요!</p>
                     <p class="text-sm text-blue-500 mt-1">푹 쉬고 월요일에 만나요~</p>
                 </div>
@@ -207,7 +207,7 @@ function renderTodaySummary(timetable, todayIndex, subjectColors) {
         return `
             <div class="mt-4 px-2">
                 <div class="bg-amber-50 rounded-2xl p-4 text-center">
-                    <div class="text-2xl mb-2">📝</div>
+                    <div class="mb-2 flex justify-center"><svg class="w-8 h-8 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
                     <p class="text-amber-600 font-medium">오늘 등록된 수업이 없어요</p>
                     <p class="text-sm text-amber-500 mt-1">선생님이 시간표를 등록해주실 거예요!</p>
                 </div>
@@ -219,7 +219,7 @@ function renderTodaySummary(timetable, todayIndex, subjectColors) {
         <div class="mt-4 px-2">
             <div class="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-2xl p-4">
                 <h3 class="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
-                    <span>📚</span>
+                    <svg class="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
                     <span>오늘의 수업</span>
                     <span class="text-xs font-normal text-gray-500">(${todayClasses.length}교시)</span>
                 </h3>

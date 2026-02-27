@@ -156,7 +156,7 @@ export function render(params) {
             ` : `
             <div class="card flex items-center justify-between">
                 <div class="flex items-center gap-3">
-                    <span class="text-3xl">💭</span>
+                    <svg class="w-7 h-7 text-gray-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                     <div class="text-gray-400 text-sm">아직 보내지 않았어요</div>
                 </div>
             </div>
@@ -221,7 +221,7 @@ function renderPraiseHistory(praises, dateFilter) {
     if (praises.length === 0) {
         return `
             <div class="empty-state py-8">
-                <div class="text-3xl mb-2">⭐</div>
+                <div class="mb-2 flex justify-center"><svg class="w-8 h-8 text-amber-300" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
                 <div class="text-gray-500">${dateFilter ? '해당 날짜에 칭찬 기록이 없어요' : '아직 칭찬 기록이 없어요'}</div>
             </div>
         `;
@@ -266,7 +266,7 @@ function renderEmotionHistory(emotions, dateFilter) {
     if (emotions.length === 0) {
         return `
             <div class="empty-state py-8">
-                <div class="text-3xl mb-2">💭</div>
+                <div class="mb-2 flex justify-center"><svg class="w-8 h-8 text-gray-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
                 <div class="text-gray-500">${dateFilter ? '해당 날짜에 감정 기록이 없어요' : '아직 감정 기록이 없어요'}</div>
             </div>
         `;
@@ -391,7 +391,7 @@ function renderNotes(notes, studentId) {
 
             ${notes.length === 0 ? `
                 <div class="empty-state py-8">
-                    <div class="text-3xl mb-2">📝</div>
+                    <div class="mb-2 flex justify-center"><svg class="w-8 h-8 text-gray-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
                     <div class="text-gray-500">메모가 없어요</div>
                 </div>
             ` : `

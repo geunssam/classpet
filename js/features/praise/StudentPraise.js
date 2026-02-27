@@ -64,7 +64,7 @@ export function render() {
 
     return `
         <div class="p-4 pb-8">
-            <h2 class="text-xl font-bold text-gray-800 mb-4">⭐ 받은 칭찬</h2>
+            <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-1.5"><svg class="w-5 h-5 text-yellow-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> 받은 칭찬</h2>
 
             <!-- 카테고리 필터 -->
             <div class="flex gap-2 overflow-x-auto pb-2 mb-4 -mx-1 px-1 scrollbar-hide">
@@ -128,7 +128,7 @@ export function render() {
                     `;
                 }).join('') : `
                     <div class="text-center py-12">
-                        <div class="text-4xl mb-3">📭</div>
+                        <div class="mb-3 flex justify-center"><svg class="w-10 h-10 text-gray-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12a4.002 4.002 0 0 0-3-3.87V6a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v2.13A4.002 4.002 0 0 0 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6z"/><polyline points="12 11 12 16"/><line x1="9" y1="8" x2="15" y2="8"/></svg></div>
                         <p class="text-gray-400">이 달에는 받은 칭찬이 없어요</p>
                     </div>
                 `}

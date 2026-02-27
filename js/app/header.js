@@ -961,7 +961,7 @@ export function handleStudentLogout() {
     // 커스텀 확인 모달 표시
     const modalContent = `
         <div class="text-center">
-            <div class="text-4xl mb-4">🚪</div>
+            <div class="mb-4 flex justify-center"><svg class="w-10 h-10 text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></div>
             <h3 class="text-lg font-bold text-gray-800 mb-2">로그아웃</h3>
             <p class="text-gray-600 mb-6">정말 로그아웃 하시겠습니까?</p>
             <div class="flex gap-3 justify-center">
