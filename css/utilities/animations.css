@@ -162,10 +162,121 @@
     }
 }
 
+/* ======================================
+   펫 클릭/idle 애니메이션
+   ====================================== */
+
+/* idle 숨쉬기 — 부드러운 scale 맥박 */
+@keyframes pet-pulse-anim {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.03); }
+}
+
+.pet-pulse {
+    animation: pet-pulse-anim 2.5s ease-in-out infinite;
+}
+
+/* 바운스 */
+@keyframes pet-bounce-anim {
+    0%, 100% { transform: translateY(0) scale(1); }
+    40% { transform: translateY(-12px) scale(1.05); }
+    60% { transform: translateY(-6px) scale(1.02); }
+}
+
+.pet-bounce {
+    animation: pet-bounce-anim 0.5s ease-in-out;
+}
+
+/* 흔들기 */
+@keyframes pet-wiggle-anim {
+    0%, 100% { transform: rotate(0deg); }
+    20% { transform: rotate(-8deg); }
+    40% { transform: rotate(8deg); }
+    60% { transform: rotate(-6deg); }
+    80% { transform: rotate(6deg); }
+}
+
+.pet-wiggle {
+    animation: pet-wiggle-anim 0.5s ease-in-out;
+}
+
+/* 레벨업 확대 반짝 */
+@keyframes pet-levelup-anim {
+    0% { transform: scale(1); filter: brightness(1); }
+    30% { transform: scale(1.3); filter: brightness(1.4); }
+    60% { transform: scale(1.05); filter: brightness(1.1); }
+    80% { transform: scale(1.2); filter: brightness(1.3); }
+    100% { transform: scale(1); filter: brightness(1); }
+}
+
+.pet-levelup {
+    animation: pet-levelup-anim 0.8s ease-in-out;
+}
+
+/* 강아지용 클릭 — 통통 점프 + 살짝 회전 */
+@keyframes pet-click-bounce-anim {
+    0% { transform: translateY(0) scale(1) rotate(0deg); }
+    25% { transform: translateY(-20px) scale(1.05) rotate(-5deg); }
+    50% { transform: translateY(-12px) scale(1.1) rotate(0deg); }
+    70% { transform: translateY(0) scale(1.05, 0.95) rotate(2deg); }
+    85% { transform: translateY(-4px) scale(1.02) rotate(0deg); }
+    100% { transform: translateY(0) scale(1) rotate(0deg); }
+}
+
+.pet-click-bounce {
+    animation: pet-click-bounce-anim 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* 고양이용 클릭 — 갸우뚱 + 좌우 흔들 + scale */
+@keyframes pet-click-wiggle-anim {
+    0% { transform: rotate(0deg) scale(1); }
+    20% { transform: rotate(-8deg) scale(1.02); }
+    40% { transform: rotate(8deg) scale(1.05); }
+    60% { transform: rotate(-5deg) scale(1.03); }
+    80% { transform: rotate(3deg) scale(1.01); }
+    100% { transform: rotate(0deg) scale(1); }
+}
+
+.pet-click-wiggle {
+    animation: pet-click-wiggle-anim 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* 파티클 이펙트 fade-out */
+@keyframes pet-click-particle {
+    0% {
+        opacity: 1;
+        transform: translate(var(--tx, 0), var(--ty, 0)) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(calc(var(--tx, 0) * 2.5), calc(var(--ty, 0) * 2.5 - 20px)) scale(0.3);
+    }
+}
+
+.pet-particle {
+    position: absolute;
+    pointer-events: none;
+    font-size: 1.2rem;
+    animation: pet-click-particle 0.8s ease-out forwards;
+    z-index: 50;
+}
+
 /* 접근성: 모션 감소 선호 시 애니메이션 비활성화 */
 @media (prefers-reduced-motion: reduce) {
     .blob {
         animation: none;
+    }
+    .pet-pulse,
+    .pet-bounce,
+    .pet-wiggle,
+    .pet-levelup,
+    .pet-click-bounce,
+    .pet-click-wiggle {
+        animation: none;
+    }
+    .pet-particle {
+        animation: none;
+        opacity: 0;
     }
 }
 

@@ -1,5 +1,5 @@
 // 클래스펫 Service Worker
-const CACHE_NAME = 'classpet-v1772098847062';
+const CACHE_NAME = 'classpet-v1772152570538';
 const OFFLINE_URL = '/offline.html';
 
 // 캐시할 정적 파일들 (앱 셸)
@@ -57,6 +57,7 @@ const STATIC_ASSETS = [
     '/js/shared/utils/animations.js',
     '/js/shared/utils/petLogic.js',
     '/js/shared/utils/nameUtils.js',
+    '/js/shared/utils/petAnimations.js',
     '/js/shared/utils/dateUtils.js',
     '/js/shared/utils/htmlSanitizer.js',
     '/js/shared/utils/subjects.constants.js',
@@ -169,7 +170,9 @@ const STATIC_ASSETS = [
     '/pet-assets/turtle/png/turtle_stage1_newborn.png',
     '/pet-assets/turtle/png/turtle_stage2_baby.png',
     '/pet-assets/turtle/png/turtle_stage3_growing.png',
-    '/pet-assets/turtle/png/turtle_stage4_adult.png'
+    '/pet-assets/turtle/png/turtle_stage4_adult.png',
+    // pet-assets (영상)
+    '/pet-assets/lion/video/lion_stage1_baby.mp4'
 ];
 
 // 캐시하지 않을 URL 패턴들 (Firebase API 요청만 - SDK는 캐시 허용)

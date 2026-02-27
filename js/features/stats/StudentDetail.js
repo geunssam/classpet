@@ -20,7 +20,6 @@ import {
     getPetStatusText
 } from '../../shared/utils/petLogic.js';
 import {
-    bounceAnimation,
     levelUpAnimation,
     createPraiseParticles,
     showToast,
@@ -28,6 +27,7 @@ import {
     openModal,
     closeModal
 } from '../../shared/utils/animations.js';
+import { playPetClickAnimation } from '../../shared/utils/petAnimations.js';
 
 let activeTab = 'praise'; // 'praise', 'emotion', 'notes'
 let filterDate = null; // 캘린더에서 선택한 날짜 필터
@@ -480,11 +480,12 @@ export function afterRender(params) {
     const parsedId = parseInt(params.id);
     const studentId = isNaN(parsedId) ? params.id : parsedId;
 
-    // 펫 클릭 시 바운스
+    // 펫 클릭 시 동물별 애니메이션
     const petEmoji = document.getElementById('petEmoji');
     if (petEmoji) {
         petEmoji.addEventListener('click', () => {
-            bounceAnimation(petEmoji);
+            const student = store.getStudent(studentId);
+            playPetClickAnimation(petEmoji, student?.petType, student?.level);
         });
     }
 

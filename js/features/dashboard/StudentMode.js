@@ -8,6 +8,7 @@ import { router } from '../../router.js';
 import { getPetEmoji, getPetImageHTML, getPetImage, getGrowthStage, getExpProgress, getCurrentLevelExp, getExpForNextLevel, isMaxLevel } from '../../shared/utils/petLogic.js';
 import { showToast } from '../../shared/utils/animations.js';
 import { getNameWithSuffix } from '../../shared/utils/nameUtils.js';
+import { playPetClickAnimation } from '../../shared/utils/petAnimations.js';
 
 let currentStudentTab = 'send'; // 'send' | 'history'
 
@@ -278,6 +279,16 @@ export function afterRender() {
     });
 
     // 로그아웃 버튼은 header.js에서 처리
+
+    // 펫 이미지 클릭 애니메이션
+    const petEmoji = document.getElementById('petEmoji');
+    if (petEmoji) {
+        petEmoji.style.cursor = 'pointer';
+        petEmoji.addEventListener('click', () => {
+            const currentStudent = store.getCurrentStudent();
+            playPetClickAnimation(petEmoji, currentStudent?.petType, currentStudent?.level);
+        });
+    }
 
     // 펫 도감 버튼
     const collectionBtn = document.getElementById('petCollectionBtn');

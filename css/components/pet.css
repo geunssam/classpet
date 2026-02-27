@@ -356,7 +356,7 @@
     border-radius: 28px;
     object-fit: cover;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
-    animation: inherit;
+    /* 클릭 애니메이션은 petAnimations.js가 직접 img에 적용 */
 }
 
 /* 학생 모드 이모지 폴백도 크게 */
