@@ -201,11 +201,31 @@ export const PET_SPEECH_STYLES = {
 };
 
 export const PET_REACTIONS = {
-    great: { animation: 'pet-jump', message: '야호! 🎉 나도 기뻐!', emoji: '✨' },
-    good: { animation: 'pet-wiggle', message: '다행이다 🌟', emoji: '💫' },
-    soso: { animation: 'pet-tilt', message: '음... 알겠어 💭', emoji: '🤔' },
-    bad: { animation: 'pet-approach', message: '괜찮아, 내가 옆에 있을게 💕', emoji: '🫂' },
-    terrible: { animation: 'pet-hug', message: '힘들었구나... 🫂 말해줘서 고마워', emoji: '💝' }
+    // 레거시 키 호환
+    great: { animation: 'pet-jump', message: '야호! 나도 기뻐!', emoji: '✨' },
+    good: { animation: 'pet-wiggle', message: '다행이다!', emoji: '💫' },
+    soso: { animation: 'pet-tilt', message: '음... 알겠어', emoji: '🤔' },
+    bad: { animation: 'pet-approach', message: '괜찮아, 내가 옆에 있을게', emoji: '🫂' },
+    terrible: { animation: 'pet-hug', message: '힘들었구나... 말해줘서 고마워', emoji: '💝' },
+    // 맑은 기분 (sunny)
+    happy: { animation: 'pet-jump', message: '야호! 나도 기뻐!', emoji: '✨' },
+    excited: { animation: 'pet-jump', message: '우와, 진짜?! 나도 두근두근해!', emoji: '🎉' },
+    grateful: { animation: 'pet-wiggle', message: '고마운 마음이 참 예쁘다!', emoji: '💛' },
+    love: { animation: 'pet-wiggle', message: '사랑하는 마음이 따뜻하다~', emoji: '💕' },
+    // 잔잔한 기분 (calm)
+    relaxed: { animation: 'pet-tilt', message: '편안하구나~ 다행이야', emoji: '🌿' },
+    neutral: { animation: 'pet-tilt', message: '음, 알겠어! 말해줘서 고마워', emoji: '💭' },
+    surprised: { animation: 'pet-jump', message: '엇, 깜짝이야?! 무슨 일이야?', emoji: '⚡' },
+    shy: { animation: 'pet-tilt', message: '부끄러웠구나~ 괜찮아!', emoji: '🌸' },
+    // 흐린 기분 (cloudy)
+    sad: { animation: 'pet-approach', message: '슬펐구나... 내가 옆에 있을게', emoji: '🫂' },
+    angry: { animation: 'pet-approach', message: '화났구나. 말해줘서 고마워', emoji: '💪' },
+    worried: { animation: 'pet-hug', message: '걱정되는구나... 다 괜찮을 거야', emoji: '🌈' },
+    lonely: { animation: 'pet-hug', message: '외롭구나... 나는 항상 여기 있어!', emoji: '💝' },
+    // 카테고리 키 (대분류 선택 프리뷰용)
+    sunny: { animation: 'pet-wiggle', message: '기분이 좋은 거구나?', emoji: '☀️' },
+    calm: { animation: 'pet-tilt', message: '잔잔한 기분이야?', emoji: '🌙' },
+    cloudy: { animation: 'pet-approach', message: '흐린 기분이야? 말해줘', emoji: '🌧️' }
 };
 
 /**

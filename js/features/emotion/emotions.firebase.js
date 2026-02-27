@@ -310,7 +310,8 @@ export function subscribeToStudentEmotions(teacherUid, classId, studentId, callb
 
     try {
         const emotionsRef = collection(db, 'teachers', uid, 'classes', cId, 'students', String(studentId), 'emotions');
-        const q = query(emotionsRef, orderBy('createdAt', 'desc'));
+        // 최근 50개만 구독 (과거 알림 무한 로드 방지)
+        const q = query(emotionsRef, orderBy('createdAt', 'desc'), limit(50));
 
         const unsubscribe = onSnapshot(q, (snapshot) => {
             const emotions = [];

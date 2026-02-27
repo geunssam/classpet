@@ -5,11 +5,13 @@
  */
 
 import { store, EMOTION_TYPES } from '../../store.js';
+import { EMOTION_CATEGORIES } from './emotions.constants.js';
 import { router } from '../../router.js';
 import { getPetEmoji, getPetImageHTML } from '../../shared/utils/petLogic.js';
 import { showToast } from '../../shared/utils/animations.js';
 import { onEmotionUpdate } from './EmotionService.js';
 import { toDateString } from '../../shared/utils/dateUtils.js';
+import { getEmotionInfo, getEmotionImageHTML, mapLegacyEmotion } from '../../shared/utils/emotionHelpers.js';
 
 let viewMode = 'checkin'; // 'checkin', 'history', 'attention'
 let emotionsUnsubscribe = null; // 실시간 구독 해제 함수
@@ -48,10 +50,14 @@ export function render() {
     // 오늘 감정 체크한 학생 ID 목록
     const checkedIds = new Set(todayEmotions.map(e => e.studentId));
 
-    // 감정별 분포
+    // 감정별 분포 (레거시 키 자동 매핑)
     const emotionDistribution = {};
     Object.keys(EMOTION_TYPES).forEach(key => {
-        emotionDistribution[key] = todayEmotions.filter(e => e.emotion === key).length;
+        emotionDistribution[key] = 0;
+    });
+    todayEmotions.forEach(e => {
+        const mapped = mapLegacyEmotion(e.emotion);
+        emotionDistribution[mapped] = (emotionDistribution[mapped] || 0) + 1;
     });
 
     // 학번 순 정렬 (감정 출석부용)
@@ -76,16 +82,18 @@ export function render() {
             <!-- 오늘의 우리 반 + 감정 출석부 (2열) -->
             <div class="card bg-gradient-to-br from-secondary/10 to-danger/10 p-0 overflow-hidden">
                 <div class="grid grid-cols-2" style="min-height: 0;">
-                    <!-- 왼쪽: 감정 분포 -->
+                    <!-- 왼쪽: 감정 분포 (12종) -->
                     <div class="p-4 flex flex-col">
-                        <h3 class="text-sm font-bold text-gray-700 mb-3">오늘의 우리 반</h3>
-                        <div class="flex items-center justify-around flex-1">
-                            ${Object.entries(EMOTION_TYPES).map(([key, info]) => `
-                                <div class="text-center">
-                                    <div class="text-2xl mb-1">${info.icon}</div>
-                                    <div class="text-lg font-bold" style="color: ${info.color}">${emotionDistribution[key] || 0}</div>
-                                </div>
-                            `).join('')}
+                        <h3 class="text-sm font-bold text-gray-700 mb-2">오늘의 우리 반</h3>
+                        <div class="emotion-distribution-grid flex-1">
+                            ${Object.entries(EMOTION_TYPES).map(([key, info]) => {
+                                const count = emotionDistribution[key] || 0;
+                                return `
+                                <div class="emotion-dist-item ${count === 0 ? 'opacity-30' : ''}">
+                                    <span class="emotion-dist-icon">${info.icon}</span>
+                                    <span class="emotion-dist-count" style="color: ${info.color}">${count}</span>
+                                </div>`;
+                            }).join('')}
                         </div>
                         <div class="mt-2 text-center text-xs text-gray-500">
                             ${todayEmotions.length}명 / ${students.length}명
@@ -104,7 +112,7 @@ export function render() {
                             ${sortedStudents.map(student => {
                                 const isSent = checkedIds.has(student.id);
                                 const emotion = isSent ? todayEmotions.find(e => e.studentId === student.id) : null;
-                                const eInfo = emotion ? EMOTION_TYPES[emotion.emotion] : null;
+                                const eInfo = emotion ? getEmotionInfo(emotion.emotion) : null;
                                 return isSent ? `
                                 <div class="rounded-2xl py-1.5 px-2.5 flex items-center gap-1.5 cursor-pointer transition-colors" style="background-color: rgba(124,158,245,0.18);"
                                      onmouseenter="this.style.backgroundColor='rgba(124,158,245,0.3)'" onmouseleave="this.style.backgroundColor='rgba(124,158,245,0.18)'"
@@ -138,7 +146,7 @@ export function render() {
                 <div class="space-y-3">
                     ${needAttention.map(student => {
                         const emotion = todayEmotions.find(e => e.studentId === student.id);
-                        const emotionInfo = emotion ? EMOTION_TYPES[emotion.emotion] : null;
+                        const emotionInfo = emotion ? getEmotionInfo(emotion.emotion) : null;
                         return `
                         <div class="bg-white rounded-xl p-3 cursor-pointer hover:bg-gray-50"
                              data-action="open-detail" data-student-id="${student.id}">
@@ -228,7 +236,7 @@ function renderChatRoomList(students) {
     return `
         <div class="space-y-1">
             ${sortedStudents.map(({ student, lastEmotion, unreadCount }) => {
-                const emotionInfo = EMOTION_TYPES[lastEmotion.emotion];
+                const emotionInfo = getEmotionInfo(lastEmotion.emotion);
                 const lastConvo = lastEmotion.conversations?.slice(-1)[0];
                 // 미리보기: 마지막 대화 내용
                 let preview = '';
@@ -292,7 +300,7 @@ function renderChatRoom(students) {
         const convos = e.conversations || [];
         convos.forEach((c, ci) => {
             if (c.studentMessage && !c.teacherReply) {
-                const emotionInfo = EMOTION_TYPES[e.emotion];
+                const emotionInfo = getEmotionInfo(e.emotion);
                 unrepliedList.push({
                     emotionId: e.firebaseId || e.id,
                     convoIndex: ci,
@@ -303,7 +311,7 @@ function renderChatRoom(students) {
         });
         // 구 데이터 호환
         if (!convos.length && !e.reply) {
-            const emotionInfo = EMOTION_TYPES[e.emotion];
+            const emotionInfo = getEmotionInfo(e.emotion);
             unrepliedList.push({
                 emotionId: e.firebaseId || e.id,
                 convoIndex: -1,
@@ -380,7 +388,7 @@ function renderTimeline(emotions, student, unrepliedList = []) {
     let lastDateStr = '';
 
     emotions.forEach(e => {
-        const emotionInfo = EMOTION_TYPES[e.emotion];
+        const emotionInfo = getEmotionInfo(e.emotion);
         const dateObj = new Date(e.timestamp);
         const dateStr = dateObj.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' });
 

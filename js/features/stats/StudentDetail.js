@@ -3,7 +3,8 @@
  * 개별 학생의 펫, 칭찬 기록, 감정 기록 등
  */
 
-import { store, PET_TYPES, EMOTION_TYPES } from '../../store.js';
+import { store, PET_TYPES } from '../../store.js';
+import { getEmotionInfo } from '../../shared/utils/emotionHelpers.js';
 import { router } from '../../router.js';
 import {
     getPetEmoji,
@@ -82,7 +83,7 @@ export function render(params) {
 
     // 최근 감정
     const recentEmotion = emotions[0];
-    const emotionInfo = recentEmotion ? EMOTION_TYPES[recentEmotion.emotion] : null;
+    const emotionInfo = recentEmotion ? getEmotionInfo(recentEmotion.emotion) : null;
 
     return `
         <div class="space-y-4">
@@ -279,7 +280,7 @@ function renderEmotionHistory(emotions, dateFilter) {
     let lastDateStr = '';
 
     for (const emotion of sorted) {
-        const emotionInfo = EMOTION_TYPES[emotion.emotion];
+        const emotionInfo = getEmotionInfo(emotion.emotion);
         const dateObj = new Date(emotion.timestamp);
         const dateStr = dateObj.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' });
 

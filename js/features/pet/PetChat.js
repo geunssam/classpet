@@ -3,9 +3,10 @@
  * 학생이 펫에게 전달한 감정 히스토리
  */
 
-import { store, PET_TYPES, EMOTION_TYPES, PET_REACTIONS } from '../../store.js';
+import { store, PET_TYPES, PET_REACTIONS } from '../../store.js';
 import { router } from '../../router.js';
 import { getPetEmoji, getPetImageHTML, getGrowthStage } from '../../shared/utils/petLogic.js';
+import { getEmotionInfo } from '../../shared/utils/emotionHelpers.js';
 
 /**
  * 렌더링
@@ -74,7 +75,7 @@ export function render() {
  * 대화 아이템 렌더링
  */
 function renderChatItem(emotion, student, petEmoji) {
-    const emotionType = EMOTION_TYPES[emotion.emotion];
+    const emotionType = getEmotionInfo(emotion.emotion);
     const reaction = PET_REACTIONS[emotion.emotion];
     const date = new Date(emotion.timestamp);
     const dateStr = formatDate(date);

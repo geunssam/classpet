@@ -18,6 +18,29 @@ import { showQuickPraise } from '../features/praise/QuickPraise.js';
 import { getPetEmoji, getPetImageHTML } from '../shared/utils/petLogic.js';
 import { DEFAULT_THERMOSTAT } from '../features/praise/thermostatMixin.js';
 
+/* ── SVG 아이콘 상수 (이모지 대체) ── */
+const SVG_ICONS = {
+    // 제목용 (inline, 20px)
+    bell: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px;margin-right:4px;"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>',
+    clipboard: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px;margin-right:4px;"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>',
+    thermometer: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px;margin-right:4px;"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg>',
+    // 섹션 소제목용 (16px)
+    clipboardSm: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-3px;margin-right:3px;"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>',
+    mailHeart: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-3px;margin-right:3px;"><path d="M22 10V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/><path d="M18 15.28c.37-.42.88-.68 1.44-.7a1.8 1.8 0 0 1 1.81 1.42c.13.6-.08 1.2-.56 1.6l-2.69 2.4-2.69-2.4a1.78 1.78 0 0 1-.56-1.6 1.8 1.8 0 0 1 1.81-1.42c.57.02 1.07.28 1.44.7z" fill="#F48FB1" stroke="#F48FB1"/></svg>',
+    starSm: '<svg width="16" height="16" viewBox="0 0 24 24" fill="#FBBF24" stroke="#FBBF24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-3px;margin-right:3px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
+    // 알림 아이템용 (24px)
+    bellFallback: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>',
+    clipboardLg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>',
+    messageLg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7C9EF5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
+    starLg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="#FBBF24" stroke="#FBBF24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
+    // 빈 상태용 (40px)
+    bellOff: '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13.73 21a2 2 0 0 1-3.46 0"/><path d="M18.63 13A17.89 17.89 0 0 1 18 8"/><path d="M6.26 6.26A5.86 5.86 0 0 0 6 8c0 7-3 9-3 9h14"/><path d="M18 8a6 6 0 0 0-9.33-5"/><line x1="1" y1="1" x2="23" y2="23"/></svg>',
+    // 체크 (14px, 온도계 마일스톤)
+    check: '<svg width="14" height="14" viewBox="0 0 24 24" fill="#10B981" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>',
+    // 설정 버튼용 (12px)
+    gear: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-1px;margin-right:2px;"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>',
+};
+
 /**
  * 헤더 버튼 바인딩
  */
@@ -266,7 +289,7 @@ function showStudentPickerModal(selectedDate) {
     const modalContent = `
         <div class="space-y-4 max-h-[70vh] overflow-y-auto">
             <div class="flex items-center justify-between sticky top-0 bg-white pb-2">
-                <h3 class="text-lg font-bold">📋 ${dateLabel} · 학생 선택</h3>
+                <h3 class="text-lg font-bold">${SVG_ICONS.clipboard} ${dateLabel} · 학생 선택</h3>
                 <button onclick="window.classpet.closeModal()" class="text-gray-400 hover:text-gray-600">✕</button>
             </div>
 
@@ -303,14 +326,15 @@ function showStudentPickerModal(selectedDate) {
  */
 export function showNotifications() {
     const notifications = store.getNotifications() || [];
-    const recentNotifications = notifications.slice(0, 20); // 최근 20개만
+    // 안읽은 알림만 표시 (새로고침 시 읽은 알림이 다시 보이는 문제 방지)
+    const recentNotifications = notifications.filter(n => !n.read).slice(0, 20);
 
     const modalContent = `
         <div class="space-y-4">
             <div class="flex items-center justify-between">
-                <h3 class="text-lg font-bold">🔔 알림</h3>
+                <h3 class="text-lg font-bold">${SVG_ICONS.bell} 알림</h3>
                 <div class="flex gap-2">
-                    ${notifications.filter(n => !n.read).length > 0 ? `
+                    ${recentNotifications.length > 0 ? `
                         <button id="markAllReadBtn" class="text-sm text-primary hover:text-primary-dark">
                             모두 읽음
                         </button>
@@ -324,15 +348,14 @@ export function showNotifications() {
                     <div class="space-y-3">
                         ${recentNotifications.map(notification => {
         const timeAgo = getTimeAgo(notification.timestamp);
-        const isUnread = !notification.read;
 
         return `
-                                <div class="notification-item p-3 rounded-xl ${isUnread ? 'bg-primary/10' : 'bg-gray-50'} cursor-pointer hover:bg-gray-100 transition-colors"
+                                <div class="notification-item p-3 rounded-xl bg-primary/10 cursor-pointer hover:bg-gray-100 transition-colors"
                                      data-notification-id="${notification.id}">
                                     <div class="flex items-start gap-3">
-                                        <span class="text-2xl">${notification.emotionIcon || '📢'}</span>
+                                        <span class="text-2xl flex-shrink-0">${notification.emotionIcon || SVG_ICONS.bellFallback}</span>
                                         <div class="flex-1">
-                                            <p class="text-sm ${isUnread ? 'font-medium' : ''} text-gray-700">
+                                            <p class="text-sm font-medium text-gray-700">
                                                 ${notification.message}
                                             </p>
                                             ${notification.memo ? `
@@ -340,7 +363,7 @@ export function showNotifications() {
                                             ` : ''}
                                             <p class="text-xs text-gray-400 mt-1">${timeAgo}</p>
                                         </div>
-                                        ${isUnread ? '<span class="w-2 h-2 bg-primary rounded-full flex-shrink-0 mt-2"></span>' : ''}
+                                        <span class="w-2 h-2 bg-primary rounded-full flex-shrink-0 mt-2"></span>
                                     </div>
                                 </div>
                             `;
@@ -348,7 +371,7 @@ export function showNotifications() {
                     </div>
                 ` : `
                     <div class="text-center py-8 text-gray-500">
-                        <div class="text-4xl mb-3">🔕</div>
+                        <div class="mb-3 flex justify-center">${SVG_ICONS.bellOff}</div>
                         <p>새로운 알림이 없어요</p>
                     </div>
                 `}
@@ -401,18 +424,16 @@ export function showStudentNotifications() {
     const student = store.getCurrentStudent();
     if (!student) return;
 
-    // 1. 미읽은 답장 목록
-    const todayEmotions = store.getStudentTodayEmotions?.(student.id) || [];
-    const unreadReplies = todayEmotions.filter(emotion => {
+    // 1. 미읽은 답장 목록 (전체 날짜, 배지와 동일 기준)
+    const allEmotions = (store.getEmotionLog?.() || []).filter(e => e.studentId === student.id);
+    const unreadReplies = allEmotions.filter(emotion => {
         const convos = emotion.conversations || [];
-        const hasUnreadConvo = convos.some(c => c.teacherReply && !c.read);
-        const hasUnreadReply = emotion.reply && !emotion.reply.read;
-        return hasUnreadConvo || hasUnreadReply;
+        return convos.some(c => c.teacherReply && !c.read);
     });
 
     // 2. 새 칭찬 목록
     const praises = store.getPraisesByStudent(student.id) || [];
-    const lastSeen = parseInt(sessionStorage.getItem('lastSeenPraiseCount') || '0');
+    const lastSeen = parseInt(localStorage.getItem('lastSeenPraiseCount') || '0');
     const newCount = Math.max(0, praises.length - lastSeen);
     const newPraises = praises.slice(0, newCount);
 
@@ -426,8 +447,15 @@ export function showStudentNotifications() {
     const modalContent = `
         <div class="space-y-4">
             <div class="flex items-center justify-between">
-                <h3 class="text-lg font-bold">🔔 알림</h3>
-                <button onclick="window.classpet.closeModal()" class="text-gray-400 hover:text-gray-600">✕</button>
+                <h3 class="text-lg font-bold">${SVG_ICONS.bell} 알림</h3>
+                <div class="flex items-center gap-2">
+                    ${hasAnyNotifications ? `
+                        <button id="studentMarkAllReadBtn" class="text-sm text-primary hover:text-primary-dark font-medium">
+                            모두 읽음
+                        </button>
+                    ` : ''}
+                    <button onclick="window.classpet.closeModal()" class="text-gray-400 hover:text-gray-600">✕</button>
+                </div>
             </div>
 
             <div class="max-h-80 overflow-y-auto">
@@ -435,7 +463,7 @@ export function showStudentNotifications() {
                     <div class="space-y-3">
                         ${newNotices.length > 0 ? `
                             <div class="mb-4">
-                                <p class="text-sm font-medium text-gray-600 mb-2">📋 새 알림장</p>
+                                <p class="text-sm font-medium text-gray-600 mb-2">${SVG_ICONS.clipboardSm} 새 알림장</p>
                                 ${newNotices.map(notice => {
         const noticeDate = notice.date || '';
         const [ny, nm, nd] = noticeDate.split('-');
@@ -444,7 +472,7 @@ export function showStudentNotifications() {
                                         <div class="notification-item p-3 rounded-xl bg-emerald-50 cursor-pointer hover:bg-emerald-100 transition-colors"
                                              data-notice-id="${notice.id}">
                                             <div class="flex items-start gap-3">
-                                                <span class="text-2xl">📋</span>
+                                                <span class="flex-shrink-0">${SVG_ICONS.clipboardLg}</span>
                                                 <div class="flex-1">
                                                     <p class="text-sm font-medium text-gray-700">${notice.title || '알림장'}</p>
                                                     <p class="text-xs text-gray-500 mt-1">${(notice.plainText || '').substring(0, 60)}${(notice.plainText || '').length > 60 ? '...' : ''}</p>
@@ -460,7 +488,7 @@ export function showStudentNotifications() {
 
                         ${unreadReplies.length > 0 ? `
                             <div class="mb-4">
-                                <p class="text-sm font-medium text-gray-600 mb-2">💌 새로운 답장</p>
+                                <p class="text-sm font-medium text-gray-600 mb-2">${SVG_ICONS.mailHeart} 새로운 답장</p>
                                 ${unreadReplies.map(emotion => {
         const convos = emotion.conversations || [];
         const lastReply = convos.slice().reverse().find(c => c.teacherReply);
@@ -471,7 +499,7 @@ export function showStudentNotifications() {
                                              data-emotion-id="${emotion.id || emotion.firebaseId}"
                                              data-emotion-timestamp="${emotion.timestamp}">
                                             <div class="flex items-start gap-3">
-                                                <span class="text-2xl">💬</span>
+                                                <span class="flex-shrink-0">${SVG_ICONS.messageLg}</span>
                                                 <div class="flex-1">
                                                     <p class="text-sm font-medium text-gray-700">펫이 답장을 보냈어요</p>
                                                     <p class="text-xs text-gray-500 mt-1 italic">"${replyMessage.substring(0, 50)}${replyMessage.length > 50 ? '...' : ''}"</p>
@@ -487,14 +515,14 @@ export function showStudentNotifications() {
 
                         ${newPraises.length > 0 ? `
                             <div>
-                                <p class="text-sm font-medium text-gray-600 mb-2">⭐ 새로운 칭찬</p>
+                                <p class="text-sm font-medium text-gray-600 mb-2">${SVG_ICONS.starSm} 새로운 칭찬</p>
                                 ${newPraises.map(praise => {
         const praiseTime = getTimeAgo(praise.timestamp || praise.createdAt);
         return `
                                         <div class="notification-item p-3 rounded-xl bg-yellow-50 cursor-pointer hover:bg-yellow-100 transition-colors"
                                              data-praise-id="${praise.id}">
                                             <div class="flex items-start gap-3">
-                                                <span class="text-2xl">🌟</span>
+                                                <span class="flex-shrink-0">${SVG_ICONS.starLg}</span>
                                                 <div class="flex-1">
                                                     <p class="text-sm font-medium text-gray-700">칭찬을 받았어요!</p>
                                                     <p class="text-xs text-gray-500 mt-1">${praise.reason || praise.category || ''}</p>
@@ -510,7 +538,7 @@ export function showStudentNotifications() {
                     </div>
                 ` : `
                     <div class="text-center py-8 text-gray-500">
-                        <div class="text-4xl mb-3">🔕</div>
+                        <div class="mb-3 flex justify-center">${SVG_ICONS.bellOff}</div>
                         <p>새로운 알림이 없어요</p>
                     </div>
                 `}
@@ -521,9 +549,29 @@ export function showStudentNotifications() {
     setModalContent(modalContent);
     openModal();
 
+    // "모두 읽음" 버튼
+    const studentMarkAllReadBtn = document.getElementById('studentMarkAllReadBtn');
+    if (studentMarkAllReadBtn) {
+        studentMarkAllReadBtn.addEventListener('click', () => {
+            // 답장 모두 읽음
+            unreadReplies.forEach(emotion => {
+                store.markReplyAsRead(emotion.id || emotion.firebaseId);
+            });
+            // 칭찬 모두 확인
+            localStorage.setItem('lastSeenPraiseCount', praises.length.toString());
+            // 알림장 모두 확인
+            if (sharedNotices.length > 0) {
+                store.setLastSeenStudentNoticeId(sharedNotices[0].id);
+            }
+            showToast('모든 알림을 읽음 처리했어요', 'info');
+            closeModal();
+            updateStudentNotificationBadge();
+        });
+    }
+
     // 칭찬 확인 시 lastSeenPraiseCount 업데이트
     if (newPraises.length > 0) {
-        sessionStorage.setItem('lastSeenPraiseCount', praises.length.toString());
+        localStorage.setItem('lastSeenPraiseCount', praises.length.toString());
     }
 
     // 알림장 클릭 시 알림장 페이지로 이동
@@ -614,9 +662,9 @@ export function showThermometerModal() {
     const modalContent = `
         <div class="space-y-3">
             <div class="flex items-center justify-between">
-                <h3 class="text-lg font-bold">🌡️ 학급 온도계</h3>
+                <h3 class="text-lg font-bold">${SVG_ICONS.thermometer} 학급 온도계</h3>
                 <div class="flex items-center gap-2">
-                    <button id="thermoSettingsBtn" class="text-xs font-semibold text-gray-400 px-3 py-1.5 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">⚙️ 설정</button>
+                    <button id="thermoSettingsBtn" class="text-xs font-semibold text-gray-400 px-3 py-1.5 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">${SVG_ICONS.gear} 설정</button>
                     <button onclick="window.classpet.closeModal()" class="text-gray-400 hover:text-gray-600">✕</button>
                 </div>
             </div>
@@ -631,7 +679,7 @@ export function showThermometerModal() {
                         const bottomPx = bulbOffset + (ms.temp / 100) * tubeHeight;
                         return `<div class="thermo-ms-tag ${side} ${achieved ? 'achieved' : ''}" style="bottom: ${bottomPx}px">
                             <span class="thermo-ms-reward">${ms.reward}</span>
-                            <span class="thermo-ms-temp">${ms.temp}°C ${achieved ? '✅' : ''}</span>
+                            <span class="thermo-ms-temp">${ms.temp}°C ${achieved ? SVG_ICONS.check : ''}</span>
                         </div>`;
                     }).join('')}
                 </div>
@@ -667,7 +715,7 @@ export function showThermometerModal() {
             <div class="thermo-ms-list">
                 ${sortedMilestones.map(ms => `
                     <span class="thermo-ms-chip ${thermoTemp >= ms.temp ? 'achieved' : ''}">
-                        ${ms.temp}°C ${ms.reward} ${thermoTemp >= ms.temp ? '✅' : ''}
+                        ${ms.temp}°C ${ms.reward} ${thermoTemp >= ms.temp ? SVG_ICONS.check : ''}
                     </span>
                 `).join('')}
             </div>
@@ -932,7 +980,7 @@ async function handleGlobalPinChange(modal) {
         modal.classList.add('hidden');
 
         // 성공 메시지
-        showToast('PIN이 변경되었어요! 🔐', 'success');
+        showToast('PIN이 변경되었어요!', 'success');
     } catch (error) {
         console.error('PIN 변경 실패:', error);
         showGlobalPinError(errorEl, 'PIN 변경에 실패했어요');

@@ -1,0 +1,237 @@
+/* =============================================
+   감정 2단계 UI 전용 CSS
+   ============================================= */
+
+/* === 대분류 카테고리 탭 === */
+.emotion-category-tabs {
+    display: flex;
+    gap: 8px;
+    padding: 0 16px;
+    margin-bottom: 16px;
+}
+
+.emotion-category-tab {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 12px 8px;
+    border-radius: 16px;
+    border: 2px solid transparent;
+    background: #f9fafb;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.emotion-category-tab:active {
+    transform: scale(0.96);
+}
+
+.emotion-category-tab .category-icon {
+    font-size: 28px;
+    line-height: 1;
+    transition: transform 0.25s ease;
+}
+
+.emotion-category-tab .category-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b7280;
+    white-space: nowrap;
+}
+
+/* 선택된 카테고리 */
+.emotion-category-tab.selected {
+    border-color: currentColor;
+    transform: scale(1.02);
+}
+
+.emotion-category-tab.selected .category-icon {
+    transform: scale(1.15);
+}
+
+.emotion-category-tab.selected .category-name {
+    font-weight: 700;
+}
+
+/* 카테고리별 선택 색상 */
+.emotion-category-tab[data-category="sunny"].selected {
+    background: linear-gradient(135deg, #FFF3E0 0%, #FFFDE7 100%);
+    border-color: #FF8A65;
+    color: #FF8A65;
+}
+.emotion-category-tab[data-category="sunny"].selected .category-name {
+    color: #E65100;
+}
+
+.emotion-category-tab[data-category="calm"].selected {
+    background: linear-gradient(135deg, #F3E5F5 0%, #E3F2FD 100%);
+    border-color: #B39DDB;
+    color: #B39DDB;
+}
+.emotion-category-tab[data-category="calm"].selected .category-name {
+    color: #4527A0;
+}
+
+.emotion-category-tab[data-category="cloudy"].selected {
+    background: linear-gradient(135deg, #ECEFF1 0%, #E8EAF6 100%);
+    border-color: #78909C;
+    color: #78909C;
+}
+.emotion-category-tab[data-category="cloudy"].selected .category-name {
+    color: #37474F;
+}
+
+/* === 감정 카드 그리드 (4열) === */
+.emotion-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    padding: 0 16px;
+    margin-bottom: 16px;
+}
+
+.emotion-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 4px;
+    border-radius: 16px;
+    border: 2px solid transparent;
+    background: #fff;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+.emotion-card:active {
+    transform: scale(0.95);
+}
+
+.emotion-card .emotion-card-img {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    object-fit: contain;
+    transition: transform 0.2s ease;
+}
+
+.emotion-card .emotion-card-icon {
+    font-size: 36px;
+    line-height: 52px;
+    height: 52px;
+    transition: transform 0.2s ease;
+}
+
+.emotion-card .emotion-card-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: #374151;
+    white-space: nowrap;
+}
+
+/* 선택된 감정 카드 */
+.emotion-card.selected {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.emotion-card.selected .emotion-card-img,
+.emotion-card.selected .emotion-card-icon {
+    transform: scale(1.1);
+}
+
+/* === 감정 선택 후 상세 영역 === */
+.emotion-detail-area {
+    padding: 0 16px;
+    animation: emotionDetailSlideIn 0.3s ease-out;
+}
+
+.emotion-detail-card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.emotion-definition {
+    font-size: 13px;
+    color: #6b7280;
+    text-align: center;
+    padding: 8px 0 16px;
+    line-height: 1.5;
+}
+
+/* === 감정 카드 그리드 등장 애니메이션 === */
+@keyframes emotionCardFadeIn {
+    from { opacity: 0; transform: translateY(8px) scale(0.95); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes emotionDetailSlideIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.emotion-cards-grid .emotion-card {
+    animation: emotionCardFadeIn 0.3s ease-out backwards;
+}
+.emotion-cards-grid .emotion-card:nth-child(1) { animation-delay: 0s; }
+.emotion-cards-grid .emotion-card:nth-child(2) { animation-delay: 0.05s; }
+.emotion-cards-grid .emotion-card:nth-child(3) { animation-delay: 0.1s; }
+.emotion-cards-grid .emotion-card:nth-child(4) { animation-delay: 0.15s; }
+
+/* === 교사 대시보드 감정 분포 (12종 2줄) === */
+.emotion-distribution-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 4px;
+}
+
+.emotion-dist-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 4px 2px;
+}
+
+.emotion-dist-item .emotion-dist-img {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+}
+
+.emotion-dist-item .emotion-dist-icon {
+    font-size: 18px;
+    line-height: 24px;
+}
+
+.emotion-dist-item .emotion-dist-count {
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+/* === 카테고리 색상 점 (교사 뷰 감정 태그) === */
+.emotion-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 9999px;
+    background: rgba(255,255,255,0.9);
+    border: 1px solid;
+}
+
+/* === 감정 이미지 공통 === */
+.emotion-img {
+    display: inline-block;
+    border-radius: 8px;
+}

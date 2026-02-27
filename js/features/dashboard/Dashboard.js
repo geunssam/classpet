@@ -67,6 +67,13 @@ export function render() {
                             <div class="flex items-center justify-center gap-1">
                                 <p class="font-bold text-gray-800 truncate">${settings?.className || '미설정'}</p>
                                 ${isGoogleTeacher ? `<button id="switchClassBtn" class="liquid-btn-small" style="font-size:11px; padding:1px 6px;">전환</button>` : ''}
+                                <button id="goStudentPageBtn" class="liquid-btn-small" style="font-size:11px; padding:1px 6px;" title="학생 페이지 미리보기">
+                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-1px; margin-right:2px;">
+                                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                                        <polyline points="15 3 21 3 21 9"/>
+                                        <line x1="10" y1="14" x2="21" y2="3"/>
+                                    </svg>학생
+                                </button>
                             </div>
                         </div>
                         <!-- 학급코드 -->
@@ -289,6 +296,19 @@ export function afterRender() {
     if (switchClassBtn) {
         switchClassBtn.addEventListener('click', () => {
             router.navigate('class-select');
+        });
+    }
+
+    // 학생 페이지 바로가기 버튼
+    const goStudentPageBtn = document.getElementById('goStudentPageBtn');
+    if (goStudentPageBtn) {
+        goStudentPageBtn.addEventListener('click', () => {
+            const classCode = store.getClassCode();
+            if (classCode) {
+                window.open(`${location.origin}${location.pathname}?code=${classCode}#student-login`, '_blank');
+            } else {
+                window.open(`${location.origin}${location.pathname}#student-login`, '_blank');
+            }
         });
     }
 

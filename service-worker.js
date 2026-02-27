@@ -1,5 +1,5 @@
 // 클래스펫 Service Worker
-const CACHE_NAME = 'classpet-v1772189071640';
+const CACHE_NAME = 'classpet-v1772202304066';
 const OFFLINE_URL = '/offline.html';
 
 // 캐시할 정적 파일들 (앱 셸)
@@ -100,6 +100,8 @@ const STATIC_ASSETS = [
     '/js/features/emotion/emotions.firebase.js',
     '/js/features/emotion/emotions.constants.js',
     '/js/features/emotion/sessionTimeout.js',
+    '/js/shared/utils/emotionHelpers.js',
+    '/css/components/emotion.css',
     // features/timetable/
     '/js/features/timetable/Timetable.js',
     '/js/features/timetable/StudentTimetable.js',
@@ -174,7 +176,20 @@ const STATIC_ASSETS = [
     '/pet-assets/turtle/png/turtle_stage3_growing.png',
     '/pet-assets/turtle/png/turtle_stage4_adult.png',
     // pet-assets (영상)
-    '/pet-assets/lion/video/lion_stage1_baby.mp4'
+    '/pet-assets/lion/video/lion_stage1_baby.mp4',
+    // emotion-assets (감정 캐릭터 이미지)
+    '/emotion-assets/happy.png',
+    '/emotion-assets/excited.png',
+    '/emotion-assets/grateful.png',
+    '/emotion-assets/love.png',
+    '/emotion-assets/relaxed.png',
+    '/emotion-assets/neutral.png',
+    '/emotion-assets/surprised.png',
+    '/emotion-assets/shy.png',
+    '/emotion-assets/sad.png',
+    '/emotion-assets/angry.png',
+    '/emotion-assets/worried.png',
+    '/emotion-assets/lonely.png'
 ];
 
 // 캐시하지 않을 URL 패턴들 (Firebase API 요청만 - SDK는 캐시 허용)

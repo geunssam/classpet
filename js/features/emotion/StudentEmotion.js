@@ -4,11 +4,13 @@
  */
 
 import { store, PET_TYPES, EMOTION_TYPES, PET_REACTIONS, PET_SPEECH_STYLES, convertToPetSpeech } from '../../store.js';
+import { EMOTION_CATEGORIES } from './emotions.constants.js';
 import { router } from '../../router.js';
 import { getPetEmoji, getPetImageHTML, getPetImage, getGrowthStage, getExpProgress, getCurrentLevelExp, getExpForNextLevel, isMaxLevel } from '../../shared/utils/petLogic.js';
 import { showToast } from '../../shared/utils/animations.js';
 import { getNameWithSuffix } from '../../shared/utils/nameUtils.js';
 import { playPetClickAnimation } from '../../shared/utils/petAnimations.js';
+import { getEmotionImageHTML, getEmotionInfo, mapLegacyEmotion } from '../../shared/utils/emotionHelpers.js';
 
 let currentStudentTab = 'send'; // 'send' | 'history'
 
@@ -115,43 +117,26 @@ export function render() {
 
             <!-- 마음 보내기 탭 -->
             <div id="sendEmotionContent" class="${currentStudentTab !== 'send' ? 'hidden' : ''}">
-                <!-- 감정 선택 -->
-                <div class="emotion-check-area px-4">
-                    <p class="text-center text-sm text-gray-500 mb-4">
-                        ${hasEmotionsToday ? '💭 지금 기분도 알려줘!' : '오늘 기분을 펫에게 알려주세요'}
+                <div class="emotion-check-area">
+                    <p class="text-center text-sm text-gray-500 mb-4 px-4">
+                        ${hasEmotionsToday ? '지금 기분도 알려줘!' : '오늘 기분을 펫에게 알려주세요'}
                     </p>
 
-                    <!-- 감정 버튼들 -->
-                    <div class="flex justify-center gap-3 mb-6" id="emotionButtons">
-                        ${Object.entries(EMOTION_TYPES).map(([key, emotion]) => `
-                            <button
-                                class="emotion-select-btn w-14 h-14 rounded-full bg-gray-50 hover:bg-gray-100 flex items-center justify-center text-3xl transition-all border-3 border-transparent hover:scale-110"
-                                data-emotion="${key}"
-                                title="${emotion.name}"
-                            >
-                                ${emotion.icon}
+                    <!-- STEP 1: 대분류 카테고리 선택 -->
+                    <div class="emotion-category-tabs" id="emotionCategoryTabs">
+                        ${Object.entries(EMOTION_CATEGORIES).map(([key, cat]) => `
+                            <button class="emotion-category-tab" data-category="${key}">
+                                <span class="category-icon">${cat.icon}</span>
+                                <span class="category-name">${cat.name}</span>
                             </button>
                         `).join('')}
                     </div>
 
-                    <!-- 감정 선택 이유 -->
-                    <div class="mb-4">
-                        <textarea
-                            id="petMemo"
-                            class="w-full p-4 border-2 border-gray-200 rounded-2xl resize-none focus:border-primary focus:ring-0 transition-colors"
-                            rows="3"
-                            placeholder="그 감정을 선택한 이유는 뭘까? 왜 그런 감정을 느꼈어?"
-                        ></textarea>
-                    </div>
+                    <!-- STEP 2: 세부 감정 카드 (카테고리 선택 후 표시) -->
+                    <div id="emotionCardsContainer"></div>
 
-                    <!-- 전송 버튼 -->
-                    <button
-                        id="sendEmotionBtn"
-                        class="w-full liquid-btn-student"
-                        disabled
-                    >
-                        펫에게 말하기
-                    </button>
+                    <!-- STEP 3: 선택 후 상세 (감정 정의 + 메모 + 전송) -->
+                    <div id="emotionDetailContainer"></div>
                 </div>
             </div>
 
@@ -323,71 +308,167 @@ export function afterRender() {
 }
 
 /**
- * 감정 선택/전송 이벤트 바인딩
+ * 감정 선택/전송 이벤트 바인딩 (2단계 UI)
  */
 function bindEmotionSendEvents() {
-    const emotionButtons = document.querySelectorAll('.emotion-select-btn');
-    const sendBtn = document.getElementById('sendEmotionBtn');
-    const memoTextarea = document.getElementById('petMemo');
+    let selectedCategory = null;
     let selectedEmotion = null;
 
-    function updateSendButtonState() {
-        const memoValue = memoTextarea?.value.trim() || '';
-        const isValid = selectedEmotion && memoValue.length > 0;
-        if (sendBtn) sendBtn.disabled = !isValid;
-    }
+    // STEP 1: 카테고리 탭 클릭
+    document.querySelectorAll('.emotion-category-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            const cat = tab.dataset.category;
+            if (selectedCategory === cat) return;
 
-    emotionButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            emotionButtons.forEach(b => {
-                b.classList.remove('selected', 'scale-110');
-            });
-            btn.classList.add('selected', 'scale-110');
-            selectedEmotion = btn.dataset.emotion;
-            updateSendButtonState();
-            previewPetReaction(selectedEmotion);
+            selectedCategory = cat;
+            selectedEmotion = null;
+
+            // 탭 선택 상태 업데이트
+            document.querySelectorAll('.emotion-category-tab').forEach(t => t.classList.remove('selected'));
+            tab.classList.add('selected');
+
+            // STEP 2: 세부 감정 카드 렌더링
+            renderEmotionCards(cat);
+
+            // 상세 영역 초기화
+            const detailContainer = document.getElementById('emotionDetailContainer');
+            if (detailContainer) detailContainer.innerHTML = '';
+
+            previewPetReaction(cat);
         });
     });
 
-    if (memoTextarea) {
-        memoTextarea.addEventListener('input', updateSendButtonState);
+    /**
+     * 세부 감정 카드 렌더링
+     */
+    function renderEmotionCards(categoryKey) {
+        const container = document.getElementById('emotionCardsContainer');
+        if (!container) return;
+
+        const catInfo = EMOTION_CATEGORIES[categoryKey];
+        if (!catInfo) return;
+
+        container.innerHTML = `
+            <div class="emotion-cards-grid">
+                ${catInfo.emotions.map(emotionKey => {
+                    const info = EMOTION_TYPES[emotionKey];
+                    if (!info) return '';
+                    return `
+                        <button class="emotion-card" data-emotion="${emotionKey}" style="border-color: transparent;">
+                            <span class="emotion-card-icon">${getEmotionImageHTML(emotionKey, 'lg')}</span>
+                            <span class="emotion-card-name">${info.name}</span>
+                        </button>
+                    `;
+                }).join('')}
+            </div>
+        `;
+
+        // 카드 클릭 이벤트
+        container.querySelectorAll('.emotion-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const emotionKey = card.dataset.emotion;
+                const info = EMOTION_TYPES[emotionKey];
+                if (!info) return;
+
+                selectedEmotion = emotionKey;
+
+                // 카드 선택 상태
+                container.querySelectorAll('.emotion-card').forEach(c => {
+                    c.classList.remove('selected');
+                    c.style.borderColor = 'transparent';
+                });
+                card.classList.add('selected');
+                card.style.borderColor = info.color;
+
+                // STEP 3: 상세 영역 렌더링
+                renderEmotionDetail(emotionKey);
+                previewPetReaction(emotionKey);
+            });
+        });
     }
 
-    if (sendBtn) {
-        sendBtn.addEventListener('click', async () => {
-            const memo = memoTextarea?.value.trim() || '';
-            if (!selectedEmotion || !memo) return;
+    /**
+     * 감정 선택 후 상세 영역 (정의 + 메모 + 전송)
+     */
+    function renderEmotionDetail(emotionKey) {
+        const container = document.getElementById('emotionDetailContainer');
+        if (!container) return;
 
-            const student = store.getCurrentStudent();
-            if (!student) return;
+        const info = EMOTION_TYPES[emotionKey];
+        if (!info) return;
 
-            sendBtn.disabled = true;
-            sendBtn.textContent = '전송 중...';
+        container.innerHTML = `
+            <div class="emotion-detail-area">
+                <div class="emotion-detail-card" style="border-top: 3px solid ${info.color};">
+                    <p class="emotion-definition">"${info.definition}"</p>
+                    <div class="mb-4">
+                        <textarea
+                            id="petMemo"
+                            class="w-full p-4 border-2 border-gray-200 rounded-2xl resize-none focus:border-primary focus:ring-0 transition-colors text-sm"
+                            rows="3"
+                            placeholder="${info.name}한 이유가 뭐야? 왜 그런 감정을 느꼈어?"
+                        ></textarea>
+                    </div>
+                    <button
+                        id="sendEmotionBtn"
+                        class="w-full liquid-btn-student"
+                        disabled
+                    >
+                        펫에게 마음 보내기
+                    </button>
+                </div>
+            </div>
+        `;
 
-            try {
-                await store.addEmotion({
-                    studentId: student.id,
-                    studentName: student.name,
-                    studentNumber: student.number,
-                    emotion: selectedEmotion,
-                    memo: memo,
-                    source: 'student'
-                });
-                // 알림 생성은 교사 탭의 Firebase 구독에서 처리 (학생 탭에서는 불필요)
-                const petResult = await store.addPetExp(student.id, 5);
-                showPetReaction(selectedEmotion);
+        // 메모 입력 → 전송 버튼 활성화
+        const memoTextarea = document.getElementById('petMemo');
+        const sendBtn = document.getElementById('sendEmotionBtn');
 
-                let resultMessage = '펫에게 마음을 전달했어요! +5 EXP';
-                if (petResult && petResult.levelUp) {
-                    resultMessage = `🎉 레벨업! Lv.${petResult.newLevel} +5 EXP`;
+        if (memoTextarea) {
+            memoTextarea.addEventListener('input', () => {
+                const isValid = memoTextarea.value.trim().length > 0;
+                if (sendBtn) sendBtn.disabled = !isValid;
+            });
+            // 포커스
+            setTimeout(() => memoTextarea.focus(), 100);
+        }
+
+        if (sendBtn) {
+            sendBtn.addEventListener('click', async () => {
+                const memo = memoTextarea?.value.trim() || '';
+                if (!selectedEmotion || !memo) return;
+
+                const student = store.getCurrentStudent();
+                if (!student) return;
+
+                sendBtn.disabled = true;
+                sendBtn.textContent = '전송 중...';
+
+                try {
+                    await store.addEmotion({
+                        studentId: student.id,
+                        studentName: student.name,
+                        studentNumber: student.number,
+                        emotion: selectedEmotion,
+                        memo: memo,
+                        source: 'student'
+                    });
+                    // 알림 생성은 교사 탭의 Firebase 구독에서 처리
+                    const petResult = await store.addPetExp(student.id, 5);
+                    showPetReaction(selectedEmotion);
+
+                    let resultMessage = '펫에게 마음을 전달했어요! +5 EXP';
+                    if (petResult && petResult.levelUp) {
+                        resultMessage = `레벨업! Lv.${petResult.newLevel} +5 EXP`;
+                    }
+                    sendBtn.textContent = resultMessage;
+                } catch (error) {
+                    console.error('감정 저장 실패:', error);
+                    sendBtn.disabled = false;
+                    sendBtn.textContent = '다시 시도하기';
                 }
-                sendBtn.textContent = resultMessage;
-            } catch (error) {
-                console.error('감정 저장 실패:', error);
-                sendBtn.disabled = false;
-                sendBtn.textContent = '다시 시도하기';
-            }
-        });
+            });
+        }
     }
 }
 
@@ -951,8 +1032,9 @@ function renderHistoryTab(student, petEmoji, petName, petImageSm) {
             <!-- 대화 내용 -->
             <div class="space-y-4 pb-4">
                 ${dayEmotions.length > 0 ? dayEmotions.map(emotion => {
-        const emotionIcon = EMOTION_TYPES[emotion.emotion]?.icon || '😊';
-        const emotionName = EMOTION_TYPES[emotion.emotion]?.name || '';
+        const eInfo = getEmotionInfo(emotion.emotion);
+        const emotionIcon = eInfo?.icon || '😊';
+        const emotionName = eInfo?.name || '';
         const convos = emotion.conversations || [];
 
         // conversations 배열 기반 렌더링

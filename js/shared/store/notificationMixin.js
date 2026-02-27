@@ -5,6 +5,7 @@
 import { STORAGE_KEYS } from './Store.js';
 import { EMOTION_TYPES } from '../constants/index.js';
 import { toDateString } from '../utils/dateUtils.js';
+import { getEmotionInfo } from '../utils/emotionHelpers.js';
 
 export const notificationMixin = {
     // ==================== 알림 관리 ====================
@@ -78,17 +79,17 @@ export const notificationMixin = {
             if (existing) return null;
         }
 
-        const emotionType = EMOTION_TYPES[emotion];
+        const emotionInfo = getEmotionInfo(emotion);
         const notification = {
             type: 'emotion',
             studentId,
             studentName: student.name,
             emotion,
-            emotionIcon: emotionType?.icon || '😊',
-            emotionName: emotionType?.name || '기분',
+            emotionIcon: emotionInfo?.icon || '😊',
+            emotionName: emotionInfo?.name || '기분',
             memo: memo || null,
             emotionFirebaseId: firebaseId || null,
-            message: `${student.name}이(가) 오늘의 기분을 알려줬어요! ${emotionType?.icon || '😊'}`
+            message: `${student.name}이(가) 오늘의 기분을 알려줬어요! ${emotionInfo?.icon || '😊'}`
         };
 
         return this.addNotification(notification);

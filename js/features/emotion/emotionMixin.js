@@ -6,6 +6,7 @@
 import { firebase, STORAGE_KEYS } from '../../shared/store/Store.js';
 import { toDateString } from '../../shared/utils/dateUtils.js';
 import { showToast } from '../../shared/utils/animations.js';
+import { isNegativeEmotion, mapLegacyEmotion } from '../../shared/utils/emotionHelpers.js';
 
 export const emotionMixin = {
     // ==================== 감정 로그 관련 ====================
@@ -103,10 +104,13 @@ export const emotionMixin = {
                     // 기존 데이터 업데이트 (conversations 등)
                     const idx = localLog.findIndex(e => e.firebaseId === fe.id);
                     if (idx !== -1) {
-                        const conversations = (fe.conversations || []).map(c => ({
+                        const localConvos = localLog[idx].conversations || [];
+                        const conversations = (fe.conversations || []).map((c, i) => ({
                             ...c,
                             studentAt: c.studentAt?.toDate?.()?.toISOString() || c.studentAt,
-                            replyAt: c.replyAt?.toDate?.()?.toISOString() || c.replyAt
+                            replyAt: c.replyAt?.toDate?.()?.toISOString() || c.replyAt,
+                            // 로컬에서 이미 읽음 처리한 상태 보존 (Firebase 동기화 지연 대응)
+                            read: (localConvos[i]?.read === true) ? true : (c.read ?? false)
                         }));
                         const firstMessage = conversations[0]?.studentMessage || '';
                         const noteText = firstMessage || fe.note || fe.memo || '';
@@ -115,12 +119,13 @@ export const emotionMixin = {
                         localLog[idx].memo = noteText;
                         localLog[idx].emotion = fe.emotion;
                         localLog[idx].source = fe.source || localLog[idx].source;
-                        // reply 객체도 Firebase 데이터로 동기화
+                        // reply 객체도 Firebase 데이터로 동기화 (로컬 read 보존)
                         if (fe.reply) {
+                            const localReplyRead = localLog[idx].reply?.read === true;
                             localLog[idx].reply = {
                                 message: fe.reply.message,
                                 timestamp: fe.reply.timestamp?.toDate?.()?.toISOString() || fe.reply.timestamp,
-                                read: fe.reply.read ?? false
+                                read: localReplyRead ? true : (fe.reply.read ?? false)
                             };
                         }
                         // 학생 감정인데 알림 누락된 경우 보충 (같은 브라우저 테스트 시)
@@ -183,18 +188,22 @@ export const emotionMixin = {
                     // 기존 데이터 업데이트 (conversations, reply 등)
                     const idx = localLog.findIndex(e => e.firebaseId === fe.id);
                     if (idx !== -1) {
-                        const conversations = (fe.conversations || []).map(c => ({
+                        const localConvos = localLog[idx].conversations || [];
+                        const conversations = (fe.conversations || []).map((c, i) => ({
                             ...c,
                             studentAt: c.studentAt?.toDate?.()?.toISOString() || c.studentAt,
-                            replyAt: c.replyAt?.toDate?.()?.toISOString() || c.replyAt
+                            replyAt: c.replyAt?.toDate?.()?.toISOString() || c.replyAt,
+                            // 로컬에서 이미 읽음 처리한 상태 보존
+                            read: (localConvos[i]?.read === true) ? true : (c.read ?? false)
                         }));
                         localLog[idx].conversations = conversations;
-                        // reply 객체도 동기화
+                        // reply 객체도 동기화 (로컬 read 보존)
                         if (fe.reply) {
+                            const localReplyRead = localLog[idx].reply?.read === true;
                             localLog[idx].reply = {
                                 message: fe.reply.message,
                                 timestamp: fe.reply.timestamp?.toDate?.()?.toISOString() || fe.reply.timestamp,
-                                read: fe.reply.read ?? false
+                                read: localReplyRead ? true : (fe.reply.read ?? false)
                             };
                         }
                     }
@@ -253,7 +262,7 @@ export const emotionMixin = {
 
         return students.filter(student => {
             const emotion = todayEmotions.find(e => e.studentId === student.id);
-            return emotion && ['bad', 'terrible'].includes(emotion.emotion);
+            return emotion && isNegativeEmotion(emotion.emotion);
         });
     },
 
