@@ -19,6 +19,10 @@ const PET_CLICK_ANIMATIONS = {
     chick:   { class: 'pet-click-wiggle',  particles: ['🌾', '💛', '✨'], duration: 700 },
     penguin: { class: 'pet-click-wiggle',  particles: ['❄️', '💙', '✨'], duration: 700 },
     turtle:  { class: 'pet-click-bounce',  particles: ['🍀', '💚', '⭐'], duration: 600 },
+    elephant:{ class: 'pet-click-bounce',  particles: ['🌿', '💙', '⭐'], duration: 600 },
+    hedgehog:{ class: 'pet-click-wiggle',  particles: ['🍎', '💛', '✨'], duration: 700 },
+    otter:   { class: 'pet-click-wiggle',  particles: ['💧', '💙', '✨'], duration: 700 },
+    unicorn: { class: 'pet-click-bounce',  particles: ['🌈', '💜', '⭐'], duration: 600 },
 };
 
 const DEFAULT_ANIMATION = { class: 'pet-click-bounce', particles: ['💫', '⭐'], duration: 600 };
@@ -26,7 +30,13 @@ const DEFAULT_ANIMATION = { class: 'pet-click-bounce', particles: ['💫', '⭐'
 /** 동물+성장단계별 클릭 영상 매핑 */
 const PET_CLICK_VIDEOS = {
     'lion_baby': 'pet-assets/lion/video/lion_stage1_baby.mp4',
+    'lion_adult': 'pet-assets/lion/video/lion_stage4_adult.mp4',
 };
+
+/** 특정 펫+단계의 영상 경로 반환 (없으면 null) */
+export function getPetVideo(petType, stage) {
+    return PET_CLICK_VIDEOS[`${petType}_${stage}`] || null;
+}
 
 /**
  * 펫 클릭 애니메이션 재생

@@ -134,6 +134,50 @@ export const PET_TYPES = {
             teen: 'pet-assets/dragon/png/dragon_stage3_growing.png',
             adult: 'pet-assets/dragon/png/dragon_stage4_adult.png'
         }
+    },
+    elephant: {
+        name: '코끼리',
+        category: 'mammal',
+        stages: { baby: '🐘', child: '🐘', teen: '🐘', adult: '🐘' },
+        images: {
+            baby: 'pet-assets/elephant/png/elephant_stage1_newborn.png',
+            child: 'pet-assets/elephant/png/elephant_stage2_baby.png',
+            teen: 'pet-assets/elephant/png/elephant_stage3_growing.png',
+            adult: 'pet-assets/elephant/png/elephant_stage4_adult.png'
+        }
+    },
+    hedgehog: {
+        name: '고슴도치',
+        category: 'mammal',
+        stages: { baby: '🦔', child: '🦔', teen: '🦔', adult: '🦔' },
+        images: {
+            baby: 'pet-assets/hedgehog/png/hedgehog_stage1_newborn.png',
+            child: 'pet-assets/hedgehog/png/hedgehog_stage2_baby.png',
+            teen: 'pet-assets/hedgehog/png/hedgehog_stage3_growing.png',
+            adult: 'pet-assets/hedgehog/png/hedgehog_stage4_adult.png'
+        }
+    },
+    otter: {
+        name: '수달',
+        category: 'mammal',
+        stages: { baby: '🦦', child: '🦦', teen: '🦦', adult: '🦦' },
+        images: {
+            baby: 'pet-assets/otter/png/otter_stage1_newborn.png',
+            child: 'pet-assets/otter/png/otter_stage2_baby.png',
+            teen: 'pet-assets/otter/png/otter_stage3_growing.png',
+            adult: 'pet-assets/otter/png/otter_stage4_adult.png'
+        }
+    },
+    unicorn: {
+        name: '유니콘',
+        category: 'fantasy',
+        stages: { baby: '🦄', child: '🦄', teen: '🦄', adult: '🦄' },
+        images: {
+            baby: 'pet-assets/unicorn/png/unicorn_stage1_newborn.png',
+            child: 'pet-assets/unicorn/png/unicorn_stage2_baby.png',
+            teen: 'pet-assets/unicorn/png/unicorn_stage3_growing.png',
+            adult: 'pet-assets/unicorn/png/unicorn_stage4_adult.png'
+        }
     }
 };
 
@@ -149,7 +193,11 @@ export const PET_SPEECH_STYLES = {
     chick: { suffix: '삐약', endings: ['삐약!', '삐~', '삐삐!'], greeting: '날개 파닥파닥~' },
     penguin: { suffix: '펭', endings: ['펭펭!', '뒤뚱~', '펭!'], greeting: '배로 슬라이딩~' },
     turtle: { suffix: '엉금', endings: ['엉금!', '거북~', '느긋~'], greeting: '천천히 다가가며~' },
-    dragon: { suffix: '드라곤', endings: ['드라곤!', '용용~', '푸하~'], greeting: '날개 펼치며~' }
+    dragon: { suffix: '드라곤', endings: ['드라곤!', '용용~', '푸하~'], greeting: '날개 펼치며~' },
+    elephant: { suffix: '코끼리', endings: ['뿌우!', '코끼리~', '뿌뿌!'], greeting: '코를 흔들며~' },
+    hedgehog: { suffix: '도치', endings: ['도치!', '찌릿~', '도치도치!'], greeting: '가시 세우며~' },
+    otter: { suffix: '수달', endings: ['수달!', '미끌~', '첨벙!'], greeting: '배영하며~' },
+    unicorn: { suffix: '유니콘', endings: ['유니콘!', '반짝~', '빛나!'], greeting: '뿔이 빛나며~' }
 };
 
 export const PET_REACTIONS = {

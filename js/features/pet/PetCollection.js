@@ -7,6 +7,7 @@ import { store, PET_TYPES } from '../../store.js';
 import { router } from '../../router.js';
 import { showToast } from '../../shared/utils/animations.js';
 import { getPetStageImageHTML } from '../../shared/utils/petLogic.js';
+import { getPetVideo } from '../../shared/utils/petAnimations.js';
 
 /**
  * 렌더링
@@ -68,7 +69,7 @@ export function render() {
 
             <!-- 펫 그리드 -->
             <div class="px-4">
-                <div class="grid grid-cols-3 gap-3" id="petGrid">
+                <div class="grid grid-cols-4 gap-2" id="petGrid">
                     ${petCards}
                 </div>
             </div>
@@ -136,11 +137,11 @@ function renderPetCard(petKey, pet, status, currentLevel, completedPet) {
     }
 
     return `
-        <div class="${cardClass} ${borderClass} bg-white rounded-xl p-3 relative transition-all duration-300"
+        <div class="${cardClass} ${borderClass} bg-white rounded-xl p-2 relative transition-all duration-300"
              data-pet="${petKey}" data-status="${status}">
             <div class="text-center flex flex-col items-center">
-                ${getPetStageImageHTML(petKey, 'child', 'lg')}
-                <p class="text-xs mt-1 font-medium text-gray-700">${name}</p>
+                ${getPetStageImageHTML(petKey, 'child', 'md')}
+                <p class="text-xs mt-1 font-medium text-gray-700 leading-tight">${name}</p>
             </div>
             ${overlayContent}
         </div>
@@ -214,27 +215,15 @@ function showPetDetail(petKey, status) {
 
             <!-- 성장 과정 -->
             <div class="bg-gray-50 rounded-xl p-4">
-                <p class="text-xs text-gray-400 text-center mb-3">성장 과정</p>
+                <p class="text-xs text-gray-400 text-center mb-3">성장 과정 <span class="text-gray-300">(터치하면 확대)</span></p>
                 <div class="flex justify-center items-end gap-3">
-                    <div class="text-center">
-                        ${getPetStageImageHTML(petKey, 'baby', 'md')}
-                        <p class="text-xs text-gray-400 mt-1">아기</p>
-                    </div>
+                    ${renderStageThumbnail(petKey, 'baby', '아기')}
                     <svg class="w-4 h-4 text-gray-300 flex-shrink-0 self-center" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-                    <div class="text-center">
-                        ${getPetStageImageHTML(petKey, 'child', 'md')}
-                        <p class="text-xs text-gray-400 mt-1">어린이</p>
-                    </div>
+                    ${renderStageThumbnail(petKey, 'child', '어린이')}
                     <svg class="w-4 h-4 text-gray-300 flex-shrink-0 self-center" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-                    <div class="text-center">
-                        ${getPetStageImageHTML(petKey, 'teen', 'md')}
-                        <p class="text-xs text-gray-400 mt-1">청소년</p>
-                    </div>
+                    ${renderStageThumbnail(petKey, 'teen', '청소년')}
                     <svg class="w-4 h-4 text-gray-300 flex-shrink-0 self-center" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-                    <div class="text-center">
-                        ${getPetStageImageHTML(petKey, 'adult', 'md')}
-                        <p class="text-xs text-gray-400 mt-1">성체</p>
-                    </div>
+                    ${renderStageThumbnail(petKey, 'adult', '성체')}
                 </div>
             </div>
 
@@ -253,4 +242,66 @@ function showPetDetail(petKey, status) {
     };
     modal.querySelector('#closePetDetail').addEventListener('click', close);
     modal.querySelector('.pet-detail-backdrop').addEventListener('click', close);
+
+    // 성장 단계 이미지 클릭 → 확대
+    modal.querySelectorAll('.pet-stage-thumb').forEach(thumb => {
+        thumb.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const stage = thumb.dataset.stage;
+            const petK = thumb.dataset.pet;
+            showZoomedImage(petK, stage);
+        });
+    });
+}
+
+/**
+ * 성장 단계 썸네일 (영상 있으면 재생 아이콘 표시)
+ */
+function renderStageThumbnail(petKey, stage, label) {
+    return `
+        <div class="text-center pet-stage-thumb cursor-pointer" data-pet="${petKey}" data-stage="${stage}">
+            ${getPetStageImageHTML(petKey, stage, 'md')}
+            <p class="text-xs text-gray-400 mt-1">${label}</p>
+        </div>
+    `;
+}
+
+/**
+ * 펫 이미지/영상 확대 오버레이
+ */
+function showZoomedImage(petKey, stage) {
+    const pet = PET_TYPES[petKey];
+    if (!pet) return;
+
+    const stageNames = { baby: '아기', child: '어린이', teen: '청소년', adult: '성체' };
+    const videoSrc = getPetVideo(petKey, stage);
+
+    const overlay = document.createElement('div');
+    overlay.className = 'fixed inset-0 flex items-center justify-center';
+    overlay.style.zIndex = '60';
+
+    const contentHtml = videoSrc
+        ? `<video src="${videoSrc}" autoplay playsinline loop
+                style="width: 200px; height: 200px; object-fit: cover; border-radius: 24px; box-shadow: 0 6px 24px rgba(0,0,0,0.3);"></video>`
+        : getPetStageImageHTML(petKey, stage, '2xl');
+
+    overlay.innerHTML = `
+        <div class="absolute inset-0 bg-black/60 pet-zoom-backdrop" style="animation: fadeIn 0.15s ease"></div>
+        <div class="relative flex flex-col items-center" style="animation: scaleIn 0.2s ease">
+            ${contentHtml}
+            <p class="mt-3 text-white text-sm font-medium">${pet.name} · ${stageNames[stage]}</p>
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    const closeZoom = () => {
+        // 영상이면 정지
+        const video = overlay.querySelector('video');
+        if (video) video.pause();
+        overlay.querySelector('.pet-zoom-backdrop').style.animation = 'fadeOut 0.15s ease forwards';
+        overlay.querySelector('.relative').style.animation = 'scaleOut 0.15s ease forwards';
+        setTimeout(() => overlay.remove(), 150);
+    };
+    overlay.addEventListener('click', closeZoom);
 }
