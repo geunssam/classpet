@@ -103,11 +103,13 @@ export function render() {
 
             <!-- 탭 UI -->
             <div class="flex gap-2 mx-4 mb-6">
-                <button id="tabSendEmotion" class="student-tab-btn flex-1 py-2.5 px-4 rounded-xl text-sm font-medium transition-all ${currentStudentTab === 'send' ? 'bg-primary text-white shadow-md' : 'bg-gray-100 text-gray-600'}">
-                    💝 마음 보내기
+                <button id="tabSendEmotion" class="student-tab-btn flex-1 py-2.5 px-4 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-1.5 ${currentStudentTab === 'send' ? 'bg-primary text-white shadow-md' : 'bg-gray-100 text-gray-600'}">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                    마음 보내기
                 </button>
-                <button id="tabHistory" class="student-tab-btn flex-1 py-2.5 px-4 rounded-xl text-sm font-medium transition-all ${currentStudentTab === 'history' ? 'bg-primary text-white shadow-md' : 'bg-gray-100 text-gray-600'}">
-                    📜 기록 보기
+                <button id="tabHistory" class="student-tab-btn flex-1 py-2.5 px-4 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-1.5 ${currentStudentTab === 'history' ? 'bg-primary text-white shadow-md' : 'bg-gray-100 text-gray-600'}">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    기록 보기
                 </button>
             </div>
 

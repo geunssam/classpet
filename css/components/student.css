@@ -107,9 +107,10 @@
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
     color: #555;
+    white-space: nowrap;
 }
 
 /* 큰 경험치바 (기존) */
