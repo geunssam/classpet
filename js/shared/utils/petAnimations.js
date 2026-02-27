@@ -96,21 +96,27 @@ function playPetVideo(element, videoSrc, petType) {
         width: '100%',
         height: '100%',
         objectFit: 'cover',
-        transition: 'opacity 0.4s ease-out',
+        transition: 'opacity 0.8s ease-out',
     });
 
     element.appendChild(video);
 
-    // 영상 종료 → 1초 대기 → 페이드아웃 → 제거
+    // 영상 끝나기 1.2초 전부터 서서히 페이드아웃 시작
+    let fadeStarted = false;
+    video.addEventListener('timeupdate', () => {
+        if (fadeStarted || !video.duration) return;
+        if (video.currentTime >= video.duration - 1.2) {
+            fadeStarted = true;
+            video.style.opacity = '0';
+        }
+    });
+
+    // 영상 종료 → 제거 + idle 복귀
     video.addEventListener('ended', () => {
         setTimeout(() => {
-            video.style.opacity = '0';
-
-            setTimeout(() => {
-                video.remove();
-                element.classList.add('pet-pulse');
-            }, 400);
-        }, 1000);
+            video.remove();
+            element.classList.add('pet-pulse');
+        }, 300);
     });
 
     // 재생 실패 시에도 복원
