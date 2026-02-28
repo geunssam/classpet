@@ -431,9 +431,10 @@ export function showStudentNotifications() {
         return convos.some(c => c.teacherReply && !c.read);
     });
 
-    // 2. 새 칭찬 목록
+    // 2. 새 칭찬 목록 (학생별 키)
     const praises = store.getPraisesByStudent(student.id) || [];
-    const lastSeen = parseInt(localStorage.getItem('lastSeenPraiseCount') || '0');
+    const praiseKey = `lastSeenPraiseCount_${student.id}`;
+    const lastSeen = parseInt(localStorage.getItem(praiseKey) || '0');
     const newCount = Math.max(0, praises.length - lastSeen);
     const newPraises = praises.slice(0, newCount);
 
@@ -557,8 +558,8 @@ export function showStudentNotifications() {
             unreadReplies.forEach(emotion => {
                 store.markReplyAsRead(emotion.id || emotion.firebaseId);
             });
-            // 칭찬 모두 확인
-            localStorage.setItem('lastSeenPraiseCount', praises.length.toString());
+            // 칭찬 모두 확인 (학생별 키)
+            localStorage.setItem(praiseKey, praises.length.toString());
             // 알림장 모두 확인
             if (sharedNotices.length > 0) {
                 store.setLastSeenStudentNoticeId(sharedNotices[0].id);
@@ -569,9 +570,9 @@ export function showStudentNotifications() {
         });
     }
 
-    // 칭찬 확인 시 lastSeenPraiseCount 업데이트
+    // 칭찬 확인 시 학생별 키 업데이트
     if (newPraises.length > 0) {
-        localStorage.setItem('lastSeenPraiseCount', praises.length.toString());
+        localStorage.setItem(praiseKey, praises.length.toString());
     }
 
     // 알림장 클릭 시 알림장 페이지로 이동

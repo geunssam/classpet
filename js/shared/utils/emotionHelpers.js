@@ -37,9 +37,21 @@ export function isLegacyEmotion(emotionKey) {
     return !!LEGACY_MAP[emotionKey];
 }
 
-// ===================== 이미지 경로 =====================
+// ===================== 이미지/영상 경로 =====================
 
 const EMOTION_ASSET_BASE = '/emotion-assets';
+
+// 영상이 존재하는 감정 목록 (파일명: {key}.mp4)
+const EMOTION_VIDEOS = new Set(['grateful']);
+
+/**
+ * 감정 영상 경로 반환 (없으면 빈 문자열)
+ */
+export function getEmotionVideoPath(emotionKey) {
+    const key = mapLegacyEmotion(emotionKey);
+    if (!EMOTION_VIDEOS.has(key)) return '';
+    return `${EMOTION_ASSET_BASE}/${key}.mp4`;
+}
 
 /**
  * 감정 이미지 경로 반환

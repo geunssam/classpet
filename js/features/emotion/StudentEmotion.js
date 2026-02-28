@@ -10,7 +10,7 @@ import { getPetEmoji, getPetImageHTML, getPetImage, getGrowthStage, getExpProgre
 import { showToast } from '../../shared/utils/animations.js';
 import { getNameWithSuffix } from '../../shared/utils/nameUtils.js';
 import { playPetClickAnimation } from '../../shared/utils/petAnimations.js';
-import { getEmotionImageHTML, getEmotionInfo, mapLegacyEmotion } from '../../shared/utils/emotionHelpers.js';
+import { getEmotionImageHTML, getEmotionInfo, mapLegacyEmotion, getEmotionVideoPath } from '../../shared/utils/emotionHelpers.js';
 
 let currentStudentTab = 'send'; // 'send' | 'history'
 
@@ -414,8 +414,11 @@ function bindEmotionSendEvents() {
 
                 <!-- 감정 카드 영역 -->
                 <div class="emotion-modal-card" style="background: ${info.color}15; border: 2px solid ${info.color}30;">
-                    <div class="emotion-modal-image">
-                        ${getEmotionImageHTML(emotionKey, 'xl')}
+                    <div class="emotion-modal-image" ${getEmotionVideoPath(emotionKey) ? 'style="width:160px;height:160px;"' : ''}>
+                        ${getEmotionVideoPath(emotionKey)
+                            ? `<video src="${getEmotionVideoPath(emotionKey)}" class="emotion-modal-video" autoplay loop muted playsinline style="width:160px;height:160px;object-fit:cover;border-radius:20px;"></video>`
+                            : getEmotionImageHTML(emotionKey, 'xl')
+                        }
                     </div>
                     <span class="emotion-modal-name" style="color: ${info.color};">${info.name}</span>
                     <p class="emotion-modal-definition">"${info.definition}"</p>

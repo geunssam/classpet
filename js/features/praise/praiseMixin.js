@@ -21,20 +21,35 @@ export const praiseMixin = {
         this.notify('praiseLog', log);
     },
 
-    addPraise(praise) {
+    async addPraise(praise) {
         const log = this.getPraiseLog() || [];
         const newPraise = {
             id: Date.now(),
             timestamp: new Date().toISOString(),
             ...praise
         };
-        log.unshift(newPraise);
 
+        // Firebase 먼저 저장하여 firebaseId 확보 (구독 중복 방지)
+        const teacherUid = this.getCurrentTeacherUid();
+        const classId = this.getCurrentClassId();
+        if (teacherUid && classId && this.firebaseEnabled && this.isOnline) {
+            try {
+                const result = await firebase.savePraise(teacherUid, classId, newPraise);
+                if (result && result.id) {
+                    newPraise.firebaseId = result.id;
+                }
+            } catch (error) {
+                console.error('Firebase 칭찬 저장 실패:', error);
+                this.addToOfflineQueue({ type: 'savePraise', teacherUid, classId, data: newPraise });
+            }
+        } else if (teacherUid && classId && this.firebaseEnabled) {
+            this.addToOfflineQueue({ type: 'savePraise', teacherUid, classId, data: newPraise });
+        }
+
+        // firebaseId 포함하여 로컬 저장
+        log.unshift(newPraise);
         if (log.length > 500) log.pop();
         this.savePraiseLog(log);
-
-        // Firebase 동기화
-        this.syncPraiseToFirebase(newPraise);
 
         // 펫 경험치 추가 (칭찬 카테고리에 따른 경험치)
         const expAmount = this.getPraiseCategories()[praise.category]?.exp || 10;
@@ -43,29 +58,6 @@ export const praiseMixin = {
         }
 
         return newPraise;
-    },
-
-    async syncPraiseToFirebase(praise) {
-        const teacherUid = this.getCurrentTeacherUid();
-        const classId = this.getCurrentClassId();
-        console.log('🔍 칭찬 Firebase 동기화 시도:', { teacherUid, classId, firebaseEnabled: this.firebaseEnabled, isOnline: this.isOnline });
-        if (!teacherUid || !classId || !this.firebaseEnabled) {
-            console.warn('⚠️ 칭찬 Firebase 동기화 스킵:', { teacherUid: !!teacherUid, classId: !!classId, firebaseEnabled: this.firebaseEnabled });
-            return;
-        }
-
-        if (this.isOnline) {
-            try {
-                const result = await firebase.savePraise(teacherUid, classId, praise);
-                console.log('✅ Firebase 칭찬 저장 완료:', result);
-            } catch (error) {
-                console.error('❌ Firebase 칭찬 저장 실패:', error);
-                showToast('저장에 실패했어요. 나중에 다시 시도합니다.', 'warning');
-                this.addToOfflineQueue({ type: 'savePraise', teacherUid, classId, data: praise });
-            }
-        } else {
-            this.addToOfflineQueue({ type: 'savePraise', teacherUid, classId, data: praise });
-        }
     },
 
     getPraisesByStudent(studentId) {
@@ -246,26 +238,44 @@ export const praiseMixin = {
         return firebase.subscribeToStudentPraises(teacherUid, classId, studentId, (firebasePraises) => {
             const localLog = this.getPraiseLog() || [];
             const existingFirebaseIds = new Set(localLog.map(p => p.firebaseId).filter(Boolean));
+            let hasNew = false;
 
             firebasePraises.forEach(fp => {
-                if (!existingFirebaseIds.has(fp.id)) {
-                    // 새 데이터만 추가
-                    const newPraise = {
-                        id: Date.now() + Math.random(),
-                        firebaseId: fp.id,
-                        timestamp: fp.timestamp || fp.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
-                        studentId: fp.studentId,
-                        studentName: fp.studentName,
-                        studentNumber: fp.studentNumber,
-                        category: fp.category,
-                        expGain: fp.expGain,
-                        source: fp.source || 'teacher'
-                    };
-                    localLog.unshift(newPraise);
+                if (existingFirebaseIds.has(fp.id)) return;
+
+                // firebaseId 없는 로컬 레코드와 timestamp+studentId로 매칭 (같은 브라우저 중복 방지)
+                const fpTime = fp.timestamp || fp.createdAt?.toDate?.()?.toISOString() || '';
+                const duplicate = localLog.find(p =>
+                    !p.firebaseId &&
+                    String(p.studentId) === String(fp.studentId) &&
+                    p.category === fp.category &&
+                    p.timestamp && fpTime &&
+                    Math.abs(new Date(p.timestamp) - new Date(fpTime)) < 5000
+                );
+                if (duplicate) {
+                    // firebaseId 보충
+                    duplicate.firebaseId = fp.id;
+                    hasNew = true;
+                    return;
                 }
+
+                // 진짜 새 데이터만 추가
+                const newPraise = {
+                    id: Date.now() + Math.random(),
+                    firebaseId: fp.id,
+                    timestamp: fpTime || new Date().toISOString(),
+                    studentId: fp.studentId,
+                    studentName: fp.studentName,
+                    studentNumber: fp.studentNumber,
+                    category: fp.category,
+                    expGain: fp.expGain,
+                    source: fp.source || 'teacher'
+                };
+                localLog.unshift(newPraise);
+                hasNew = true;
             });
 
-            this.savePraiseLog(localLog);
+            if (hasNew) this.savePraiseLog(localLog);
             if (callback) callback(localLog.filter(p => String(p.studentId) === String(studentId)));
         });
     },

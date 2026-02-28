@@ -147,6 +147,12 @@
     transform: scale(1.1);
 }
 
+/* 모달 내 영상 */
+.emotion-modal-video {
+    border-radius: 20px;
+    object-fit: cover;
+}
+
 /* === 마음보내기 모달 === */
 .emotion-send-modal-overlay {
     position: fixed;

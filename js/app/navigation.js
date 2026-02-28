@@ -355,9 +355,10 @@ export function updateStudentNotificationBadge() {
     // 1. 미읽은 답장 수
     const unreadReplies = store.getUnreadReplyCount(student.id);
 
-    // 2. 새 칭찬 수 (마지막 확인 이후)
+    // 2. 새 칭찬 수 (마지막 확인 이후, 학생별)
     const praises = store.getPraisesByStudent(student.id) || [];
-    const lastSeen = parseInt(localStorage.getItem('lastSeenPraiseCount') || '0');
+    const praiseKey = `lastSeenPraiseCount_${student.id}`;
+    const lastSeen = parseInt(localStorage.getItem(praiseKey) || '0');
     const newPraises = Math.max(0, praises.length - lastSeen);
 
     // 3. 새 알림장 수
