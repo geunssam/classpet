@@ -128,10 +128,7 @@ export const emotionMixin = {
                                 read: localReplyRead ? true : (fe.reply.read ?? false)
                             };
                         }
-                        // 학생 감정인데 알림 누락된 경우 보충 (같은 브라우저 테스트 시)
-                        if (fe.source === 'student') {
-                            this.createEmotionNotification(fe.studentId, fe.emotion, noteText, fe.id);
-                        }
+                        // 기존 감정은 알림 재생성하지 않음 (onSnapshot 재트리거 시 중복 방지)
                     }
                 } else {
                     // 새 데이터 추가
