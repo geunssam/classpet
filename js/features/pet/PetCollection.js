@@ -6,7 +6,7 @@
 import { store, PET_TYPES } from '../../store.js';
 import { router } from '../../router.js';
 import { showToast } from '../../shared/utils/animations.js';
-import { getPetStageImageHTML } from '../../shared/utils/petLogic.js';
+import { getPetStageImageHTML, getGrowthStage, GROWTH_STAGES } from '../../shared/utils/petLogic.js';
 import { getPetVideo } from '../../shared/utils/petAnimations.js';
 
 /**
@@ -166,12 +166,24 @@ export function afterRender() {
 /**
  * 펫 상세 정보 모달 표시
  */
-function showPetDetail(petKey, status) {
+export function showPetDetail(petKey, status) {
     const pet = PET_TYPES[petKey];
     if (!pet) return;
 
     const student = store.getCurrentStudent();
     const completedPet = student?.completedPets?.find(p => p.type === petKey);
+    const isCurrentPet = student?.petType === petKey;
+    const currentStage = isCurrentPet ? getGrowthStage(student.level) : null;
+
+    // 잠금 판별용 studentLevel 계산
+    let studentLevel;
+    if (status === 'completed') {
+        studentLevel = 15; // 완성 → 모든 단계 해제
+    } else if (status === 'current') {
+        studentLevel = student?.level || 1;
+    } else {
+        studentLevel = 0; // 미소유 → 모든 단계 잠금
+    }
 
     let statusText = '';
     let statusClass = '';
@@ -200,7 +212,7 @@ function showPetDetail(petKey, status) {
     modal.className = 'fixed inset-0 z-50 flex items-center justify-center px-6';
     modal.innerHTML = `
         <div class="absolute inset-0 bg-black/40 backdrop-blur-sm pet-detail-backdrop" style="animation: fadeIn 0.2s ease"></div>
-        <div class="relative bg-white w-full max-w-sm rounded-2xl p-5 pb-5 shadow-xl" style="animation: scaleIn 0.25s ease">
+        <div class="relative bg-white w-full max-w-sm rounded-2xl p-5 pb-5 shadow-xl" style="animation: scaleIn 0.25s ease; max-width: 380px;">
             <!-- 펫 이름 + 닫기 -->
             <div class="flex items-center justify-between mb-4">
                 <div class="w-8"></div>
@@ -214,16 +226,13 @@ function showPetDetail(petKey, status) {
             </div>
 
             <!-- 성장 과정 -->
-            <div class="bg-gray-50 rounded-xl p-4">
+            <div class="bg-gray-50 rounded-xl p-3">
                 <p class="text-xs text-gray-400 text-center mb-3">성장 과정 <span class="text-gray-300">(터치하면 확대)</span></p>
-                <div class="flex justify-center items-end gap-3">
-                    ${renderStageThumbnail(petKey, 'baby', '아기')}
-                    <svg class="w-4 h-4 text-gray-300 flex-shrink-0 self-center" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-                    ${renderStageThumbnail(petKey, 'child', '어린이')}
-                    <svg class="w-4 h-4 text-gray-300 flex-shrink-0 self-center" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-                    ${renderStageThumbnail(petKey, 'teen', '청소년')}
-                    <svg class="w-4 h-4 text-gray-300 flex-shrink-0 self-center" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-                    ${renderStageThumbnail(petKey, 'adult', '성체')}
+                <div class="grid grid-cols-4 gap-1">
+                    ${renderStageThumbnail(petKey, 'baby', '아기', currentStage, studentLevel)}
+                    ${renderStageThumbnail(petKey, 'child', '어린이', currentStage, studentLevel)}
+                    ${renderStageThumbnail(petKey, 'teen', '청소년', currentStage, studentLevel)}
+                    ${renderStageThumbnail(petKey, 'adult', '성체', currentStage, studentLevel)}
                 </div>
             </div>
 
@@ -243,10 +252,15 @@ function showPetDetail(petKey, status) {
     modal.querySelector('#closePetDetail').addEventListener('click', close);
     modal.querySelector('.pet-detail-backdrop').addEventListener('click', close);
 
-    // 성장 단계 이미지 클릭 → 확대
+    // 성장 단계 이미지 클릭 → 확대 (잠금 체크)
     modal.querySelectorAll('.pet-stage-thumb').forEach(thumb => {
         thumb.addEventListener('click', (e) => {
             e.stopPropagation();
+            if (thumb.dataset.locked === 'true') {
+                const minLv = thumb.dataset.minLevel;
+                showToast(`레벨 ${minLv}에 도달하면 볼 수 있어요!`, 'info');
+                return;
+            }
             const stage = thumb.dataset.stage;
             const petK = thumb.dataset.pet;
             showZoomedImage(petK, stage);
@@ -255,13 +269,26 @@ function showPetDetail(petKey, status) {
 }
 
 /**
- * 성장 단계 썸네일 (영상 있으면 재생 아이콘 표시)
+ * 성장 단계 썸네일 (잠금 판별 + 영상 재생 제어)
  */
-function renderStageThumbnail(petKey, stage, label) {
+function renderStageThumbnail(petKey, stage, label, currentStage, studentLevel) {
+    const levelRanges = { baby: 'Lv.1', child: 'Lv.2~4', teen: 'Lv.5~9', adult: 'Lv.10~15' };
+    const isCurrentStage = currentStage === stage;
+    const isLocked = studentLevel < GROWTH_STAGES[stage].minLevel;
+    const borderStyle = isCurrentStage
+        ? 'border: 2px solid #60A5FA; background: #EFF6FF; border-radius: 12px;'
+        : 'border: 2px solid transparent;';
+
+    const lockIcon = `<div class="pet-stage-lock-icon"><svg class="w-5 h-5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>`;
+
     return `
-        <div class="text-center pet-stage-thumb cursor-pointer" data-pet="${petKey}" data-stage="${stage}">
-            ${getPetStageImageHTML(petKey, stage, 'md')}
-            <p class="text-xs text-gray-400 mt-1">${label}</p>
+        <div class="text-center pet-stage-thumb ${isLocked ? 'pet-stage-locked' : 'cursor-pointer'}" style="padding: 6px; ${borderStyle}" data-pet="${petKey}" data-stage="${stage}" data-locked="${isLocked}" data-min-level="${GROWTH_STAGES[stage].minLevel}">
+            <div style="position: relative; display: inline-block;">
+                ${getPetStageImageHTML(petKey, stage, 'md')}
+                ${isLocked ? lockIcon : ''}
+            </div>
+            <p style="font-size: 11px; color: ${isLocked ? '#D1D5DB' : '#6B7280'}; margin-top: 4px;">${label}</p>
+            <p style="font-size: 10px; margin-top: 2px; font-weight: ${isCurrentStage ? '700' : '500'}; color: ${isCurrentStage ? '#3B82F6' : isLocked ? '#D1D5DB' : '#9CA3AF'};">${levelRanges[stage]}</p>
         </div>
     `;
 }

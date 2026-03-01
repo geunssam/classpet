@@ -356,7 +356,6 @@
     border-radius: 28px;
     object-fit: cover;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
-    /* 클릭 애니메이션은 petAnimations.js가 직접 img에 적용 */
 }
 
 /* 학생 모드 이모지 폴백도 크게 */
@@ -473,6 +472,69 @@
 /* 범례 반짝임 (keyframes는 animations.css에 정의) */
 .pet-collection-sparkle {
     animation: sparkle-dot 1.5s ease-in-out infinite;
+}
+
+/* 펫 정보(ℹ) 버튼 — 펫 영역 우상단 */
+.pet-info-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #9CA3AF;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    z-index: 5;
+}
+
+.pet-info-btn:hover {
+    background: rgba(255, 255, 255, 1);
+    color: #3B82F6;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+}
+
+.pet-info-btn:active {
+    transform: scale(0.9);
+}
+
+/* 성장 과정 모달 썸네일 이미지 크기 */
+.pet-stage-thumb .pet-img {
+    width: 60px;
+    height: 60px;
+}
+
+/* 성장 단계 잠금 스타일 */
+.pet-stage-locked {
+    cursor: default;
+}
+
+.pet-stage-locked .pet-img,
+.pet-stage-locked .pet-emoji-text {
+    filter: grayscale(100%);
+    opacity: 0.4;
+}
+
+.pet-stage-lock-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: rgba(255, 255, 255, 0.85);
+    border-radius: 50%;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* 펫 도감 상세 모달 애니메이션 */
