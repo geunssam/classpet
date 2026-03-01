@@ -69,11 +69,11 @@ export function render() {
                 <p class="text-xs text-gray-400 mt-1">한 번 선택하면 바꿀 수 없어요</p>
             </div>
 
-            <!-- 펫 선택 그리드 (3x4) -->
+            <!-- 펫 선택 그리드 (4x4) -->
             <div class="max-w-lg mx-auto">
-                <div class="grid grid-cols-3 gap-3 mb-6" id="petSelectionGrid">
+                <div class="grid grid-cols-4 gap-2 mb-6" id="petSelectionGrid">
                     ${Object.entries(PET_TYPES).map(([type, pet]) => `
-                        <button class="pet-option-btn group relative p-4 bg-white rounded-2xl border-2 border-gray-200 hover:border-primary transition-all duration-300 shadow-sm hover:shadow-md"
+                        <button class="pet-option-btn group relative p-3 bg-white rounded-2xl border-2 border-gray-200 hover:border-primary transition-all duration-300 shadow-sm hover:shadow-md"
                                 data-pet-type="${type}">
                             <!-- 선택 체크 표시 -->
                             <div class="pet-check absolute top-2 right-2 w-5 h-5 rounded-full bg-primary text-white items-center justify-center hidden text-xs">
@@ -82,8 +82,8 @@ export function render() {
 
                             <!-- 펫 이미지와 이름 -->
                             <div class="text-center">
-                                <div class="mb-2 group-hover:scale-110 transition-transform flex justify-center">
-                                    ${getPetStageImageHTML(type, 'baby', 'lg')}
+                                <div class="mb-1 group-hover:scale-110 transition-transform flex justify-center">
+                                    ${getPetStageImageHTML(type, 'baby', 'md')}
                                 </div>
                                 <p class="font-bold text-gray-800 text-sm">${pet.name}</p>
                             </div>

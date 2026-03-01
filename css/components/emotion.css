@@ -332,7 +332,7 @@
 /* === 교사 대시보드 감정 분포 (12종 2줄) === */
 .emotion-distribution-grid {
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 4px;
 }
 
@@ -353,6 +353,22 @@
 .emotion-dist-item .emotion-dist-icon {
     font-size: 18px;
     line-height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.emotion-dist-item .emotion-dist-icon img {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    border-radius: 50%;
+}
+
+.emotion-dist-item .emotion-dist-name {
+    font-size: 9px;
+    color: #888;
+    line-height: 1;
 }
 
 .emotion-dist-item .emotion-dist-count {

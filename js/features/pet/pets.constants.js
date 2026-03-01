@@ -92,7 +92,7 @@ export const PET_TYPES = {
         }
     },
     chick: {
-        name: '병아리',
+        name: '닭',
         category: 'bird',
         stages: { baby: '🐣', child: '🐣', teen: '🐤', adult: '🐓' },
         images: {

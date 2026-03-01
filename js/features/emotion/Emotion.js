@@ -60,6 +60,57 @@ export function render() {
         emotionDistribution[mapped] = (emotionDistribution[mapped] || 0) + 1;
     });
 
+    // 카테고리별 합산 (파이차트용)
+    const categoryTotals = { sunny: 0, calm: 0, cloudy: 0 };
+    Object.entries(EMOTION_TYPES).forEach(([key, info]) => {
+        categoryTotals[info.category] += (emotionDistribution[key] || 0);
+    });
+    const totalEmotions = todayEmotions.length;
+
+    // 파이차트 SVG 생성
+    const pieChart = (() => {
+        const size = 80, cx = 40, cy = 40, r = 32;
+        const cats = [
+            { key: 'sunny', label: '맑은', color: '#FFB74D', count: categoryTotals.sunny },
+            { key: 'calm', label: '잔잔', color: '#B39DDB', count: categoryTotals.calm },
+            { key: 'cloudy', label: '흐린', color: '#78909C', count: categoryTotals.cloudy }
+        ];
+
+        if (totalEmotions === 0) {
+            return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+                <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#E0E0E0" stroke-width="12" />
+            </svg>`;
+        }
+
+        let cumAngle = -Math.PI / 2;
+        const paths = [];
+        cats.forEach(cat => {
+            if (cat.count === 0) return;
+            const ratio = cat.count / totalEmotions;
+            if (ratio >= 1) {
+                paths.push(`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${cat.color}" stroke-width="12" />`);
+                return;
+            }
+            const angle = ratio * Math.PI * 2;
+            const x1 = cx + r * Math.cos(cumAngle);
+            const y1 = cy + r * Math.sin(cumAngle);
+            const x2 = cx + r * Math.cos(cumAngle + angle);
+            const y2 = cy + r * Math.sin(cumAngle + angle);
+            const large = angle > Math.PI ? 1 : 0;
+            paths.push(`<path d="M${x1},${y1} A${r},${r} 0 ${large} 1 ${x2},${y2}" fill="none" stroke="${cat.color}" stroke-width="12" stroke-linecap="round" />`);
+            cumAngle += angle;
+        });
+
+        return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">${paths.join('')}</svg>`;
+    })();
+
+    // 카테고리 범례
+    const categoryLegend = [
+        { label: '맑은', color: '#FFB74D', count: categoryTotals.sunny },
+        { label: '잔잔', color: '#B39DDB', count: categoryTotals.calm },
+        { label: '흐린', color: '#78909C', count: categoryTotals.cloudy }
+    ];
+
     // 학번 순 정렬 (감정 출석부용)
     const sortedStudents = [...students].sort((a, b) => (a.number || 0) - (b.number || 0));
     const sentStudents = sortedStudents.filter(s => checkedIds.has(s.id));
@@ -84,13 +135,28 @@ export function render() {
                 <div class="grid grid-cols-2" style="min-height: 0;">
                     <!-- 왼쪽: 감정 분포 (12종) -->
                     <div class="p-4 flex flex-col">
-                        <h3 class="text-sm font-bold text-gray-700 mb-2">오늘의 우리 반</h3>
+                        <h3 class="text-sm font-bold text-gray-700 mb-3">오늘의 우리 반</h3>
+                        <!-- 파이차트 + 범례 -->
+                        <div class="flex items-center justify-center gap-3 mb-3">
+                            ${pieChart}
+                            <div class="flex flex-col gap-1.5">
+                                ${categoryLegend.map(c => `
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="inline-block w-2.5 h-2.5 rounded-full" style="background:${c.color}"></span>
+                                        <span class="text-xs text-gray-600">${c.label}</span>
+                                        <span class="text-xs font-bold" style="color:${c.color}">${c.count}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                        <!-- 세부 감정 그리드 -->
                         <div class="emotion-distribution-grid flex-1">
                             ${Object.entries(EMOTION_TYPES).map(([key, info]) => {
                                 const count = emotionDistribution[key] || 0;
                                 return `
-                                <div class="emotion-dist-item ${count === 0 ? 'opacity-30' : ''}">
-                                    <span class="emotion-dist-icon">${info.icon}</span>
+                                <div class="emotion-dist-item">
+                                    <span class="emotion-dist-icon">${getEmotionImageHTML(key, 'xs')}</span>
+                                    <span class="emotion-dist-name">${info.name}</span>
                                     <span class="emotion-dist-count" style="color: ${info.color}">${count}</span>
                                 </div>`;
                             }).join('')}
