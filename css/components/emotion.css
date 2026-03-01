@@ -2,23 +2,23 @@
    감정 2단계 UI 전용 CSS
    ============================================= */
 
-/* === 대분류 카테고리 탭 === */
+/* === 대분류 카테고리 탭 (1열 가로) === */
 .emotion-category-tabs {
     display: flex;
-    gap: 8px;
+    gap: 6px;
     padding: 0 16px;
-    margin-bottom: 16px;
+    margin-bottom: 12px;
 }
 
 .emotion-category-tab {
     flex: 1;
     display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: 4px;
-    padding: 12px 8px;
-    border-radius: 16px;
-    border: 2px solid transparent;
+    justify-content: center;
+    gap: 5px;
+    padding: 8px 6px;
+    border-radius: 12px;
+    border: 1.5px solid transparent;
     background: #f9fafb;
     cursor: pointer;
     transition: all 0.25s ease;
@@ -29,14 +29,15 @@
     transform: scale(0.96);
 }
 
-.emotion-category-tab .category-icon {
-    font-size: 28px;
-    line-height: 1;
+.emotion-category-tab .category-svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
     transition: transform 0.25s ease;
 }
 
 .emotion-category-tab .category-name {
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 600;
     color: #6b7280;
     white-space: nowrap;
@@ -45,11 +46,10 @@
 /* 선택된 카테고리 */
 .emotion-category-tab.selected {
     border-color: currentColor;
-    transform: scale(1.02);
 }
 
-.emotion-category-tab.selected .category-icon {
-    transform: scale(1.15);
+.emotion-category-tab.selected .category-svg {
+    transform: scale(1.1);
 }
 
 .emotion-category-tab.selected .category-name {
@@ -97,8 +97,8 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2px;
-    padding: 4px 4px 6px;
+    gap: 0;
+    padding: 0;
     border-radius: 16px;
     border: 2px solid transparent;
     background: #fff;
@@ -130,10 +130,11 @@
 }
 
 .emotion-card .emotion-card-name {
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 600;
     color: #374151;
     white-space: nowrap;
+    padding: 4px 0 6px;
 }
 
 /* 선택된 감정 카드 */
@@ -379,13 +380,14 @@
     border-radius: 12px;
 }
 
-/* === 감정 카드 내 이미지 (꽉 차게) === */
+/* === 감정 카드 내 이미지 (정사각 꽉 채움) === */
 .emotion-card .emotion-img {
-    border-radius: 12px;
+    border-radius: 14px 14px 0 0;
     width: 100% !important;
     height: auto !important;
     aspect-ratio: 1;
     object-fit: cover;
+    display: block;
 }
 
 /* === 마음 보내기 날아가는 애니메이션 === */

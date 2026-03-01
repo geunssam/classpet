@@ -6,11 +6,12 @@
 import { store, PET_TYPES, EMOTION_TYPES, PET_REACTIONS, PET_SPEECH_STYLES, convertToPetSpeech } from '../../store.js';
 import { EMOTION_CATEGORIES } from './emotions.constants.js';
 import { router } from '../../router.js';
-import { getPetEmoji, getPetImageHTML, getPetImage, getGrowthStage, getExpProgress, getCurrentLevelExp, getExpForNextLevel, isMaxLevel } from '../../shared/utils/petLogic.js';
+import { getPetEmoji, getPetImageHTML, getPetImage, getGrowthStage, getExpProgress, getCurrentLevelExp, getExpForNextLevel, isMaxLevel, calculateLevel } from '../../shared/utils/petLogic.js';
 import { showToast } from '../../shared/utils/animations.js';
 import { getNameWithSuffix } from '../../shared/utils/nameUtils.js';
 import { playPetClickAnimation } from '../../shared/utils/petAnimations.js';
 import { getEmotionImageHTML, getEmotionInfo, mapLegacyEmotion, getEmotionVideoPath } from '../../shared/utils/emotionHelpers.js';
+import { showPetDetail } from '../pet/PetCollection.js';
 
 let currentStudentTab = 'send'; // 'send' | 'history'
 
@@ -65,46 +66,41 @@ export function render() {
     return `
         <div class="student-mode-container pb-8">
             <!-- 펫 영역 (2열 그리드) -->
-            <div class="pet-display-area px-4 py-6 mb-6">
-                <div class="pet-grid">
-                    <!-- 왼쪽: 펫 이모지 + 이름 -->
+            <div class="pet-display-area px-4 py-6 mb-6 relative">
+                <button id="petInfoBtn" class="pet-info-btn" title="성장 과정 보기">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                </button>
+                <div class="pet-speech-row">
+                    <!-- 왼쪽: 이미지 + 레벨·이름 + 경험치바 -->
                     <div class="pet-left-column">
                         <div id="petEmojiContainer" class="relative">
                             <span id="petEmoji" class="pet-emoji-large inline-block pet-pulse">${petImageHTML}</span>
                             <span id="reactionEmoji" class="absolute -top-3 -right-3 text-2xl opacity-0 transition-all duration-500"></span>
                         </div>
-                        <h2 class="text-2xl font-bold text-gray-800 mt-3">${petName}</h2>
-                    </div>
-                    
-                    <!-- 오른쪽: 레벨+단계 (상단) + 경험치바 (하단) -->
-                    <div class="pet-right-column">
-                        <!-- 상단: 레벨 + 단계 -->
-                        <div class="flex items-center gap-3 mb-4">
+                        <div class="pet-name-level">
                             <span class="level-badge-lg">Lv.${student.level || 1}</span>
-                            <span class="pet-stage-text">${petStage === 'adult' ? '성체' : (petStage === 'teen' ? '청소년' : (petStage === 'child' ? '어린이' : '아기'))}</span>
+                            <h2 class="text-base font-bold text-gray-800">${petName}</h2>
                         </div>
-                        <!-- 하단: 경험치바 (% 내부 중앙) -->
                         <div class="exp-bar-xl">
                             <div class="exp-bar-fill-xl" style="width: ${Math.max(expPercent, 15)}%"></div>
                             <span class="exp-bar-percent">${expPercent}% ( ${currentExp} / ${neededExp} )</span>
                         </div>
                     </div>
+                    <!-- 오른쪽: 말풍선 -->
+                    <div id="petSpeechBubble" class="pet-speech-bubble-inline">
+                        <div class="speech-arrow-left"></div>
+                        <p id="petMessage" class="text-base text-gray-700">
+                            ${hasEmotionsToday
+                        ? `또 이야기하고 싶은 거야? ${getNameWithSuffix(student.name)}! 언제든 말해줘!`
+                        : `안녕, ${getNameWithSuffix(student.name)}! 오늘 기분이 어때? 🐾`
+                    }
+                        </p>
+                    </div>
                 </div>
             </div>
 
-            <!-- 펫 말풍선 -->
-            <div id="petSpeechBubble" class="pet-speech-bubble bg-white rounded-2xl p-4 shadow-soft mx-4 mb-6 relative">
-                <div class="speech-arrow"></div>
-                <p id="petMessage" class="text-center text-gray-700">
-                    ${hasEmotionsToday
-            ? `또 이야기하고 싶은 거야? ${getNameWithSuffix(student.name)}! 언제든 말해줘! 💕`
-            : `안녕, ${getNameWithSuffix(student.name)}! 오늘 기분이 어때? 🐾`
-        }
-                </p>
-            </div>
-
             <!-- 탭 UI -->
-            <div class="flex gap-2 mx-4 mb-6">
+            <div class="flex gap-2 mx-4 mb-4">
                 <button id="tabSendEmotion" class="student-tab-btn flex-1 py-2.5 px-4 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-1.5 ${currentStudentTab === 'send' ? 'bg-primary text-white shadow-md' : 'bg-gray-100 text-gray-600'}">
                     <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                     마음 보내기
@@ -124,12 +120,18 @@ export function render() {
 
                     <!-- STEP 1: 대분류 카테고리 선택 -->
                     <div class="emotion-category-tabs" id="emotionCategoryTabs">
-                        ${Object.entries(EMOTION_CATEGORIES).map(([key, cat]) => `
-                            <button class="emotion-category-tab" data-category="${key}">
-                                <span class="category-icon">${cat.icon}</span>
-                                <span class="category-name">${cat.name}</span>
-                            </button>
-                        `).join('')}
+                        <button class="emotion-category-tab" data-category="sunny">
+                            <svg class="category-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                            <span class="category-name">맑은 기분</span>
+                        </button>
+                        <button class="emotion-category-tab" data-category="calm">
+                            <svg class="category-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                            <span class="category-name">잔잔한 기분</span>
+                        </button>
+                        <button class="emotion-category-tab" data-category="cloudy">
+                            <svg class="category-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="16" y1="13" x2="16" y2="21"/><line x1="8" y1="13" x2="8" y2="21"/><line x1="12" y1="15" x2="12" y2="23"/><path d="M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25"/></svg>
+                            <span class="category-name">흐린 기분</span>
+                        </button>
                     </div>
 
                     <!-- STEP 2: 세부 감정 카드 (카테고리 선택 후 표시) -->
@@ -274,6 +276,18 @@ export function afterRender() {
         petEmoji.addEventListener('click', () => {
             const currentStudent = store.getCurrentStudent();
             playPetClickAnimation(petEmoji, currentStudent?.petType, currentStudent?.level);
+        });
+    }
+
+    // 펫 정보(ℹ) 버튼 → 성장 과정 모달
+    const petInfoBtn = document.getElementById('petInfoBtn');
+    if (petInfoBtn) {
+        petInfoBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const currentStudent = store.getCurrentStudent();
+            if (currentStudent?.petType) {
+                showPetDetail(currentStudent.petType, 'current');
+            }
         });
     }
 
@@ -434,7 +448,7 @@ function bindEmotionSendEvents() {
                         id="petMemo"
                         class="emotion-letter-textarea"
                         rows="4"
-                        placeholder="${info.name}한 이유가 뭐야? 왜 그런 감정을 느꼈어?"
+                        placeholder="${info.prompt}"
                     ></textarea>
                 </div>
 
@@ -621,11 +635,14 @@ function setupStudentPetSubscription() {
         const currentStudent = store.getCurrentStudent();
         if (!currentStudent) return;
 
-        // exp/level이 변경된 경우에만 업데이트
-        if (currentStudent.exp !== activePet.exp || currentStudent.level !== activePet.level) {
+        // exp에서 level 재계산 (Firebase 데이터 불일치 방지)
+        const syncedExp = activePet.exp || 0;
+        const syncedLevel = calculateLevel(syncedExp);
+
+        if (currentStudent.exp !== syncedExp || currentStudent.level !== syncedLevel) {
             store.updateStudent(currentStudent.id, {
-                exp: activePet.exp || 0,
-                level: activePet.level || 1
+                exp: syncedExp,
+                level: syncedLevel
             });
 
             // 펫 디스플레이 영역만 부분 갱신

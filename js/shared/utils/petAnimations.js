@@ -29,8 +29,26 @@ const DEFAULT_ANIMATION = { class: 'pet-click-bounce', particles: ['💫', '⭐'
 
 /** 동물+성장단계별 클릭 영상 매핑 */
 const PET_CLICK_VIDEOS = {
-    'lion_baby': 'pet-assets/lion/video/lion_stage1_baby.mp4',
-    'lion_adult': 'pet-assets/lion/video/lion_stage4_adult.mp4',
+    // 사자
+    'lion_baby': 'pet-assets/lion/video/사자 1단계 영상.mp4',
+    'lion_child': 'pet-assets/lion/video/사자 2단계 영상.mp4',
+    'lion_teen': 'pet-assets/lion/video/사자 3단계 영상 .mp4',
+    'lion_adult': 'pet-assets/lion/video/사자 4단계 영상.mp4',
+    // 고양이
+    'cat_baby': 'pet-assets/cat/vedio/고양이 1단계 영상.mp4',
+    'cat_child': 'pet-assets/cat/vedio/고양이 2단계 영상.mp4',
+    'cat_teen': 'pet-assets/cat/vedio/고양이 3단계 영상.mp4',
+    'cat_adult': 'pet-assets/cat/vedio/고양이 4단계 영상.mp4',
+    // 토끼
+    'rabbit_baby': 'pet-assets/video/rabbit_stage1_newborn.mp4',
+    'rabbit_child': 'pet-assets/video/rabbit_stage2_baby.mp4',
+    'rabbit_teen': 'pet-assets/video/rabbit_stage3_growing.mp4',
+    'rabbit_adult': 'pet-assets/video/rabbit_stage4_adult.mp4',
+    // 고슴도치
+    'hedgehog_baby': 'pet-assets/video/hedgehog_stage1_newborn.mp4',
+    'hedgehog_child': 'pet-assets/video/hedgehog_stage2_baby.mp4',
+    'hedgehog_teen': 'pet-assets/video/hedgehog_stage3_growing.mp4',
+    'hedgehog_adult': 'pet-assets/video/hedgehog_stage4_adult.mp4',
 };
 
 /** 특정 펫+단계의 영상 경로 반환 (없으면 null) */

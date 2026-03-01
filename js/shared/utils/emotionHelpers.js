@@ -42,7 +42,7 @@ export function isLegacyEmotion(emotionKey) {
 const EMOTION_ASSET_BASE = '/emotion-assets';
 
 // 영상이 존재하는 감정 목록 (파일명: {key}.mp4)
-const EMOTION_VIDEOS = new Set(['grateful']);
+const EMOTION_VIDEOS = new Set(['happy', 'excited', 'grateful', 'love', 'relaxed', 'neutral', 'surprised', 'shy', 'sad', 'angry', 'worried', 'lonely']);
 
 /**
  * 감정 영상 경로 반환 (없으면 빈 문자열)
