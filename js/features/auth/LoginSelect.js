@@ -200,7 +200,7 @@ function showTermsAgreementModal(user) {
                 transition: max-height 0.3s ease;
             }
             .terms-content-panel.open {
-                max-height: 240px; overflow-y: auto;
+                max-height: 300px; overflow-y: auto;
             }
         `;
         document.head.appendChild(style);

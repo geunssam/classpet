@@ -23,6 +23,7 @@ import {
     clearCurrentSession,
     serverTimestamp
 } from '../../shared/firebase/init.js';
+import { TERMS_VERSION, PRIVACY_VERSION } from '../../shared/utils/termsContent.js';
 
 const googleProvider = new GoogleAuthProvider();
 
@@ -35,8 +36,11 @@ async function processGoogleSignInResult(result) {
     const profile = await createOrUpdateTeacherProfile(user);
     setCurrentTeacherUid(user.uid);
 
-    // 약관 동의 여부 확인 (termsAgreed !== true → 모달 필요)
-    const needsTermsAgreement = profile?.termsAgreed !== true;
+    // 약관 동의 여부 확인 (미동의 또는 버전 불일치 → 재동의 모달)
+    const needsTermsAgreement =
+        profile?.termsAgreed !== true ||
+        profile?.termsAgreedVersion !== TERMS_VERSION ||
+        profile?.privacyAgreedVersion !== PRIVACY_VERSION;
     console.log(`✅ Google 로그인 성공: ${user.email} (약관동의: ${!needsTermsAgreement})`);
 
     const userData = {
@@ -206,7 +210,9 @@ export async function saveTermsAgreement(uid) {
         const teacherRef = doc(db, 'teachers', uid);
         await setDoc(teacherRef, {
             termsAgreed: true,
-            termsAgreedAt: serverTimestamp()
+            termsAgreedAt: serverTimestamp(),
+            termsAgreedVersion: TERMS_VERSION,
+            privacyAgreedVersion: PRIVACY_VERSION
         }, { merge: true });
         console.log('✅ 약관 동의 저장 완료');
         return true;
