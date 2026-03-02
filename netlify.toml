@@ -5,6 +5,10 @@
   command = "npm run build"
   publish = "."
 
+# preview 브랜치 배포 활성화
+[context.preview]
+  command = "npm run build"
+
 [build.processing]
   skip_processing = false
 [build.processing.html]
