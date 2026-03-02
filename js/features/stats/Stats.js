@@ -9,6 +9,14 @@ import { getPetEmoji, getPetImageHTML, calculateRank, getRankTier, getGrowthStag
 import { showToast, setModalContent, openModal, closeModal, showLoading, hideLoading } from '../../shared/utils/animations.js';
 const DEFAULT_CAT_ORDER = Object.keys(PRAISE_CATEGORIES);
 
+// HEX → RGBA
+function hexToRgba(hex, alpha) {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 export function render() {
     const students = store.getStudents() || [];
     const stats = store.getStats();
@@ -87,33 +95,116 @@ export function render() {
                 `}
             </div>
 
-            <!-- 칭찬 통계 -->
-            <div class="card">
-                <h3 class="section-title">📈 칭찬 통계</h3>
-                <div class="grid grid-cols-4 gap-1">
-                    ${Object.entries(store.getPraiseCategories()).sort(([a], [b]) => {
-                        const ai = DEFAULT_CAT_ORDER.indexOf(a);
-                        const bi = DEFAULT_CAT_ORDER.indexOf(b);
-                        if (ai !== -1 && bi !== -1) return ai - bi;
-                        if (ai !== -1) return -1;
-                        if (bi !== -1) return 1;
-                        return 0;
-                    }).map(([key, cat]) => `
-                    <span class="flex items-center bg-cream rounded-lg px-1 py-1.5">
-                        <span class="flex-1 text-center text-xl">${cat.icon}</span>
-                        <span class="flex-1 text-center text-sm font-bold text-gray-800">${cat.name}</span>
-                        <span class="flex-1 text-center font-extrabold text-sm text-gray-800">${stats.categoryStats[key] || 0}</span>
-                    </span>
-                    `).join('')}
+            <!-- 칭찬 통계 2열 (대시보드 동일 구조) -->
+            ${(() => {
+                const praiseCats = store.getPraiseCategories();
+                const catEntries = Object.entries(praiseCats).sort(([a], [b]) => {
+                    const ai = DEFAULT_CAT_ORDER.indexOf(a);
+                    const bi = DEFAULT_CAT_ORDER.indexOf(b);
+                    if (ai !== -1 && bi !== -1) return ai - bi;
+                    if (ai !== -1) return -1;
+                    if (bi !== -1) return 1;
+                    return 0;
+                });
+                const FB_COLORS = ['#fbbf24', '#60a5fa', '#a78bfa', '#34d399', '#f87171', '#fb923c', '#e879f9', '#38bdf8'];
+                const catColor = (cat, i) => cat.color || FB_COLORS[i % FB_COLORS.length];
+                const total = catEntries.reduce((s, [k]) => s + (stats.categoryStats[k] || 0), 0);
+                const svgR = 34, svgC = 50, svgW = 16;
+                const circ = 2 * Math.PI * svgR;
+                let offset = 0;
+                const segs = catEntries.map(([k, cat], i) => {
+                    const cnt = stats.categoryStats[k] || 0;
+                    const pct = total > 0 ? cnt / total : 0;
+                    const dash = pct * circ;
+                    const gap = circ - dash;
+                    const c = catColor(cat, i);
+                    const s = `<circle cx="${svgC}" cy="${svgC}" r="${svgR}" fill="none" stroke="${c}" stroke-width="${svgW}" stroke-dasharray="${dash} ${gap}" stroke-dashoffset="-${offset}" data-tooltip="${cat.name}: ${cnt}회" style="cursor:pointer;pointer-events:stroke;"></circle>`;
+                    offset += dash;
+                    return s;
+                }).join('');
+                const svg = total > 0
+                    ? `<svg viewBox="0 0 100 100" style="width:100%;height:100%;transform:rotate(-90deg);"><circle cx="${svgC}" cy="${svgC}" r="${svgR}" fill="none" stroke="#f3f4f6" stroke-width="${svgW}"/>${segs}</svg>`
+                    : `<svg viewBox="0 0 100 100" style="width:100%;height:100%;"><circle cx="${svgC}" cy="${svgC}" r="${svgR}" fill="none" stroke="#e5e7eb" stroke-width="${svgW}"/></svg>`;
+                return `
+            <div class="grid grid-cols-2 gap-3">
+                <!-- 카테고리 리스트 -->
+                <div class="card py-2" style="margin:0;">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="section-title m-0 flex items-center gap-1.5" style="font-size:13px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block;flex-shrink:0"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>칭찬 통계</span>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        ${catEntries.map(([k, cat], i) => {
+                            const cnt = stats.categoryStats[k] || 0;
+                            const c = catColor(cat, i);
+                            return `
+                            <div class="flex items-center gap-2">
+                                <span style="width:8px;height:8px;border-radius:50%;background:${c};flex-shrink:0;"></span>
+                                <span class="text-sm font-medium text-gray-600 flex-1">${cat.name}</span>
+                                <span class="text-sm font-bold" style="color:${c};">${cnt}</span>
+                            </div>`;
+                        }).join('')}
+                    </div>
                 </div>
-            </div>
+                <!-- 파이차트 -->
+                <div class="card py-2" style="margin:0;">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="section-title m-0 flex items-center gap-1.5" style="font-size:13px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block;flex-shrink:0"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 10 10h-10z"/></svg>칭찬 분포</span>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div style="position:relative;width:100%;max-width:100px;aspect-ratio:1;margin:4px auto;">
+                            ${svg}
+                            <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;">
+                                <span style="font-size:14px;font-weight:700;color:#374151;">${total}</span>
+                            </div>
+                        </div>
+                        <span style="font-size:10px;color:#9ca3af;margin-top:4px;">총 칭찬 횟수</span>
+                    </div>
+                </div>
+            </div>`;
+            })()}
 
         </div>
     `;
 }
 
 export function afterRender() {
-    // Stats 페이지에서는 특별한 afterRender 불필요
+    // SVG 도넛 차트 커스텀 툴팁
+    const content = document.getElementById('content');
+    if (!content) return;
+    const circles = content.querySelectorAll('circle[data-tooltip]');
+    if (!circles.length) return;
+
+    let tip = document.getElementById('svgChartTip');
+    if (!tip) {
+        tip = document.createElement('div');
+        tip.id = 'svgChartTip';
+        Object.assign(tip.style, {
+            position: 'fixed', padding: '4px 10px', borderRadius: '8px',
+            background: 'rgba(55,65,81,.9)', color: '#fff', fontSize: '12px',
+            fontWeight: '600', pointerEvents: 'none', opacity: '0',
+            transition: 'opacity .15s', zIndex: '9999', whiteSpace: 'nowrap'
+        });
+        document.body.appendChild(tip);
+    }
+
+    circles.forEach(c => {
+        const color = c.getAttribute('stroke') || '#374151';
+        const show = (e) => {
+            tip.textContent = c.getAttribute('data-tooltip');
+            tip.style.background = color;
+            tip.style.opacity = '1';
+            const cx = (e.touches ? e.touches[0].clientX : e.clientX);
+            const cy = (e.touches ? e.touches[0].clientY : e.clientY);
+            tip.style.left = cx + 8 + 'px';
+            tip.style.top = cy - 32 + 'px';
+        };
+        const hide = () => { tip.style.opacity = '0'; };
+
+        c.addEventListener('mouseenter', show);
+        c.addEventListener('mousemove', show);
+        c.addEventListener('mouseleave', hide);
+        c.addEventListener('touchstart', (e) => { show(e); setTimeout(hide, 1500); }, { passive: true });
+    });
 }
 
 /**

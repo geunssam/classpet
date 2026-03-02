@@ -92,18 +92,18 @@ export const praiseMixin = {
         this.syncPraiseCategoriesToFirebase(categories);
     },
 
-    addPraiseCategory({ icon, name, exp }) {
+    addPraiseCategory({ icon, name, exp, color }) {
         const categories = this.getPraiseCategories();
         const key = `custom_${Date.now()}`;
-        categories[key] = { icon, name, exp: Number(exp) };
+        categories[key] = { icon, name, exp: Number(exp), color: color || '#60a5fa' };
         this.savePraiseCategories(categories);
         return key;
     },
 
-    updatePraiseCategory(key, { icon, name, exp }) {
+    updatePraiseCategory(key, { icon, name, exp, color }) {
         const categories = this.getPraiseCategories();
         if (categories[key]) {
-            categories[key] = { icon, name, exp: Number(exp) };
+            categories[key] = { icon, name, exp: Number(exp), color: color || categories[key].color || '#60a5fa' };
             this.savePraiseCategories(categories);
         }
     },

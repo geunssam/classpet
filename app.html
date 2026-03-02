@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#7C9EF5">
+    <meta name="format-detection" content="telephone=no">
+
+    <title>클래스펫 - 학급 경영 도우미</title>
+
+    <!-- PWA 설정 -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="icons/icon-192x192.png" type="image/png">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+
+    <!-- Critical CSS (인라인) -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        body {
+            font-family: 'Paperlogy', -apple-system, 'Apple SD Gothic Neo', sans-serif;
+            background: #FFF9F0;
+            min-height: 100vh;
+            min-height: -webkit-fill-available;
+        }
+
+        #authLoadingScreen {
+            position: fixed;
+            inset: 0;
+            background: #fff;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .loading-content {
+            text-align: center;
+        }
+
+        .loading-icon {
+            font-size: 3.5rem;
+            animation: bounce 1s infinite;
+        }
+
+        .loading-text {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #374151;
+            margin-top: 1rem;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+    </style>
+
+    <!-- Tailwind CSS (빌드됨) - 비동기 로딩 -->
+    <link rel="preload" href="css/output.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript>
+        <link rel="stylesheet" href="css/output.css">
+    </noscript>
+
+    <!-- 커스텀 스타일 - 비동기 로딩 -->
+    <link rel="preload" href="css/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript>
+        <link rel="stylesheet" href="css/style.css">
+    </noscript>
+
+    <!-- 감정 2단계 UI 스타일 -->
+    <link rel="stylesheet" href="css/components/emotion.css">
+
+    <!-- 폰트 CDN (Paperlogy + GmarketSans) -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/fonts-archive/Paperlogy/subsets/Paperlogy-dynamic-subset.css" />
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/fonts-archive/GmarketSans/GmarketSans.css" />
+</head>
+
+<body>
+    <!-- 인증 로딩 화면 -->
+    <div id="authLoadingScreen">
+        <div class="loading-content">
+            <div class="loading-icon">🐾</div>
+            <p class="loading-text">클래스펫 시작 중...</p>
+        </div>
+    </div>
+
+    <!-- 앱 컨테이너 -->
+    <div id="app" class="app-container-new">
+        <!-- 배경 장식 -->
+        <div class="bg-decorations">
+            <div class="bg-circle bg-circle-1"></div>
+            <div class="bg-circle bg-circle-2"></div>
+            <div class="bg-circle bg-circle-3"></div>
+        </div>
+
+        <!-- 상단 네비바 (기본 숨김 - 플리커링 방지) -->
+        <header class="top-navbar hidden">
+            <div class="navbar-left">
+                <a id="navHomeBtn" class="navbar-home-link" href="#dashboard">
+                    <span class="navbar-logo">🐾</span>
+                    <h1 class="navbar-title">클래스펫</h1>
+                </a>
+            </div>
+            <!-- 교사용 네비게이션 -->
+            <nav class="navbar-tabs" id="teacherNav">
+                <button data-route="dashboard" class="navbar-tab active">
+                    <span class="nav-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M3 9.5L12 4l9 5.5" />
+                            <path d="M19 13v6a1 1 0 01-1 1H6a1 1 0 01-1-1v-6" />
+                        </svg>
+                    </span>
+                    <span>홈</span>
+                </button>
+                <button data-route="timetable" class="navbar-tab">
+                    <span class="nav-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <rect x="3" y="4" width="18" height="16" rx="2" />
+                            <line x1="3" y1="10" x2="21" y2="10" />
+                            <line x1="8" y1="2" x2="8" y2="6" />
+                            <line x1="16" y1="2" x2="16" y2="6" />
+                            <text x="12" y="17" text-anchor="middle" font-size="7" font-weight="600" fill="currentColor"
+                                stroke="none">17</text>
+                        </svg>
+                    </span>
+                    <span>시간표</span>
+                </button>
+                <button data-route="petfarm" class="navbar-tab">
+                    <span class="nav-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <ellipse cx="8.5" cy="4.5" rx="1.7" ry="2.3" transform="rotate(-8 8.5 4.5)" />
+                            <ellipse cx="15.5" cy="4.5" rx="1.7" ry="2.3" transform="rotate(8 15.5 4.5)" />
+                            <ellipse cx="4.5" cy="9" rx="1.4" ry="2" transform="rotate(-18 4.5 9)" />
+                            <ellipse cx="19.5" cy="9" rx="1.4" ry="2" transform="rotate(18 19.5 9)" />
+                            <path d="M12 11C7 11 5.5 13.5 6.5 16C7 17 8 18 9.2 18.8C10 19.3 10.8 18.6 11.3 18.2C11.6 18 11.8 17.8 12 17.8C12.2 17.8 12.4 18 12.7 18.2C13.2 18.6 14 19.3 14.8 18.8C16 18 17 17 17.5 16C18.5 13.5 17 11 12 11Z" />
+                        </svg>
+                    </span>
+                    <span>펫농장</span>
+                </button>
+                <button data-route="emotion" class="navbar-tab">
+                    <span class="nav-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path
+                                d="M12 21C12 21 4 14.5 4 9.5C4 6.5 6.5 4 9.5 4C11 4 12 5 12 5C12 5 13 4 14.5 4C17.5 4 20 6.5 20 9.5C20 14.5 12 21 12 21Z" />
+                            <path d="M12 8v4M10 10h4" stroke-width="1.2" />
+                        </svg>
+                    </span>
+                    <span>마음</span>
+                </button>
+                <button data-route="praise" class="navbar-tab">
+                    <span class="nav-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <polygon
+                                points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                        </svg>
+                    </span>
+                    <span>칭찬</span>
+                </button>
+                <button data-route="stats" class="navbar-tab">
+                    <span class="nav-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <rect x="4" y="13" width="4" height="7" rx="1" />
+                            <rect x="10" y="9" width="4" height="11" rx="1" />
+                            <rect x="16" y="5" width="4" height="15" rx="1" />
+                        </svg>
+                    </span>
+                    <span>통계</span>
+                </button>
+            </nav>
+            <!-- 학생용 네비게이션 (기본 숨김) -->
+            <nav class="navbar-tabs hidden justify-center" id="studentNav">
+                <button data-route="student-home" class="navbar-tab">
+                    <span class="nav-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M3 12L5 10M5 10L12 3L19 10M5 10V20C5 20.55 5.45 21 6 21H9M19 10L21 12M19 10V20C19 20.55 18.55 21 18 21H15M9 21C9.55 21 10 20.55 10 20V16C10 15.45 10.45 15 11 15H13C13.55 15 14 15.45 14 16V20C14 20.55 14.45 21 15 21M9 21H15" />
+                        </svg>
+                    </span>
+                    <span>홈</span>
+                </button>
+                <button data-route="student-main" class="navbar-tab">
+                    <span class="nav-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path
+                                d="M12 21C12 21 4 14.5 4 9.5C4 6.5 6.5 4 9.5 4C11 4 12 5 12 5C12 5 13 4 14.5 4C17.5 4 20 6.5 20 9.5C20 14.5 12 21 12 21Z" />
+                            <path d="M12 8v4M10 10h4" stroke-width="1.2" />
+                        </svg>
+                    </span>
+                    <span>마음보내기</span>
+                </button>
+                <button data-route="student-timetable" class="navbar-tab">
+                    <span class="nav-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <rect x="3" y="4" width="18" height="16" rx="2" />
+                            <line x1="3" y1="10" x2="21" y2="10" />
+                            <line x1="8" y1="2" x2="8" y2="6" />
+                            <line x1="16" y1="2" x2="16" y2="6" />
+                            <text x="12" y="17" text-anchor="middle" font-size="7" font-weight="600" fill="currentColor"
+                                stroke="none">17</text>
+                        </svg>
+                    </span>
+                    <span>시간표</span>
+                </button>
+                <button data-route="student-notice" class="navbar-tab">
+                    <span class="nav-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                            <polyline points="14 2 14 8 20 8" />
+                            <line x1="16" y1="13" x2="8" y2="13" />
+                            <line x1="16" y1="17" x2="8" y2="17" />
+                        </svg>
+                    </span>
+                    <span>알림장</span>
+                </button>
+            </nav>
+            <div class="navbar-right">
+                <!-- 학생 프로필 (펫 이미지 + 학급·이름) -->
+                <div id="studentProfile" class="student-profile hidden">
+                    <span id="studentProfilePet" class="student-profile-pet">🐾</span>
+                    <span id="studentClassInfo" class="navbar-class-info"></span>
+                </div>
+                <!-- 교사용 학급정보 -->
+                <span id="classInfo" class="navbar-class-info"></span>
+                <!-- 교사 프로필 사진 (Google 로그인 시) -->
+                <img id="teacherProfilePic" class="teacher-profile-pic hidden" alt="" />
+
+                <!-- 학생용 버튼들 (데스크탑/태블릿) -->
+                <button id="studentNotificationBtn" class="student-header-btn hidden">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                    </svg>
+                    <span id="studentNotificationBadge" class="student-noti-badge hidden">0</span>
+                </button>
+                <button id="studentSettingsBtn" class="student-header-btn hidden">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <circle cx="12" cy="12" r="3" />
+                        <path
+                            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                    </svg>
+                </button>
+                <button id="studentLogoutBtn" class="student-header-btn hidden">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                        <polyline points="16 17 21 12 16 7" />
+                        <line x1="21" y1="12" x2="9" y2="12" />
+                    </svg>
+                </button>
+
+                <!-- 햄버거 메뉴 (모바일) -->
+                <button id="hamburgerBtn" class="hamburger-btn">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+            </div>
+            <button id="logoutBtn" class="hidden"></button>
+        </header>
+
+        <!-- 메인 컨테이너 -->
+        <div class="main-container">
+            <!-- 메인 콘텐츠 -->
+            <main id="content" class="main-content">
+                <!-- 라우터에 의해 동적으로 렌더링됨 -->
+            </main>
+
+            <!-- 우측 툴바 (투명 리퀴드 글라스) -->
+            <aside class="right-toolbar" id="rightToolbar">
+                <div class="toolbar-items">
+                    <button id="notificationBtn" class="toolbar-btn toolbar-btn-coral">
+                        <span class="toolbar-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                            </svg>
+                        </span>
+                        <span class="toolbar-text">알림</span>
+                        <span class="notification-badge" id="notificationBadge"></span>
+                    </button>
+                    <div class="toolbar-divider"></div>
+                    <div class="toolbar-btn-wrapper">
+                        <button id="dateHistoryBtn" class="toolbar-btn toolbar-btn-green">
+                            <span class="toolbar-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                                    <line x1="16" y1="2" x2="16" y2="6" />
+                                    <line x1="8" y1="2" x2="8" y2="6" />
+                                    <line x1="3" y1="10" x2="21" y2="10" />
+                                </svg>
+                            </span>
+                            <span id="currentDate" class="toolbar-text"></span>
+                        </button>
+                        <input type="date" id="historyDatePicker" class="toolbar-date-picker" />
+                    </div>
+                    <button id="quickPraiseToolbarBtn" class="toolbar-btn toolbar-btn-amber">
+                        <span class="toolbar-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                            </svg>
+                        </span>
+                        <span class="toolbar-text">빠른 칭찬</span>
+                    </button>
+                    <button id="pickerToolbarBtn" class="toolbar-btn toolbar-btn-violet">
+                        <span class="toolbar-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <circle cx="12" cy="12" r="10" />
+                                <path d="M12 8v4l2 2" />
+                                <path d="M8.5 8.5L12 12" />
+                                <circle cx="12" cy="5" r="1" fill="currentColor" stroke="none" />
+                                <circle cx="17.5" cy="8.5" r="1" fill="currentColor" stroke="none" />
+                                <circle cx="17.5" cy="15.5" r="1" fill="currentColor" stroke="none" />
+                                <circle cx="12" cy="19" r="1" fill="currentColor" stroke="none" />
+                                <circle cx="6.5" cy="15.5" r="1" fill="currentColor" stroke="none" />
+                                <circle cx="6.5" cy="8.5" r="1" fill="currentColor" stroke="none" />
+                            </svg>
+                        </span>
+                        <span class="toolbar-text">뽑기</span>
+                    </button>
+                    <button id="timerToolbarBtn" class="toolbar-btn toolbar-btn-blue">
+                        <span class="toolbar-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <circle cx="12" cy="13" r="8" />
+                                <path d="M12 9v4l2 2" />
+                                <line x1="12" y1="1" x2="12" y2="3" />
+                                <line x1="9" y1="1" x2="15" y2="1" />
+                            </svg>
+                        </span>
+                        <span class="toolbar-text">타이머</span>
+                    </button>
+                    <button id="thermoToolbarBtn" class="toolbar-btn toolbar-btn-teal">
+                        <span class="toolbar-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z" />
+                            </svg>
+                        </span>
+                        <span class="toolbar-text">온도계</span>
+                    </button>
+                    <button id="noticeToolbarBtn" class="toolbar-btn toolbar-btn-emerald">
+                        <span class="toolbar-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                <polyline points="14 2 14 8 20 8" />
+                                <line x1="16" y1="13" x2="8" y2="13" />
+                                <line x1="16" y1="17" x2="8" y2="17" />
+                                <polyline points="10 9 9 9 8 9" />
+                            </svg>
+                        </span>
+                        <span class="toolbar-text">알림장</span>
+                    </button>
+                    <div class="toolbar-divider"></div>
+                    <button id="settingsBtn" class="toolbar-btn toolbar-btn-gray">
+                        <span class="toolbar-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <circle cx="12" cy="12" r="3" />
+                                <path
+                                    d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                            </svg>
+                        </span>
+                        <span class="toolbar-text">설정</span>
+                    </button>
+                    <button id="switchClassToolbarBtn" class="toolbar-btn toolbar-btn-indigo hidden">
+                        <span class="toolbar-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                            </svg>
+                        </span>
+                        <span class="toolbar-text">학급 전환</span>
+                    </button>
+                    <button id="headerLogoutBtn" class="toolbar-btn toolbar-btn-danger">
+                        <span class="toolbar-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                                <polyline points="16 17 21 12 16 7" />
+                                <line x1="21" y1="12" x2="9" y2="12" />
+                            </svg>
+                        </span>
+                        <span class="toolbar-text">로그아웃</span>
+                    </button>
+                </div>
+                <button class="toolbar-toggle" id="toolbarToggle">
+                    <span class="toggle-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="14" height="14">
+                            <polyline points="15 18 9 12 15 6" />
+                        </svg>
+                    </span>
+                    <span class="toggle-text toolbar-text">접기</span>
+                </button>
+            </aside>
+        </div>
+
+        <!-- 모바일 드로어 메뉴 -->
+        <div class="mobile-drawer" id="mobileDrawer">
+            <div class="mobile-drawer-nav">
+                <button data-route="dashboard" class="mobile-nav-item active">
+                    <span class="mobile-nav-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M3 9.5L12 4l9 5.5" />
+                            <path d="M19 13v6a1 1 0 01-1 1H6a1 1 0 01-1-1v-6" />
+                        </svg>
+                    </span>
+                    <span>홈</span>
+                </button>
+                <button data-route="timetable" class="mobile-nav-item">
+                    <span class="mobile-nav-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <rect x="3" y="4" width="18" height="16" rx="2" />
+                            <line x1="3" y1="10" x2="21" y2="10" />
+                            <line x1="8" y1="2" x2="8" y2="6" />
+                            <line x1="16" y1="2" x2="16" y2="6" />
+                            <text x="12" y="17" text-anchor="middle" font-size="7" font-weight="600" fill="currentColor"
+                                stroke="none">17</text>
+                        </svg>
+                    </span>
+                    <span>시간표</span>
+                </button>
+                <button data-route="petfarm" class="mobile-nav-item">
+                    <span class="mobile-nav-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <ellipse cx="8.5" cy="4.5" rx="1.7" ry="2.3" transform="rotate(-8 8.5 4.5)" />
+                            <ellipse cx="15.5" cy="4.5" rx="1.7" ry="2.3" transform="rotate(8 15.5 4.5)" />
+                            <ellipse cx="4.5" cy="9" rx="1.4" ry="2" transform="rotate(-18 4.5 9)" />
+                            <ellipse cx="19.5" cy="9" rx="1.4" ry="2" transform="rotate(18 19.5 9)" />
+                            <path d="M12 11C7 11 5.5 13.5 6.5 16C7 17 8 18 9.2 18.8C10 19.3 10.8 18.6 11.3 18.2C11.6 18 11.8 17.8 12 17.8C12.2 17.8 12.4 18 12.7 18.2C13.2 18.6 14 19.3 14.8 18.8C16 18 17 17 17.5 16C18.5 13.5 17 11 12 11Z" />
+                        </svg>
+                    </span>
+                    <span>펫농장</span>
+                </button>
+                <button data-route="emotion" class="mobile-nav-item">
+                    <span class="mobile-nav-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path
+                                d="M12 21C12 21 4 14.5 4 9.5C4 6.5 6.5 4 9.5 4C11 4 12 5 12 5C12 5 13 4 14.5 4C17.5 4 20 6.5 20 9.5C20 14.5 12 21 12 21Z" />
+                            <path d="M12 8v4M10 10h4" stroke-width="1.2" />
+                        </svg>
+                    </span>
+                    <span>마음</span>
+                </button>
+                <button data-route="praise" class="mobile-nav-item">
+                    <span class="mobile-nav-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <polygon
+                                points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                        </svg>
+                    </span>
+                    <span>칭찬</span>
+                </button>
+                <button data-route="stats" class="mobile-nav-item">
+                    <span class="mobile-nav-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <rect x="4" y="13" width="4" height="7" rx="1" />
+                            <rect x="10" y="9" width="4" height="11" rx="1" />
+                            <rect x="16" y="5" width="4" height="15" rx="1" />
+                        </svg>
+                    </span>
+                    <span>통계</span>
+                </button>
+                <button data-route="notice" class="mobile-nav-item">
+                    <span class="mobile-nav-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                            <polyline points="14 2 14 8 20 8" />
+                            <line x1="16" y1="13" x2="8" y2="13" />
+                            <line x1="16" y1="17" x2="8" y2="17" />
+                            <polyline points="10 9 9 9 8 9" />
+                        </svg>
+                    </span>
+                    <span>알림장</span>
+                </button>
+            </div>
+            <!-- 학생용 네비게이션 (기본 숨김) -->
+            <div class="mobile-drawer-nav hidden" id="mobileStudentNav">
+                <button data-route="student-home" class="mobile-nav-item">
+                    <span class="mobile-nav-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M3 12L5 10M5 10L12 3L19 10M5 10V20C5 20.55 5.45 21 6 21H9M19 10L21 12M19 10V20C19 20.55 18.55 21 18 21H15M9 21C9.55 21 10 20.55 10 20V16C10 15.45 10.45 15 11 15H13C13.55 15 14 15.45 14 16V20C14 20.55 14.45 21 15 21M9 21H15" />
+                        </svg>
+                    </span>
+                    <span>홈</span>
+                </button>
+                <button data-route="student-main" class="mobile-nav-item">
+                    <span class="mobile-nav-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path
+                                d="M12 21C12 21 4 14.5 4 9.5C4 6.5 6.5 4 9.5 4C11 4 12 5 12 5C12 5 13 4 14.5 4C17.5 4 20 6.5 20 9.5C20 14.5 12 21 12 21Z" />
+                            <path d="M12 8v4M10 10h4" stroke-width="1.2" />
+                        </svg>
+                    </span>
+                    <span>마음보내기</span>
+                </button>
+                <button data-route="student-timetable" class="mobile-nav-item">
+                    <span class="mobile-nav-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <rect x="3" y="4" width="18" height="16" rx="2" />
+                            <line x1="3" y1="10" x2="21" y2="10" />
+                            <line x1="8" y1="2" x2="8" y2="6" />
+                            <line x1="16" y1="2" x2="16" y2="6" />
+                            <text x="12" y="17" text-anchor="middle" font-size="7" font-weight="600" fill="currentColor"
+                                stroke="none">17</text>
+                        </svg>
+                    </span>
+                    <span>시간표</span>
+                </button>
+                <button data-route="student-notice" class="mobile-nav-item">
+                    <span class="mobile-nav-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                            <polyline points="14 2 14 8 20 8" />
+                            <line x1="16" y1="13" x2="8" y2="13" />
+                            <line x1="16" y1="17" x2="8" y2="17" />
+                        </svg>
+                    </span>
+                    <span>알림장</span>
+                </button>
+            </div>
+            <!-- 학생용 액션 버튼 (모바일 드로어) -->
+            <div class="mobile-drawer-tools hidden" id="mobileStudentActions">
+                <button id="mobileStudentNotiBtn" class="mobile-tool-btn">
+                    <span class="mobile-tool-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                        </svg>
+                    </span>
+                    알림
+                    <span id="mobileStudentNotiBadge" class="student-noti-badge hidden" style="margin-left: auto;">0</span>
+                </button>
+                <button id="mobileStudentSettingsBtn" class="mobile-tool-btn">
+                    <span class="mobile-tool-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <circle cx="12" cy="12" r="3" />
+                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                        </svg>
+                    </span>
+                    PIN 변경
+                </button>
+                <button id="mobileStudentLogoutBtn" class="mobile-tool-btn mobile-tool-btn-danger">
+                    <span class="mobile-tool-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                            <polyline points="16 17 21 12 16 7" />
+                            <line x1="21" y1="12" x2="9" y2="12" />
+                        </svg>
+                    </span>
+                    로그아웃
+                </button>
+            </div>
+            <!-- 학생 프로필 (하단) -->
+            <div class="mobile-drawer-profile hidden" id="mobileStudentProfile">
+                <div class="mobile-profile-info">
+                    <span id="mobileStudentPetIcon" class="mobile-student-pet-icon">🐾</span>
+                    <div class="mobile-profile-text">
+                        <span id="mobileStudentName" class="mobile-profile-name">학생</span>
+                        <span id="mobileStudentClass" class="mobile-profile-class">우리반</span>
+                    </div>
+                    <div class="mobile-profile-actions">
+                        <button id="mobileStudentSettingsBtnDrawer" class="mobile-action-btn-sm" title="PIN 변경">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3" />
+                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                            </svg>
+                        </button>
+                        <button id="mobileStudentLogoutBtnDrawer" class="mobile-action-btn-sm mobile-action-btn-danger" title="로그아웃">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                                <polyline points="16 17 21 12 16 7" />
+                                <line x1="21" y1="12" x2="9" y2="12" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <!-- 교사 프로필 (하단) -->
+            <div class="mobile-drawer-profile hidden" id="mobileDrawerProfile">
+                <div class="mobile-profile-info">
+                    <img id="mobileProfilePic" class="mobile-profile-pic" alt="" />
+                    <div class="mobile-profile-text">
+                        <span id="mobileProfileName" class="mobile-profile-name">선생님</span>
+                        <span class="mobile-profile-class-row">
+                            <span id="mobileProfileClass" class="mobile-profile-class"></span>
+                            <button id="mobileCodeCopyBtn" class="mobile-code-copy-btn hidden" title="학급코드 복사">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                                </svg>
+                            </button>
+                        </span>
+                    </div>
+                    <div class="mobile-profile-actions">
+                        <button id="mobileSettingsBtn" class="mobile-action-btn-sm" title="설정">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3" />
+                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                            </svg>
+                        </button>
+                        <button id="mobileLogoutBtn" class="mobile-action-btn-sm mobile-action-btn-danger" title="로그아웃">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                                <polyline points="16 17 21 12 16 7" />
+                                <line x1="21" y1="12" x2="9" y2="12" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <!-- 교사용 도구 버튼은 우측 툴바에서만 제공 -->
+        </div>
+        <div class="mobile-drawer-overlay" id="mobileDrawerOverlay"></div>
+    </div>
+
+    <!-- 모달 컨테이너 -->
+    <div id="modalContainer" class="fixed inset-0 z-[100] hidden">
+        <div class="modal-backdrop absolute inset-0 bg-black/50"></div>
+        <div class="modal-content"></div>
+    </div>
+
+    <!-- 학생 PIN 변경 모달 (전역) -->
+    <div id="studentPinChangeModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-6 w-full max-w-xs shadow-2xl">
+            <div class="text-center mb-6">
+                <div class="text-4xl mb-2">🔐</div>
+                <h3 class="text-lg font-bold text-gray-800">PIN 변경</h3>
+                <p class="text-sm text-gray-500 mt-1">새로운 PIN을 설정해주세요</p>
+            </div>
+
+            <!-- 현재 PIN -->
+            <div class="mb-4">
+                <label class="text-sm font-medium text-gray-700 mb-2 block">현재 PIN</label>
+                <div class="flex justify-center gap-2" id="globalCurrentPinInputs">
+                    <input type="text" maxlength="1" class="pin-input global-pin-input" data-group="current"
+                        data-index="0" inputmode="numeric">
+                    <input type="text" maxlength="1" class="pin-input global-pin-input" data-group="current"
+                        data-index="1" inputmode="numeric">
+                    <input type="text" maxlength="1" class="pin-input global-pin-input" data-group="current"
+                        data-index="2" inputmode="numeric">
+                    <input type="text" maxlength="1" class="pin-input global-pin-input" data-group="current"
+                        data-index="3" inputmode="numeric">
+                </div>
+            </div>
+
+            <!-- 새 PIN -->
+            <div class="mb-4">
+                <label class="text-sm font-medium text-gray-700 mb-2 block">새 PIN</label>
+                <div class="flex justify-center gap-2" id="globalNewPinInputs">
+                    <input type="text" maxlength="1" class="pin-input global-pin-input" data-group="new" data-index="0"
+                        inputmode="numeric">
+                    <input type="text" maxlength="1" class="pin-input global-pin-input" data-group="new" data-index="1"
+                        inputmode="numeric">
+                    <input type="text" maxlength="1" class="pin-input global-pin-input" data-group="new" data-index="2"
+                        inputmode="numeric">
+                    <input type="text" maxlength="1" class="pin-input global-pin-input" data-group="new" data-index="3"
+                        inputmode="numeric">
+                </div>
+            </div>
+
+            <!-- 새 PIN 확인 -->
+            <div class="mb-4">
+                <label class="text-sm font-medium text-gray-700 mb-2 block">새 PIN 확인</label>
+                <div class="flex justify-center gap-2" id="globalConfirmPinInputs">
+                    <input type="text" maxlength="1" class="pin-input global-pin-input" data-group="confirm"
+                        data-index="0" inputmode="numeric">
+                    <input type="text" maxlength="1" class="pin-input global-pin-input" data-group="confirm"
+                        data-index="1" inputmode="numeric">
+                    <input type="text" maxlength="1" class="pin-input global-pin-input" data-group="confirm"
+                        data-index="2" inputmode="numeric">
+                    <input type="text" maxlength="1" class="pin-input global-pin-input" data-group="confirm"
+                        data-index="3" inputmode="numeric">
+                </div>
+            </div>
+
+            <!-- 에러 메시지 -->
+            <p id="globalPinChangeError" class="text-center text-sm text-red-500 mb-4 hidden"></p>
+
+            <!-- 버튼 -->
+            <div class="modal-buttons">
+                <button id="globalCancelPinBtn" class="liquid-btn-student-secondary">
+                    취소
+                </button>
+                <button id="globalConfirmPinBtn" class="liquid-btn-student">
+                    변경하기
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 토스트 메시지 -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- QR 코드 라이브러리 (지연 로딩) -->
+    <script>
+        // QR 라이브러리 필요 시에만 로딩
+        window.loadQRLibrary = function () {
+            if (window.QRCode) return Promise.resolve();
+            return new Promise((resolve) => {
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js';
+                script.onload = resolve;
+                document.head.appendChild(script);
+            });
+        };
+    </script>
+
+    <!-- 해시 없을 때 기본 라우트 설정 (app.js 로드 전) -->
+    <script>
+        // 해시 없으면 즉시 #login 설정 (replaceState로 히스토리 오염 방지)
+        if (!window.location.hash) {
+            history.replaceState(null, '', '#login');
+        }
+    </script>
+
+    <!-- JavaScript 모듈 (defer로 비차단 로딩) -->
+    <script type="module" src="js/app.js?v=20260207a"></script>
+
+    <!-- Service Worker 등록 -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            // 이미 새로고침 중인지 플래그
+            let isReloading = false;
+            // 첫 방문인지 (SW controller가 없으면 첫 방문)
+            const isFirstVisit = !navigator.serviceWorker.controller;
+
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then((registration) => {
+                        console.log('[PWA] Service Worker 등록 성공:', registration.scope);
+
+                        // 새 버전 감지 시 skipWaiting 요청
+                        registration.addEventListener('updatefound', () => {
+                            const newWorker = registration.installing;
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    console.log('[PWA] 새 버전 감지 - skipWaiting 요청');
+                                    newWorker.postMessage('skipWaiting');
+                                }
+                            });
+                        });
+
+                        // 컨트롤러 변경 시 새로고침 (첫 방문이 아닌 경우만)
+                        navigator.serviceWorker.addEventListener('controllerchange', () => {
+                            // 첫 방문이면 새로고침 안함 (플리커링 방지)
+                            if (isFirstVisit) {
+                                console.log('[PWA] 첫 방문 - 새로고침 건너뜀');
+                                return;
+                            }
+                            if (isReloading) return;
+                            isReloading = true;
+                            console.log('[PWA] 컨트롤러 변경 - 새로고침');
+                            window.location.reload();
+                        });
+                    })
+                    .catch((error) => {
+                        console.error('[PWA] Service Worker 등록 실패:', error);
+                    });
+            });
+        }
+    </script>
+
+</body>
+
+</html>

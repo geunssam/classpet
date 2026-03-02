@@ -6,7 +6,7 @@
 import { store } from '../../store.js';
 import { showQuickPraise } from './QuickPraise.js';
 import { showToast, setModalContent, openModal, closeModal } from '../../shared/utils/animations.js';
-import { PRAISE_CATEGORIES } from '../../shared/constants/index.js';
+import { PRAISE_CATEGORIES, PRAISE_COLOR_PALETTE } from '../../shared/constants/index.js';
 
 // 기본 카테고리 키 순서 (학생 페이지와 동일)
 const DEFAULT_CAT_ORDER = Object.keys(PRAISE_CATEGORIES);
@@ -48,6 +48,7 @@ export function render() {
                     }).map(([key, cat]) => `
                         <div class="flex items-center justify-between bg-white rounded-xl p-3 shadow-sm border border-gray-100">
                             <div class="flex items-center gap-3">
+                                <span style="width:10px;height:10px;border-radius:50%;background:${cat.color || '#60a5fa'};flex-shrink:0;"></span>
                                 <span class="text-2xl">${cat.icon}</span>
                                 <div>
                                     <span class="font-medium text-gray-800">${cat.name}</span>
@@ -207,6 +208,7 @@ function showCategoryModal(editKey = null, editCat = null) {
     const isEdit = !!editKey;
     const title = isEdit ? '카테고리 수정' : '카테고리 추가';
     const currentIcon = editCat?.icon || '';
+    const currentColor = editCat?.color || PRAISE_COLOR_PALETTE[0];
 
     const emojiGroupNames = Object.keys(EMOJI_GROUPS);
     const firstGroup = emojiGroupNames[0];
@@ -242,6 +244,24 @@ function showCategoryModal(editKey = null, editCat = null) {
             </div>
 
             <div>
+                <label class="text-sm font-medium text-gray-700 mb-1 block">차트 색상</label>
+                <input type="hidden" id="categoryColor" value="${currentColor}">
+                <div id="colorPalette" style="display:grid;grid-template-columns:repeat(9,28px);gap:6px;justify-content:center;">
+                    ${PRAISE_COLOR_PALETTE.map(c => `
+                        <button class="color-item rounded-full transition-all ${currentColor === c ? 'ring-2 ring-offset-2 ring-gray-400 scale-110' : 'hover:scale-110'}" data-color="${c}" style="width:28px;height:28px;background:${c};"></button>
+                    `).join('')}
+                    <div style="position:relative;width:28px;height:28px;">
+                        <div class="rounded-full hover:scale-110 transition-transform" style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:conic-gradient(from 0deg,#ff0000,#ff8000,#ffff00,#80ff00,#00ff00,#00ff80,#00ffff,#0080ff,#0000ff,#8000ff,#ff00ff,#ff0080,#ff0000);">
+                            <span style="position:absolute;inset:2px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;pointer-events:none;">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v16m8-8H4"/></svg>
+                            </span>
+                        </div>
+                        <input type="color" id="catColorPicker" style="position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;" value="${currentColor}" title="직접 선택">
+                    </div>
+                </div>
+            </div>
+
+            <div>
                 <label class="text-sm font-medium text-gray-700 mb-1 block">이름</label>
                 <input type="text" id="categoryName" value="${editCat?.name || ''}" class="w-full p-3 border rounded-xl" placeholder="카테고리 이름">
             </div>
@@ -262,6 +282,32 @@ function showCategoryModal(editKey = null, editCat = null) {
 
     const grid = document.getElementById('emojiGrid');
     const hiddenInput = document.getElementById('categoryIcon');
+    const colorInput = document.getElementById('categoryColor');
+
+    // 팔레트 선택 해제 헬퍼
+    const clearColorSelection = () => {
+        document.querySelectorAll('.color-item').forEach(el => {
+            el.classList.remove('ring-2', 'ring-offset-2', 'ring-gray-400', 'scale-110');
+        });
+    };
+
+    // 컬러 팔레트 클릭
+    document.querySelectorAll('.color-item').forEach(btn => {
+        btn.addEventListener('click', () => {
+            colorInput.value = btn.dataset.color;
+            clearColorSelection();
+            btn.classList.add('ring-2', 'ring-offset-2', 'ring-gray-400', 'scale-110');
+        });
+    });
+
+    // 직접 색상 선택 (컬러피커)
+    const catColorPicker = document.getElementById('catColorPicker');
+    if (catColorPicker) {
+        catColorPicker.addEventListener('input', (e) => {
+            colorInput.value = e.target.value;
+            clearColorSelection();
+        });
+    }
 
     // 카테고리 탭 전환
     document.querySelectorAll('.emoji-tab').forEach(tab => {
@@ -296,6 +342,7 @@ function showCategoryModal(editKey = null, editCat = null) {
         const icon = hiddenInput.value.trim();
         const name = document.getElementById('categoryName').value.trim();
         const exp = parseInt(document.getElementById('categoryExp').value);
+        const color = colorInput.value;
 
         if (!icon) {
             showToast('아이콘을 선택해주세요', 'warning');
@@ -311,10 +358,10 @@ function showCategoryModal(editKey = null, editCat = null) {
         }
 
         if (isEdit) {
-            store.updatePraiseCategory(editKey, { icon, name, exp });
+            store.updatePraiseCategory(editKey, { icon, name, exp, color });
             showToast('수정되었습니다', 'success');
         } else {
-            store.addPraiseCategory({ icon, name, exp });
+            store.addPraiseCategory({ icon, name, exp, color });
             showToast('추가되었습니다', 'success');
         }
 
