@@ -504,9 +504,12 @@
     .tools-section { background: #ffffff; }
 
     .tools-grid {
-      display: grid; grid-template-columns: repeat(3, 1fr);
+      display: grid; grid-template-columns: repeat(2, 1fr);
       gap: 20px;
       margin-top: 48px;
+      max-width: 720px;
+      margin-left: auto;
+      margin-right: auto;
     }
     .tool-card {
       padding: 36px 28px;
@@ -789,10 +792,10 @@
       클래스펫
     </a>
     <div class="nav-menu" id="navMenu">
+      <a href="#dashboard" class="nav-link">학급 관리</a>
       <a href="#pet" class="nav-link">펫 키우기</a>
       <a href="#emotion" class="nav-link">마음 보내기</a>
       <a href="#tools" class="nav-link">수업 도구</a>
-      <a href="#dashboard" class="nav-link">학급 관리</a>
       <a href="#start" class="nav-link">시작하기</a>
     </div>
     <div class="nav-end">
@@ -840,7 +843,83 @@
   </div>
 </section>
 
-<!-- ===== 2. Pet Growth ===== -->
+<!-- ===== 2. Teacher Dashboard ===== -->
+<section class="section dashboard-section" id="dashboard">
+  <div class="section-inner">
+    <div class="split">
+      <div class="split-text">
+        <span class="section-tag reveal">학급 관리</span>
+        <h2 class="section-headline reveal">한 화면에서 다 보이는<br>우리 반 오늘 하루</h2>
+        <p class="section-desc reveal reveal-delay-1">오늘의 한마디, 시간표, 감정 현황, 칭찬 통계를 한 화면에서 확인하세요.</p>
+      </div>
+      <div class="split-visual reveal reveal-delay-2">
+        <div class="device-frame device-frame-wide">
+          <div class="device-notch"></div>
+          <div class="device-screen">
+            <!-- 오늘의 한마디 -->
+            <div style="margin:4px 4px 10px; padding:10px 12px; background:linear-gradient(135deg, #fef9c3, #fef3c7); border-radius:10px; display:flex; align-items:center; gap:8px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              <div>
+                <div style="font-size:9px; font-weight:700; color:#92400e; margin-bottom:2px;">오늘의 한마디</div>
+                <div style="font-size:11px; color:#78716c; line-height:1.4;">오늘도 씩씩하게 도전하는 하루!</div>
+              </div>
+            </div>
+
+            <div class="mock-dash">
+              <!-- Timetable -->
+              <div class="mock-dash-card">
+                <div class="mock-dash-card-title">오늘의 시간표</div>
+                <div class="mock-timetable">
+                  <div class="mock-tt-row"><div class="mock-tt-period">1</div><span class="mock-tt-subject">국어</span></div>
+                  <div class="mock-tt-row"><div class="mock-tt-period">2</div><span class="mock-tt-subject">수학</span></div>
+                  <div class="mock-tt-row"><div class="mock-tt-period">3</div><span class="mock-tt-subject">체육</span></div>
+                  <div class="mock-tt-row"><div class="mock-tt-period">4</div><span class="mock-tt-subject">사회</span></div>
+                  <div class="mock-tt-row"><div class="mock-tt-period">5</div><span class="mock-tt-subject">음악</span></div>
+                </div>
+              </div>
+
+              <!-- Emotion pie -->
+              <div class="mock-dash-card">
+                <div class="mock-dash-card-title">감정 현황</div>
+                <div class="mock-pie"></div>
+                <div class="mock-pie-legend">
+                  <span class="mock-pie-item"><span class="mock-pie-dot" style="background:#fbbf24"></span>맑은</span>
+                  <span class="mock-pie-item"><span class="mock-pie-dot" style="background:#60a5fa"></span>잔잔</span>
+                  <span class="mock-pie-item"><span class="mock-pie-dot" style="background:#a78bfa"></span>흐린</span>
+                  <span class="mock-pie-item"><span class="mock-pie-dot" style="background:#f87171"></span>미전송</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Student list -->
+            <div style="padding:4px;">
+              <div class="mock-dash-card-title" style="padding:0 4px 6px; font-size:10px; font-weight:600; color:#9ca3af;">우리 반 친구들</div>
+              <div class="mock-student-list">
+                <div class="mock-student-row">
+                  <img class="mock-student-avatar" src="pet-assets/thumbs/dog_stage4_adult.webp" alt="">
+                  <span class="mock-student-name">김도현</span>
+                  <span class="mock-student-badge">행복</span>
+                </div>
+                <div class="mock-student-row">
+                  <img class="mock-student-avatar" src="pet-assets/thumbs/rabbit_stage4_adult.webp" alt="">
+                  <span class="mock-student-name">이서윤</span>
+                  <span class="mock-student-badge" style="background:#fef3c7; color:#92400e;">감사</span>
+                </div>
+                <div class="mock-student-row">
+                  <img class="mock-student-avatar" src="pet-assets/thumbs/fox_stage4_adult.webp" alt="">
+                  <span class="mock-student-name">박지호</span>
+                  <span class="mock-student-badge" style="background:#fce7f3; color:#9d174d;">신남</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 3. Pet Growth ===== -->
 <section class="section pet-section" id="pet">
   <div class="section-inner">
     <div class="split">
@@ -914,10 +993,9 @@
         <div class="device-frame">
           <div class="device-notch"></div>
           <div class="device-screen">
-            <div class="mock-tabs">
-              <div class="mock-tab active">맑은</div>
-              <div class="mock-tab">잔잔</div>
-              <div class="mock-tab">흐린</div>
+            <!-- 맑은 -->
+            <div style="font-size:10px; font-weight:700; color:#d97706; margin-bottom:6px; display:flex; align-items:center; gap:4px;">
+              <span style="font-size:12px;">☀️</span> 맑은
             </div>
             <div class="mock-emotion-grid">
               <div class="mock-emotion-card selected">
@@ -937,9 +1015,53 @@
                 <span class="mock-emotion-name">사랑</span>
               </div>
             </div>
+            <!-- 잔잔 -->
+            <div style="font-size:10px; font-weight:700; color:#6366f1; margin:8px 0 6px; display:flex; align-items:center; gap:4px;">
+              <span style="font-size:12px;">🌙</span> 잔잔
+            </div>
+            <div class="mock-emotion-grid">
+              <div class="mock-emotion-card">
+                <img class="mock-emotion-img" src="emotion-assets/relaxed.jpg" alt="편안">
+                <span class="mock-emotion-name">편안</span>
+              </div>
+              <div class="mock-emotion-card">
+                <img class="mock-emotion-img" src="emotion-assets/neutral.jpg" alt="평범">
+                <span class="mock-emotion-name">평범</span>
+              </div>
+              <div class="mock-emotion-card">
+                <img class="mock-emotion-img" src="emotion-assets/surprised.jpg" alt="놀람">
+                <span class="mock-emotion-name">놀람</span>
+              </div>
+              <div class="mock-emotion-card">
+                <img class="mock-emotion-img" src="emotion-assets/shy.jpg" alt="수줍">
+                <span class="mock-emotion-name">수줍</span>
+              </div>
+            </div>
+            <!-- 흐린 -->
+            <div style="font-size:10px; font-weight:700; color:#64748b; margin:8px 0 6px; display:flex; align-items:center; gap:4px;">
+              <span style="font-size:12px;">🌧️</span> 흐린
+            </div>
+            <div class="mock-emotion-grid">
+              <div class="mock-emotion-card">
+                <img class="mock-emotion-img" src="emotion-assets/sad.jpg" alt="슬픔">
+                <span class="mock-emotion-name">슬픔</span>
+              </div>
+              <div class="mock-emotion-card">
+                <img class="mock-emotion-img" src="emotion-assets/angry.jpg" alt="화남">
+                <span class="mock-emotion-name">화남</span>
+              </div>
+              <div class="mock-emotion-card">
+                <img class="mock-emotion-img" src="emotion-assets/worried.jpg" alt="걱정">
+                <span class="mock-emotion-name">걱정</span>
+              </div>
+              <div class="mock-emotion-card">
+                <img class="mock-emotion-img" src="emotion-assets/lonely.jpg" alt="외로움">
+                <span class="mock-emotion-name">외로움</span>
+              </div>
+            </div>
             <!-- Mini letter mockup -->
-            <div style="margin-top:12px; padding:12px; background:#fffbeb; border-radius:10px; border:1px dashed #fcd34d;">
-              <div style="font-size:10px; color:#92400e; font-weight:600; margin-bottom:6px;">선생님에게 보내는 편지</div>
+            <div style="margin-top:10px; padding:10px 12px; background:#fffbeb; border-radius:10px; border:1px dashed #fcd34d;">
+              <div style="font-size:10px; color:#92400e; font-weight:600; margin-bottom:4px;">선생님에게 보내는 편지</div>
               <div style="font-size:11px; color:#78716c; line-height:1.5;">오늘 친구랑 같이 놀아서 너무 행복했어요!</div>
             </div>
           </div>
@@ -949,7 +1071,7 @@
   </div>
 </section>
 
-<!-- ===== 4. Classroom Tools ===== -->
+<!-- ===== 5. Classroom Tools ===== -->
 <section class="section tools-section" id="tools">
   <div class="section-inner" style="text-align:center;">
     <span class="section-tag reveal">수업 도구</span>
@@ -986,72 +1108,18 @@
         <div class="tool-title">호루라기</div>
         <div class="tool-desc">꾹, 길게, 삐삐삐 —<br>진짜 호루라기처럼</div>
       </div>
-    </div>
-  </div>
-</section>
-
-<!-- ===== 5. Teacher Dashboard ===== -->
-<section class="section dashboard-section" id="dashboard">
-  <div class="section-inner">
-    <div class="split">
-      <div class="split-text">
-        <span class="section-tag reveal">학급 관리</span>
-        <h2 class="section-headline reveal">한 화면에서 다 보이는<br>우리 반 오늘 하루</h2>
-        <p class="section-desc reveal reveal-delay-1">시간표, 알림장, 감정 현황, 칭찬 통계를 한 화면에서 확인하세요.</p>
-      </div>
-      <div class="split-visual reveal reveal-delay-2">
-        <div class="device-frame device-frame-wide">
-          <div class="device-notch"></div>
-          <div class="device-screen">
-            <div class="mock-dash">
-              <!-- Timetable -->
-              <div class="mock-dash-card">
-                <div class="mock-dash-card-title">오늘의 시간표</div>
-                <div class="mock-timetable">
-                  <div class="mock-tt-row"><div class="mock-tt-period">1</div><span class="mock-tt-subject">국어</span></div>
-                  <div class="mock-tt-row"><div class="mock-tt-period">2</div><span class="mock-tt-subject">수학</span></div>
-                  <div class="mock-tt-row"><div class="mock-tt-period">3</div><span class="mock-tt-subject">체육</span></div>
-                  <div class="mock-tt-row"><div class="mock-tt-period">4</div><span class="mock-tt-subject">사회</span></div>
-                  <div class="mock-tt-row"><div class="mock-tt-period">5</div><span class="mock-tt-subject">음악</span></div>
-                </div>
-              </div>
-
-              <!-- Emotion pie -->
-              <div class="mock-dash-card">
-                <div class="mock-dash-card-title">감정 현황</div>
-                <div class="mock-pie"></div>
-                <div class="mock-pie-legend">
-                  <span class="mock-pie-item"><span class="mock-pie-dot" style="background:#fbbf24"></span>맑은</span>
-                  <span class="mock-pie-item"><span class="mock-pie-dot" style="background:#60a5fa"></span>잔잔</span>
-                  <span class="mock-pie-item"><span class="mock-pie-dot" style="background:#a78bfa"></span>흐린</span>
-                  <span class="mock-pie-item"><span class="mock-pie-dot" style="background:#f87171"></span>미전송</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Student list -->
-            <div style="padding:4px;">
-              <div class="mock-dash-card-title" style="padding:0 4px 6px; font-size:10px; font-weight:600; color:#9ca3af;">우리 반 친구들</div>
-              <div class="mock-student-list">
-                <div class="mock-student-row">
-                  <img class="mock-student-avatar" src="pet-assets/thumbs/dog_stage4_adult.webp" alt="">
-                  <span class="mock-student-name">김도현</span>
-                  <span class="mock-student-badge">행복</span>
-                </div>
-                <div class="mock-student-row">
-                  <img class="mock-student-avatar" src="pet-assets/thumbs/rabbit_stage4_adult.webp" alt="">
-                  <span class="mock-student-name">이서윤</span>
-                  <span class="mock-student-badge" style="background:#fef3c7; color:#92400e;">감사</span>
-                </div>
-                <div class="mock-student-row">
-                  <img class="mock-student-avatar" src="pet-assets/thumbs/fox_stage4_adult.webp" alt="">
-                  <span class="mock-student-name">박지호</span>
-                  <span class="mock-student-badge" style="background:#fce7f3; color:#9d174d;">신남</span>
-                </div>
-              </div>
-            </div>
-          </div>
+      <div class="tool-card reveal reveal-delay-3">
+        <div class="tool-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <polyline points="10 9 9 9 8 9"/>
+          </svg>
         </div>
+        <div class="tool-title">알림장</div>
+        <div class="tool-desc">오늘의 준비물, 숙제를<br>학생에게 바로 전달</div>
       </div>
     </div>
   </div>

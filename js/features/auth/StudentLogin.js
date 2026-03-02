@@ -124,11 +124,6 @@ export function render(params = {}) {
                 <!-- 에러 메시지 -->
                 <p id="pinError" class="text-center text-sm text-red-500 mb-4 hidden">PIN이 틀렸어요. 다시 입력해주세요!</p>
 
-                <!-- 힌트 -->
-                <p class="text-center text-xs text-gray-400 mb-6">
-                    처음이에요? → <span id="pinHint" class="font-mono text-primary">0001</span>
-                </p>
-
                 <!-- 버튼 -->
                 <div class="modal-buttons">
                     <button id="pinCancelBtn" class="liquid-btn-student-secondary">
@@ -153,7 +148,6 @@ function openPinModal(student, petEmoji) {
     const nameEl = document.getElementById('pinModalName');
     const numberEl = document.getElementById('pinModalNumber');
     const emojiEl = document.getElementById('pinModalEmoji');
-    const hintEl = document.getElementById('pinHint');
     const errorEl = document.getElementById('pinError');
 
     // 학생 정보 표시 (이미지 지원)
@@ -162,7 +156,6 @@ function openPinModal(student, petEmoji) {
     emojiEl.innerHTML = student.petType
         ? getPetImageHTML(student.petType, student.level || 1, 'lg')
         : petEmoji;
-    hintEl.textContent = String(student.number).padStart(4, '0');
 
     // 에러 숨기기
     errorEl.classList.add('hidden');
