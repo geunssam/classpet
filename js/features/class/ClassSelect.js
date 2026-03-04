@@ -295,11 +295,11 @@ async function handleDeleteClass(classId, className) {
             showToast(`${className} 학급이 삭제되었습니다`, 'info');
             await refreshClassList();
         } else {
-            throw new Error(result.error || '삭제에 실패했습니다');
+            throw new Error(result.error || '삭제에 실패했어요');
         }
     } catch (error) {
         console.error('학급 삭제 오류:', error);
-        showToast(error.message || '학급 삭제에 실패했습니다', 'error');
+        showToast(error.message || '학급 삭제에 실패했어요', 'error');
     }
 }
 
@@ -421,7 +421,7 @@ async function handleLogout() {
             router.navigate('login');
         } catch (error) {
             console.error('로그아웃 실패:', error);
-            showToast('로그아웃에 실패했습니다', 'error');
+            showToast('로그아웃에 실패했어요', 'error');
         }
     }
 }
@@ -567,11 +567,11 @@ async function handleCreateClass() {
                 await selectClass(result.classId);
             }
         } else {
-            throw new Error(result.error || '학급 생성에 실패했습니다');
+            throw new Error(result.error || '학급 생성에 실패했어요');
         }
     } catch (error) {
         console.error('학급 생성 오류:', error);
-        showToast(error.message || '학급 생성에 실패했습니다', 'error');
+        showToast(error.message || '학급 생성에 실패했어요', 'error');
     } finally {
         isCreating = false;
         const confirmBtn = document.getElementById('confirmCreateBtn');

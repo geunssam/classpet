@@ -180,7 +180,7 @@ export function afterRender() {
                 if (error.code === 'auth/popup-closed-by-user') {
                     showToast('로그인이 취소되었습니다', 'info');
                 } else {
-                    showToast(error.message || '로그인에 실패했습니다', 'error');
+                    showToast(error.message || '로그인에 실패했어요', 'error');
                 }
             }
         });

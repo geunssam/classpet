@@ -98,7 +98,7 @@ export const classMixin = {
                 });
                 return { success: true, classId: newClass.id, teacherUid: newClass.teacherUid, classData: newClass };
             }
-            return { success: false, error: '학급 생성에 실패했습니다' };
+            return { success: false, error: '학급 생성에 실패했어요' };
         } catch (error) {
             console.error('학급 생성 실패:', error);
             return { success: false, error: error.message };
@@ -127,7 +127,7 @@ export const classMixin = {
                 }
                 return { success: true };
             }
-            return { success: false, error: '학급 삭제에 실패했습니다' };
+            return { success: false, error: '학급 삭제에 실패했어요' };
         } catch (error) {
             console.error('학급 삭제 실패:', error);
             return { success: false, error: error.message };

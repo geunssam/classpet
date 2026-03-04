@@ -15,7 +15,7 @@ import { toDateString } from '../shared/utils/dateUtils.js';
 import { bindToolbarToggle, bindMobileDrawer, updateNotificationBadge, updateStudentNotificationBadge } from './navigation.js';
 import { setStudentTab, setHistoryDate } from '../features/emotion/StudentEmotion.js';
 import { showQuickPraise } from '../features/praise/QuickPraise.js';
-import { getPetEmoji, getPetImageHTML } from '../shared/utils/petLogic.js';
+import { getPetImageHTML } from '../shared/utils/petLogic.js';
 import { DEFAULT_THERMOSTAT } from '../features/praise/thermostatMixin.js';
 
 /* ── SVG 아이콘 상수 (이모지 대체) ── */

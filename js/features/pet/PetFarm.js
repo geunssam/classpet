@@ -9,7 +9,6 @@ import { router } from '../../router.js';
 
 const DEFAULT_CAT_ORDER = Object.keys(PRAISE_CATEGORIES);
 import {
-    getPetEmoji,
     getPetImageHTML,
     getExpProgress,
     getGrowthStage,

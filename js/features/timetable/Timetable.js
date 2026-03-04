@@ -1475,7 +1475,7 @@ function showSubjectDeleteConfirmModal(subject, usageCount) {
             showSubjectSettingsModal(); // 목록으로 돌아가기
             refreshView(); // 시간표 새로고침
         } else {
-            showToast('과목 삭제에 실패했습니다', 'error');
+            showToast('과목 삭제에 실패했어요', 'error');
         }
     });
 }

@@ -12,10 +12,6 @@ export const authMixin = {
     async signInWithGoogle() {
         try {
             const result = await firebase.signInWithGoogle();
-            console.log('🔍 store.signInWithGoogle result:', JSON.stringify(result, null, 2));
-            console.log('🔍 result.success:', result?.success);
-            console.log('🔍 result.user exists:', !!result?.user);
-            console.log('🔍 result.user type:', typeof result?.user);
 
             // user 객체가 있으면 성공으로 처리 (success 플래그와 무관하게)
             const user = result?.user;
@@ -49,7 +45,7 @@ export const authMixin = {
                 return { success: false, pending: true };
             }
 
-            return { success: false, error: result?.error || '로그인에 실패했습니다' };
+            return { success: false, error: result?.error || '로그인에 실패했어요' };
         } catch (error) {
             console.error('Google 로그인 실패:', error);
             throw error;

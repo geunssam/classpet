@@ -7,7 +7,7 @@
 import { store, EMOTION_TYPES } from '../../store.js';
 import { EMOTION_CATEGORIES } from './emotions.constants.js';
 import { router } from '../../router.js';
-import { getPetEmoji, getPetImageHTML } from '../../shared/utils/petLogic.js';
+import { getPetImageHTML } from '../../shared/utils/petLogic.js';
 import { showToast } from '../../shared/utils/animations.js';
 import { onEmotionUpdate } from './EmotionService.js';
 import { toDateString } from '../../shared/utils/dateUtils.js';

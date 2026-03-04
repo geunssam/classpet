@@ -132,7 +132,7 @@ async function handleGoogleLogin() {
             showToast(`환영합니다, ${result.user.displayName || '선생님'}! 🎉`, 'success');
             router.navigate('class-select');
         } else {
-            throw new Error(result.error || '로그인에 실패했습니다');
+            throw new Error(result.error || '로그인에 실패했어요');
         }
     } catch (error) {
         console.error('Google 로그인 오류:', error);
@@ -141,7 +141,7 @@ async function handleGoogleLogin() {
         if (error.code === 'auth/popup-closed-by-user') {
             showToast('로그인이 취소되었습니다', 'info');
         } else {
-            showToast(error.message || '로그인에 실패했습니다', 'error');
+            showToast(error.message || '로그인에 실패했어요', 'error');
         }
     } finally {
         // 로딩 숨기기
@@ -362,7 +362,7 @@ function showTermsAgreementModal(user) {
             router.navigate('class-select');
         } catch (error) {
             console.error('약관 동의 저장 실패:', error);
-            showToast('약관 동의 저장에 실패했습니다. 다시 시도해주세요.', 'error');
+            showToast('약관 동의 저장에 실패했어요. 다시 시도해주세요.', 'error');
             agreeBtn.disabled = false;
             agreeBtn.textContent = '동의하고 시작하기';
             agreeBtn.style.opacity = '1';
