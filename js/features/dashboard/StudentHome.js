@@ -241,7 +241,7 @@ export function afterRender() {
             if (petContainer) {
                 const student = store.getCurrentStudent();
                 if (student?.petType) {
-                    playPetClickAnimation(petContainer, student.petType);
+                    playPetClickAnimation(petContainer, student.petType, student.level || 1);
                 }
             }
             setTimeout(() => router.navigate('student-main'), 300);

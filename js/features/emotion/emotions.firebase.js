@@ -42,7 +42,7 @@ export async function saveEmotion(teacherUid, classId, emotion) {
         const localDate = toDateString(now);
 
         const emotionData = {
-            studentId: emotion.studentId,
+            studentId: String(emotion.studentId),
             studentName: emotion.studentName || '',
             studentNumber: emotion.studentNumber || 0,
             emotion: emotion.emotion,

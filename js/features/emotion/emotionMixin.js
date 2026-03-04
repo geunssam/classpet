@@ -34,7 +34,6 @@ export const emotionMixin = {
      * Firebase 먼저 저장 → firebaseId 확보 후 로컬 저장 (중복 방지)
      */
     async addEmotion(emotion) {
-        const log = this.getEmotionLog() || [];
         const now = new Date().toISOString();
 
         const isStudent = emotion.source === 'student';
@@ -77,7 +76,8 @@ export const emotionMixin = {
             this.addToOfflineQueue({ type: 'saveEmotion', teacherUid, classId, data: newEmotion });
         }
 
-        // 로컬에 저장 (firebaseId 포함)
+        // await 이후에 localStorage 읽기 (최신 상태 보장 — 레이스 컨디션 방지)
+        const log = this.getEmotionLog() || [];
         log.unshift(newEmotion);
         if (log.length > 1000) log.pop();
         this.saveEmotionLog(log);

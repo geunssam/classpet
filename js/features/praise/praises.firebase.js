@@ -37,6 +37,7 @@ export async function savePraise(teacherUid, classId, praise) {
 
         const praiseData = {
             ...praise,
+            studentId: String(praise.studentId),
             date: toDateString(praise.timestamp ? new Date(praise.timestamp) : new Date()),
             teacherUid: uid,
             classId: cId,

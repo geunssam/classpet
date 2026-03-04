@@ -251,6 +251,12 @@ export function initRouter() {
                     setTimeout(() => router.navigate('student-login'), 0);
                     return '<div class="text-center p-8">로그인이 필요합니다...</div>';
                 }
+                // 이미 펫이 있으면 홈으로 리다이렉트 (뒤로가기 중복 선택 방지)
+                const session = store.getStudentSession();
+                if (session?.studentId && store.hasSelectedPet(session.studentId)) {
+                    setTimeout(() => router.navigate('student-home'), 0);
+                    return '<div class="text-center p-8">이동 중...</div>';
+                }
                 updateHeaderForStudentMode(true, true);
                 const html = PetSelection.render();
                 setTimeout(() => PetSelection.afterRender?.(), 0);

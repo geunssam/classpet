@@ -1,5 +1,5 @@
 // 클래스펫 Service Worker
-const CACHE_NAME = 'classpet-v1772463338980';
+const CACHE_NAME = 'classpet-v1772618858169';
 const OFFLINE_URL = '/offline.html';
 
 // 캐시할 정적 파일들 (앱 셸)
@@ -125,71 +125,16 @@ const STATIC_ASSETS = [
     // features/dashboard/
     '/js/features/dashboard/Dashboard.js',
     '/js/features/dashboard/StudentHome.js',
-    '/manifest.json',
-    // pet-assets (이미지)
-    '/pet-assets/dog/png/dog_stage1_newborn.png',
-    '/pet-assets/dog/png/dog_stage2_baby_v2.png',
-    '/pet-assets/dog/png/dog_stage3_growing.png',
-    '/pet-assets/dog/png/dog_stage4_adult.png',
-    '/pet-assets/cat/png/cat_stage1_newborn.png',
-    '/pet-assets/cat/png/cat_stage2_baby.png',
-    '/pet-assets/cat/png/cat_stage3_growing.png',
-    '/pet-assets/cat/png/cat_stage4_adult.png',
-    '/pet-assets/rabbit/png/rabbit_stage1_newborn.png',
-    '/pet-assets/rabbit/png/rabbit_stage2_baby.png',
-    '/pet-assets/rabbit/png/rabbit_stage3_growing.png',
-    '/pet-assets/rabbit/png/rabbit_stage4_adult.png',
-    '/pet-assets/dragon/png/dragon_stage1_newborn.png',
-    '/pet-assets/dragon/png/dragon_stage2_baby.png',
-    '/pet-assets/dragon/png/dragon_stage3_growing.png',
-    '/pet-assets/dragon/png/dragon_stage4_adult.png',
-    '/pet-assets/hamster/png/hamster_stage1_newborn.png',
-    '/pet-assets/hamster/png/hamster_stage2_baby.png',
-    '/pet-assets/hamster/png/hamster_stage3_growing.png',
-    '/pet-assets/hamster/png/hamster_stage4_adult.png',
-    '/pet-assets/fox/png/fox_stage1_newborn.png',
-    '/pet-assets/fox/png/fox_stage2_baby.png',
-    '/pet-assets/fox/png/fox_stage3_growing.png',
-    '/pet-assets/fox/png/fox_stage4_adult.png',
-    '/pet-assets/bear/png/bear_stage1_newborn.png',
-    '/pet-assets/bear/png/bear_stage2_baby.png',
-    '/pet-assets/bear/png/bear_stage3_growing.png',
-    '/pet-assets/bear/png/bear_stage4_adult.png',
-    '/pet-assets/panda/png/panda_stage1_newborn.png',
-    '/pet-assets/panda/png/panda_stage2_baby.png',
-    '/pet-assets/panda/png/panda_stage3_growing.png',
-    '/pet-assets/panda/png/panda_stage4_adult.png',
-    '/pet-assets/lion/png/lion_stage1_newborn.png',
-    '/pet-assets/lion/png/lion_stage2_baby.png',
-    '/pet-assets/lion/png/lion_stage3_growing.png',
-    '/pet-assets/lion/png/lion_stage4_adult.png',
-    '/pet-assets/chick/png/chick_stage1_newborn.png',
-    '/pet-assets/chick/png/chick_stage2_baby.png',
-    '/pet-assets/chick/png/chick_stage3_growing.png',
-    '/pet-assets/chick/png/chick_stage4_adult.png',
-    '/pet-assets/penguin/png/penguin_stage1_newborn.png',
-    '/pet-assets/penguin/png/penguin_stage2_baby.png',
-    '/pet-assets/penguin/png/penguin_stage3_growing.png',
-    '/pet-assets/penguin/png/penguin_stage4_adult.png',
-    '/pet-assets/turtle/png/turtle_stage1_newborn.png',
-    '/pet-assets/turtle/png/turtle_stage2_baby.png',
-    '/pet-assets/turtle/png/turtle_stage3_growing.png',
-    '/pet-assets/turtle/png/turtle_stage4_adult.png',
-    // pet-assets (영상)
-    '/pet-assets/lion/video/lion_stage1_baby.mp4',
-    // emotion-assets (감정 캐릭터 이미지)
-    '/emotion-assets/happy.png',
-    '/emotion-assets/excited.png',
-    '/emotion-assets/grateful.png',
-    '/emotion-assets/love.png',
-    '/emotion-assets/relaxed.png',
-    '/emotion-assets/neutral.png',
-    '/emotion-assets/surprised.png',
-    '/emotion-assets/shy.png',
-    '/emotion-assets/sad.png',
-    '/emotion-assets/angry.png',
-    '/emotion-assets/worried.png',
-    '/emotion-assets/lonely.png'
+    '/manifest.json'
+    // pet-assets, emotion-assets → 런타임 캐싱 (MEDIA_CACHE)으로 전환
+    // 설치 시 110MB+ 다운로드 제거 → 사용 시점에 캐시
+];
+
+// 미디어 파일 런타임 캐시 (이미지/영상은 캐시 우선 전략)
+const MEDIA_CACHE = 'classpet-media-v1';
+const MEDIA_PATTERNS = [
+    /\/pet-assets\//,
+    /\/emotion-assets\//
 ];
 
 // 캐시하지 않을 URL 패턴들 (Firebase API 요청만 - SDK는 캐시 허용)
@@ -226,7 +171,7 @@ self.addEventListener('activate', (event) => {
             .then((cacheNames) => {
                 return Promise.all(
                     cacheNames
-                        .filter((name) => name !== CACHE_NAME)
+                        .filter((name) => name !== CACHE_NAME && name !== MEDIA_CACHE)
                         .map((name) => {
                             console.log('[SW] Deleting old cache:', name);
                             return caches.delete(name);
@@ -264,6 +209,26 @@ self.addEventListener('fetch', (event) => {
                 .catch(() => {
                     return caches.match(OFFLINE_URL);
                 })
+        );
+        return;
+    }
+
+    // 미디어 파일 (이미지/영상) - 캐시 우선, 없으면 네트워크 → 캐시에 저장
+    if (MEDIA_PATTERNS.some(pattern => pattern.test(request.url))) {
+        event.respondWith(
+            caches.open(MEDIA_CACHE).then((cache) => {
+                return cache.match(request).then((cached) => {
+                    if (cached) return cached;
+                    return fetch(request).then((response) => {
+                        if (response.ok) {
+                            cache.put(request, response.clone());
+                        }
+                        return response;
+                    }).catch(() => {
+                        return new Response('', { status: 503, statusText: 'Service Unavailable' });
+                    });
+                });
+            })
         );
         return;
     }

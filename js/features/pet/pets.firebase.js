@@ -38,6 +38,7 @@ export async function savePet(teacherUid, classId, pet) {
 
         const petData = {
             ...pet,
+            studentId: String(pet.studentId),
             teacherUid: uid,
             classId: cId,
             createdAt: pet.createdAt || serverTimestamp(),
