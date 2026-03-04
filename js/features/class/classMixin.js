@@ -459,6 +459,40 @@ export const classMixin = {
                 }
             }));
 
+            // 4.5. 마이그레이션: studentCode 없는 학생에게 개인코드 자동 발급
+            let migrationCount = 0;
+            const isTeacherSession = !sessionStorage.getItem('classpet_student_session');
+            if (isTeacherSession) {
+                for (const student of mergedStudents) {
+                    if (!student.studentCode) {
+                        try {
+                            const code = await firebase.generateStudentCode();
+                            if (code) {
+                                await firebase.saveStudentCode(code, {
+                                    teacherUid,
+                                    classId,
+                                    studentId: String(student.id)
+                                });
+                                student.studentCode = code;
+                                // Firestore 학생 문서에도 저장
+                                await firebase.saveStudent(teacherUid, classId, {
+                                    id: student.id,
+                                    number: student.number,
+                                    name: student.name,
+                                    studentCode: code
+                                });
+                                migrationCount++;
+                            }
+                        } catch (migErr) {
+                            console.warn(`학생 ${student.name} 개인코드 발급 실패:`, migErr);
+                        }
+                    }
+                }
+                if (migrationCount > 0) {
+                    console.log(`개인코드 마이그레이션: ${migrationCount}명 발급 완료`);
+                }
+            }
+
             // 5. localStorage에 완전한 데이터 저장
             this.saveStudents(mergedStudents);
             this.savePraiseLog(praiseLog);
@@ -484,7 +518,7 @@ export const classMixin = {
             }
 
             // 7. 데이터 로드 완료 알림 (화면 갱신용)
-            this.notify('dataLoaded', { students: true, praises: true, emotions: true });
+            this.notify('dataLoaded', { students: true, praises: true, emotions: true, migrationCount });
 
             return true;
         } catch (error) {

@@ -6,6 +6,7 @@ import {
     collection,
     doc,
     setDoc,
+    getDoc,
     getDocs,
     deleteDoc,
     onSnapshot
@@ -18,6 +19,86 @@ import {
     serverTimestamp
 } from '../../shared/firebase/init.js';
 import { deleteNotesByStudent } from '../../shared/firebase/notes.js';
+
+// ==================== 학생 개인코드 관리 ====================
+
+/**
+ * 4자리 숫자 유니크 학생코드 생성
+ * @returns {Promise<string|null>} 생성된 4자리 코드 또는 실패 시 null
+ */
+export async function generateStudentCode() {
+    const db = getDb();
+    if (!db) return null;
+
+    for (let attempts = 0; attempts < 10; attempts++) {
+        const code = String(Math.floor(Math.random() * 10000)).padStart(4, '0');
+        const codeRef = doc(db, 'studentCodes', code);
+        const codeDoc = await getDoc(codeRef);
+        if (!codeDoc.exists()) {
+            return code;
+        }
+    }
+    console.error('학생코드 생성 실패: 10회 시도 후 유니크 코드를 찾지 못함');
+    return null;
+}
+
+/**
+ * 학생코드 문서 저장 (/studentCodes/{code})
+ */
+export async function saveStudentCode(code, data) {
+    const db = getDb();
+    if (!db || !code) return false;
+
+    try {
+        await setDoc(doc(db, 'studentCodes', code), {
+            teacherUid: data.teacherUid,
+            classId: data.classId,
+            studentId: data.studentId,
+            createdAt: serverTimestamp()
+        });
+        return true;
+    } catch (error) {
+        console.error('학생코드 저장 실패:', error);
+        return false;
+    }
+}
+
+/**
+ * 학생코드로 학생 정보 조회
+ * @returns {Promise<{teacherUid, classId, studentId}|null>}
+ */
+export async function getStudentByCode(code) {
+    const db = getDb();
+    if (!db || !code) return null;
+
+    try {
+        const codeRef = doc(db, 'studentCodes', code);
+        const codeDoc = await getDoc(codeRef);
+        if (codeDoc.exists()) {
+            return codeDoc.data();
+        }
+        return null;
+    } catch (error) {
+        console.error('학생코드 조회 실패:', error);
+        return null;
+    }
+}
+
+/**
+ * 학생코드 문서 삭제
+ */
+export async function deleteStudentCode(code) {
+    const db = getDb();
+    if (!db || !code) return false;
+
+    try {
+        await deleteDoc(doc(db, 'studentCodes', code));
+        return true;
+    } catch (error) {
+        console.error('학생코드 삭제 실패:', error);
+        return false;
+    }
+}
 
 /**
  * 학생 저장

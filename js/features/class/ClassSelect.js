@@ -509,8 +509,7 @@ function collectStudentData() {
         if (name) {
             students.push({
                 number: number,
-                name: name,
-                pin: String(number).padStart(4, '0')
+                name: name
             });
         }
     });

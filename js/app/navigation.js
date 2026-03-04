@@ -6,7 +6,7 @@
 import { store } from '../store.js';
 import { router } from '../router.js';
 import { showToast } from '../shared/utils/animations.js';
-import { showStudentNotifications, showStudentPinChangeModal, handleStudentLogout } from './header.js';
+import { showStudentNotifications, showStudentCodeInfoModal, handleStudentLogout } from './header.js';
 import { getPetEmoji, getPetImageHTML } from '../shared/utils/petLogic.js';
 
 /**
@@ -227,7 +227,7 @@ export function bindMobileDrawer(showNotificationsFn, showQuickPraiseFn) {
         mobileSettingsBtn.addEventListener('click', () => {
             closeMobileDrawer();
             if (isStudentMode()) {
-                showStudentPinChangeModal();
+                showStudentCodeInfoModal();
             } else {
                 router.navigate('settings');
             }

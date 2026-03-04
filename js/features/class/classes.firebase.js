@@ -20,6 +20,7 @@ import {
     serverTimestamp
 } from '../../shared/firebase/init.js';
 import { getCurrentUser } from '../auth/auth.firebase.js';
+import { generateStudentCode, saveStudentCode } from './students.firebase.js';
 
 /**
  * 새 학급 코드 생성 (6자리 영숫자)
@@ -89,10 +90,17 @@ export async function createClass(classData) {
             for (const student of classData.students) {
                 const studentDocId = String(student.id || student.number);
                 const studentDoc = doc(studentsRef, studentDocId);
+
+                // 개인코드 생성
+                const code = await generateStudentCode();
+                if (code) {
+                    await saveStudentCode(code, { teacherUid, classId, studentId: studentDocId });
+                }
+
                 await setDoc(studentDoc, {
                     number: student.number,
                     name: student.name,
-                    pin: student.pin || String(student.number).padStart(4, '0'),
+                    studentCode: code || '',
                     createdAt: serverTimestamp(),
                     updatedAt: serverTimestamp()
                 });
@@ -245,6 +253,13 @@ export async function deleteClass(teacherUid, classId) {
 
         for (const studentDoc of studentsSnap.docs) {
             const sid = studentDoc.id;
+            const studentData = studentDoc.data();
+
+            // studentCode 문서 삭제
+            if (studentData.studentCode) {
+                await deleteDoc(doc(db, 'studentCodes', studentData.studentCode));
+            }
+
             // 모든 하위 컬렉션 삭제
             const subCollections = ['emotions', 'pets', 'praises'];
             for (const sub of subCollections) {

@@ -205,6 +205,13 @@ export function render() {
                     <button id="dailyMessageClearBtn" class="liquid-btn-small" style="background: #f3f4f6; color: #6b7280;">지우기</button>
                 </div>
                 <p class="text-xs text-gray-400 mt-1 px-2" style="padding-left: 34px;">비어있으면 랜덤 명언이 학생에게 표시됩니다</p>
+                <!-- 학생 개인코드 안내 -->
+                <div class="border-t border-gray-100 mt-2 pt-2 px-2">
+                    <div class="flex items-center justify-between">
+                        <p class="text-xs text-gray-400">학생들은 <strong class="text-gray-600">개인코드 4자리</strong>로 로그인합니다</p>
+                        <button id="goToCodesBtn" class="liquid-btn-small" style="font-size:10px; padding:1px 6px;">코드 관리</button>
+                    </div>
+                </div>
             </div>
 
             <!-- QR 코드 전체화면 모달 (칠판용) -->
@@ -437,12 +444,15 @@ export function afterRender() {
     const goStudentPageBtn = document.getElementById('goStudentPageBtn');
     if (goStudentPageBtn) {
         goStudentPageBtn.addEventListener('click', () => {
-            const classCode = store.getClassCode();
-            if (classCode) {
-                window.open(`${location.origin}${location.pathname}?code=${classCode}#student-login`, '_blank');
-            } else {
-                window.open(`${location.origin}${location.pathname}#student-login`, '_blank');
-            }
+            window.open(`${location.origin}${location.pathname}#student-login`, '_blank');
+        });
+    }
+
+    // 학생 코드 관리 바로가기
+    const goToCodesBtn = document.getElementById('goToCodesBtn');
+    if (goToCodesBtn) {
+        goToCodesBtn.addEventListener('click', () => {
+            router.navigate('settings');
         });
     }
 

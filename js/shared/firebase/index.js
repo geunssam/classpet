@@ -56,7 +56,11 @@ export {
     saveAllStudents,
     getAllStudents,
     deleteStudent,
-    subscribeToStudents
+    subscribeToStudents,
+    generateStudentCode,
+    saveStudentCode,
+    getStudentByCode,
+    deleteStudentCode
 } from '../../features/class/students.firebase.js';
 
 // emotions.js - 감정 기록

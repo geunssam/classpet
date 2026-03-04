@@ -223,30 +223,53 @@ export function render() {
                         <span>👥</span>
                         <span>학생 관리 (${students.length}명)</span>
                     </h2>
-                    <button id="addStudentBtn" class="text-sm text-primary font-medium hover:text-primary-dark">
-                        + 학생 추가
-                    </button>
+                    <div class="flex items-center gap-2">
+                        ${students.length > 0 ? `
+                            <button id="printCodesBtn" class="text-sm text-gray-500 font-medium hover:text-primary">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:2px;"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>코드 인쇄
+                            </button>
+                        ` : ''}
+                        <button id="addStudentBtn" class="text-sm text-primary font-medium hover:text-primary-dark">
+                            + 학생 추가
+                        </button>
+                    </div>
                 </div>
 
                 <div class="card">
-                    ${students.length > 0 ? `
-                        <div class="grid grid-cols-2 gap-2 max-h-[176px] overflow-y-auto" id="studentList">
+                    ${students.length > 0 ? (() => {
+                        const needCodes = students.filter(s => !s.studentCode).length;
+                        return `
+                        ${needCodes > 0 ? `
+                            <div class="flex items-center justify-between px-3 py-2 mb-2 bg-amber-50 rounded-lg border border-amber-200">
+                                <span class="text-xs text-amber-700">${needCodes}명의 코드가 미발급 상태입니다</span>
+                                <button id="bulkGenerateCodesBtn" class="text-xs font-medium text-amber-700 bg-amber-200 hover:bg-amber-300 px-3 py-1 rounded-full transition-colors">일괄 발급</button>
+                            </div>
+                        ` : ''}
+                        <div class="space-y-1.5 max-h-[220px] overflow-y-auto" id="studentList">
                             ${students.map(student => {
+                                const code = student.studentCode || '----';
+                                const hasCode = !!student.studentCode;
                                 return `
                                     <div class="flex items-center justify-between px-3 py-2 bg-gray-50 rounded-lg text-sm">
-                                        <span class="text-gray-600 font-medium">${student.number}번</span>
+                                        <span class="text-gray-600 font-medium" style="min-width:32px;">${student.number}번</span>
                                         <span class="text-gray-800 font-medium flex-1 text-center">${student.name}</span>
-                                        <button class="pin-reset-btn text-xs bg-blue-100 text-blue-600 hover:bg-blue-200 transition-colors px-2 py-0.5 rounded"
+                                        <span class="font-mono font-bold text-xs ${hasCode ? 'text-primary' : 'text-gray-300'}">${code}</span>
+                                        <button class="code-copy-btn text-xs text-gray-400 hover:text-primary transition-colors px-1 ml-1 ${!hasCode ? 'opacity-30 pointer-events-none' : ''}" title="코드 복사"
+                                                data-code="${code}">
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                                        </button>
+                                        <button class="code-regen-btn text-xs text-gray-400 hover:text-orange-500 transition-colors px-1" title="코드 재발급"
                                                 data-student-id="${student.id}"
-                                                data-student-name="${student.name}"
-                                                data-student-number="${student.number}">PIN</button>
+                                                data-student-name="${student.name}">
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+                                        </button>
                                         <button class="student-edit-btn text-xs bg-gray-200 text-gray-600 hover:bg-gray-300 transition-colors px-2 py-0.5 rounded ml-1"
                                                 data-student-id="${student.id}">수정</button>
                                     </div>
                                 `;
                             }).join('')}
-                        </div>
-                    ` : `
+                        </div>`;
+                    })() : `
                         <div class="text-center py-8 text-gray-500">
                             <div class="text-4xl mb-3">🐣</div>
                             <p>등록된 학생이 없어요</p>
@@ -665,24 +688,22 @@ function showRegenerateCodeConfirm() {
 }
 
 /**
- * PIN 초기화 확인 모달
+ * 학생코드 재발급 확인 모달
  */
-function showPinResetConfirm(studentId, studentName, studentNumber) {
-    const defaultPin = String(studentNumber).padStart(4, '0');
-
+function showCodeRegenerateConfirm(studentId, studentName) {
     const modalContent = `
         <div class="space-y-4">
             <div class="flex items-center justify-between">
-                <h3 class="text-lg font-bold">🔐 PIN 초기화</h3>
+                <h3 class="text-lg font-bold">코드 재발급</h3>
                 <button onclick="window.classpet.closeModal()" class="text-gray-400 hover:text-gray-600">✕</button>
             </div>
 
             <div class="text-center py-4">
                 <p class="text-gray-700 mb-2">
-                    <strong>${studentName}</strong>의 PIN을 초기화할까요?
+                    <strong>${studentName}</strong>의 개인코드를 재발급할까요?
                 </p>
                 <p class="text-sm text-gray-500">
-                    초기화 후 PIN: <span class="font-mono text-primary font-bold">${defaultPin}</span>
+                    기존 코드는 사용할 수 없게 됩니다.
                 </p>
             </div>
 
@@ -690,8 +711,8 @@ function showPinResetConfirm(studentId, studentName, studentNumber) {
                 <button onclick="window.classpet.closeModal()" class="flex-1 btn btn-secondary">
                     취소
                 </button>
-                <button id="confirmPinResetBtn" class="flex-1 btn btn-primary">
-                    초기화
+                <button id="confirmCodeRegenBtn" class="flex-1 btn btn-primary">
+                    재발급
                 </button>
             </div>
         </div>
@@ -700,15 +721,97 @@ function showPinResetConfirm(studentId, studentName, studentNumber) {
     setModalContent(modalContent);
     openModal();
 
-    // 확인 버튼 이벤트
-    document.getElementById('confirmPinResetBtn').addEventListener('click', () => {
-        const result = store.resetStudentPin(studentId);
-        if (result) {
-            showToast(`${studentName}의 PIN이 ${defaultPin}으로 초기화되었어요!`, 'success');
-        } else {
-            showToast('PIN 초기화에 실패했어요', 'error');
+    document.getElementById('confirmCodeRegenBtn').addEventListener('click', async () => {
+        try {
+            const newCode = await store.regenerateStudentCode(studentId);
+            if (newCode) {
+                showToast(`${studentName}의 새 코드: ${newCode}`, 'success');
+            } else {
+                showToast('코드 재발급에 실패했어요', 'error');
+            }
+        } catch (error) {
+            console.error('코드 재발급 실패:', error);
+            showToast('코드 재발급에 실패했어요', 'error');
         }
         closeModal();
+        router.handleRoute();
+    });
+}
+
+/**
+ * 학생 코드 인쇄 모달
+ */
+function showPrintCodesModal() {
+    const students = store.getStudents() || [];
+    const settings = store.getSettings();
+    const className = settings?.className || '우리반';
+
+    if (students.length === 0) {
+        showToast('인쇄할 학생이 없어요', 'warning');
+        return;
+    }
+
+    // 인쇄용 모달 생성
+    const printModal = document.createElement('div');
+    printModal.id = 'printCodesModal';
+    printModal.className = 'fixed inset-0 bg-white z-[9999] overflow-y-auto';
+    printModal.innerHTML = `
+        <div class="print-hide p-4 flex items-center justify-between bg-gray-50 border-b sticky top-0">
+            <h2 class="font-bold text-gray-800">${className} - 학생 개인코드</h2>
+            <div class="flex gap-2">
+                <button id="doPrintBtn" class="px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary-dark transition-colors">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline-block;vertical-align:-3px;margin-right:4px;"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>인쇄하기
+                </button>
+                <button id="closePrintBtn" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors">닫기</button>
+            </div>
+        </div>
+        <div class="p-6">
+            <div class="print-grid" style="display:grid; grid-template-columns:repeat(3, 1fr); gap:16px;">
+                ${students.map(student => {
+                    const code = student.studentCode || '----';
+                    const qrUrl = `https://classpet.netlify.app/s?code=${code}`;
+                    return `
+                        <div class="print-card" style="border:2px dashed #d1d5db; border-radius:12px; padding:16px; text-align:center; break-inside:avoid;">
+                            <p style="font-size:14px; color:#6b7280; margin-bottom:4px;">${className}</p>
+                            <p style="font-size:20px; font-weight:bold; color:#374151; margin-bottom:12px;">${student.number}번</p>
+                            <div class="qr-code-cell" data-url="${qrUrl}" style="width:100px; height:100px; margin:0 auto 12px;"></div>
+                            <p style="font-family:monospace; font-size:24px; font-weight:bold; color:#6366f1; letter-spacing:4px;">${code}</p>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(printModal);
+
+    // QR 코드 생성
+    if (typeof QRCode !== 'undefined') {
+        printModal.querySelectorAll('.qr-code-cell').forEach(cell => {
+            const url = cell.dataset.url;
+            try {
+                new QRCode(cell, {
+                    text: url,
+                    width: 100,
+                    height: 100,
+                    colorDark: '#000000',
+                    colorLight: '#ffffff',
+                    correctLevel: QRCode.CorrectLevel.M
+                });
+            } catch (e) {
+                cell.textContent = 'QR';
+            }
+        });
+    }
+
+    // 인쇄 버튼
+    document.getElementById('doPrintBtn').addEventListener('click', () => {
+        window.print();
+    });
+
+    // 닫기 버튼
+    document.getElementById('closePrintBtn').addEventListener('click', () => {
+        printModal.remove();
     });
 }
 
@@ -1125,15 +1228,63 @@ export function afterRender() {
         });
     }
 
-    // PIN 초기화 버튼들
-    document.querySelectorAll('.pin-reset-btn').forEach(btn => {
+    // 코드 복사 버튼들
+    document.querySelectorAll('.code-copy-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const code = btn.dataset.code;
+            if (code && code !== '----') {
+                navigator.clipboard.writeText(code).then(() => {
+                    showToast('코드가 복사되었어요!', 'success');
+                }).catch(() => {
+                    showToast('복사에 실패했어요', 'error');
+                });
+            }
+        });
+    });
+
+    // 코드 재발급 버튼들
+    document.querySelectorAll('.code-regen-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const studentId = btn.dataset.studentId;
             const studentName = btn.dataset.studentName;
-            const studentNumber = parseInt(btn.dataset.studentNumber);
-            showPinResetConfirm(studentId, studentName, studentNumber);
+            showCodeRegenerateConfirm(studentId, studentName);
         });
     });
+
+    // 코드 인쇄 버튼
+    const printCodesBtn = document.getElementById('printCodesBtn');
+    if (printCodesBtn) {
+        printCodesBtn.addEventListener('click', showPrintCodesModal);
+    }
+
+    // 코드 일괄 발급 버튼
+    const bulkGenerateBtn = document.getElementById('bulkGenerateCodesBtn');
+    if (bulkGenerateBtn) {
+        bulkGenerateBtn.addEventListener('click', async () => {
+            bulkGenerateBtn.disabled = true;
+            bulkGenerateBtn.textContent = '발급 중...';
+
+            const students = store.getStudents() || [];
+            const needCodes = students.filter(s => !s.studentCode);
+            let generated = 0;
+
+            for (const student of needCodes) {
+                try {
+                    const newCode = await store.regenerateStudentCode(student.id);
+                    if (newCode) generated++;
+                } catch (e) {
+                    console.warn(`코드 발급 실패 (${student.name}):`, e);
+                }
+            }
+
+            if (generated > 0) {
+                showToast(`${generated}명 코드 발급 완료!`, 'success');
+            } else {
+                showToast('코드 발급에 실패했어요. Firebase 연결을 확인해주세요.', 'error');
+            }
+            router.handleRoute();
+        });
+    }
 
     // 학생 수정 버튼들
     document.querySelectorAll('.student-edit-btn').forEach(btn => {

@@ -164,6 +164,13 @@ export const settingsMixin = {
 
     studentLogout() {
         sessionStorage.removeItem(SESSION_KEYS.STUDENT_SESSION);
+        // 학생 로그아웃 시 민감 데이터 정리
+        localStorage.removeItem(STORAGE_KEYS.STUDENTS);
+        localStorage.removeItem(STORAGE_KEYS.EMOTION_LOG);
+        localStorage.removeItem(STORAGE_KEYS.PRAISE_LOG);
+        localStorage.removeItem('classpet_class_code');
+        localStorage.removeItem(STORAGE_KEYS.CURRENT_CLASS_ID);
+        localStorage.removeItem(STORAGE_KEYS.CURRENT_TEACHER_UID);
         this.notify('studentLogout', null);
     },
 

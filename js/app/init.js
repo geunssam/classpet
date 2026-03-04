@@ -13,6 +13,7 @@ import { startEmotionSubscription, stopEmotionSubscription } from '../features/e
 import { startPetSubscription, stopPetSubscription } from '../features/pet/PetService.js';
 import { initSessionTimeout } from '../features/emotion/sessionTimeout.js';
 import { hasAgreedToTerms } from '../firebase-config.js';
+import { showToast } from '../shared/utils/animations.js';
 
 /**
  * Firebase 서비스 구독 시작 + store에 정리 함수 등록
@@ -36,14 +37,11 @@ async function initApp() {
     if (rightToolbar) rightToolbar.style.display = 'none';
     if (mobileDrawer) mobileDrawer.style.display = 'none';
 
-    // /student 또는 /s 경로 → 학생 로그인 직행
+    // /student 또는 /s 경로 → 학생 개인코드 로그인
     const pathname = window.location.pathname;
     if (pathname === '/student' || pathname === '/s') {
         const urlParams = new URLSearchParams(window.location.search);
         const codeParam = urlParams.get('code');
-        if (codeParam) {
-            store.setClassCode(codeParam.toUpperCase());
-        }
         window.history.replaceState({}, '', '/');
         hideAuthLoadingScreen();
         setTimeout(() => {
@@ -51,28 +49,30 @@ async function initApp() {
             bindNavigation();
             bindHeaderButtons();
             registerGlobalFunctions();
-            router.navigate('student-login');
+            // 개인코드가 있으면 student-login에 code 파라미터 전달 (자동 로그인)
+            if (codeParam) {
+                router.navigate('student-login', { code: codeParam });
+            } else {
+                router.navigate('student-login');
+            }
         }, 0);
         return;
     }
 
-    // URL 파라미터로 학급 코드 자동 설정 (QR 스캔 시)
+    // URL 파라미터로 개인코드 전달 (QR 스캔 시)
     const urlParams = new URLSearchParams(window.location.search);
     const codeParam = urlParams.get('code');
     if (codeParam) {
-        store.setClassCode(codeParam.toUpperCase());
         window.history.replaceState({}, '', window.location.pathname);
-        // 로딩 화면 숨기기
         hideAuthLoadingScreen();
-        // DOM 로드 후 라우터 초기화하고 학생 로그인으로 이동
         setTimeout(() => {
             initRouter();
             bindNavigation();
             bindHeaderButtons();
             registerGlobalFunctions();
-            router.navigate('student-login');
+            router.navigate('student-login', { code: codeParam });
         }, 0);
-        return; // 초기화 중단하고 학생 로그인으로
+        return;
     }
 
     // 1. Firebase 인증 상태 확정까지 대기
@@ -157,6 +157,11 @@ async function initApp() {
         if (type === 'dataLoaded') {
             // 학급 전환 → Firebase 서비스 재구독
             startFirebaseServices();
+
+            // 마이그레이션 완료 알림
+            if (data?.migrationCount > 0) {
+                showToast(`학생 개인코드 ${data.migrationCount}명 발급 완료! 설정에서 확인하세요.`, 'success');
+            }
 
             const currentRoute = window.location.hash.slice(1).split('/')[0].split('?')[0];
             const skipRoutes = ['login', 'teacher-login', 'class-select', 'student-login', 'pet-selection'];

@@ -48,7 +48,7 @@ export function getTermsHTML() {
             <p class="font-semibold text-gray-700 mb-1">제5조 (계정 등록 및 보안)</p>
             <ul class="list-disc list-inside space-y-0.5 text-xs text-gray-500">
                 <li>교사 계정은 Google OAuth 인증을 통해 생성되며, 타인과 계정을 공유해서는 안 됩니다</li>
-                <li>학생 계정(번호, PIN)은 교사가 생성 및 관리하며, 학생의 실명 대신 가명(별명) 사용을 권장합니다</li>
+                <li>학생 계정(개인코드)은 교사가 생성 및 관리하며, 학생의 실명 대신 가명(별명) 사용을 권장합니다</li>
                 <li>교사는 학생 정보에 주민등록번호, 전화번호, 주소 등 민감한 개인정보를 입력해서는 안 됩니다</li>
                 <li>계정의 보안 관리 책임은 해당 이용자에게 있습니다</li>
             </ul>
@@ -127,7 +127,7 @@ export function getPrivacyPolicyHTML() {
             </ul>
             <p class="text-xs text-gray-500 mb-1"><strong>나. 학생 정보</strong></p>
             <ul class="list-disc list-inside space-y-0.5 text-xs text-gray-500 mb-2">
-                <li>수집 항목: 이름(가명 권장), 번호, PIN</li>
+                <li>수집 항목: 이름(가명 권장), 번호, 개인코드</li>
                 <li>이용 목적: 학급 내 본인 확인, 학습 활동 기록</li>
             </ul>
             <p class="text-xs text-gray-500 mb-1"><strong>다. 학급 활동 데이터</strong></p>

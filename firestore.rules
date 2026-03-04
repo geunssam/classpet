@@ -40,11 +40,11 @@ service cloud.firestore {
           allow read: if isAuthenticated();
 
           // 학생 (익명 인증): 수정 시 허용 필드 제한
-          // PIN 변경, 기본 학생 정보(name, number 등) + updatedAt만 허용
+          // 개인코드 변경, 기본 학생 정보(name, number 등) + updatedAt만 허용
           // petType, petName, exp, level 등 펫 관련은 pets 서브컬렉션에서 관리
           allow update: if isAuthenticated()
             && request.resource.data.diff(resource.data).affectedKeys()
-               .hasOnly(['pin', 'name', 'number', 'updatedAt']);
+               .hasOnly(['studentCode', 'name', 'number', 'updatedAt']);
 
           // ====== 학생 서브컬렉션 ======
 
@@ -141,6 +141,21 @@ service cloud.firestore {
     match /{path=**}/praises/{praiseId} {
       allow read: if request.auth != null &&
                      resource.data.teacherUid == request.auth.uid;
+    }
+
+    // ==================== 학생 개인코드 매핑 ====================
+    // /studentCodes/{code} - 학생 개인코드 로그인용 (teacherUid + classId + studentId 매핑)
+    match /studentCodes/{code} {
+      // 읽기: 인증된 모든 사용자 (학생 로그인 시 조회)
+      allow read: if isAuthenticated();
+
+      // 생성/수정: 해당 학급 교사만
+      allow create, update: if isAuthenticated()
+        && request.resource.data.teacherUid == request.auth.uid;
+
+      // 삭제: 기존 문서의 teacherUid가 본인인 경우
+      allow delete: if isAuthenticated()
+        && resource.data.teacherUid == request.auth.uid;
     }
 
     // ==================== 학급 코드 매핑 ====================

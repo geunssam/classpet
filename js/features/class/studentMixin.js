@@ -1,6 +1,6 @@
 /**
  * 학생 관리 Mixin
- * 학생 CRUD, Firebase 동기화, PIN 관리
+ * 학생 CRUD, Firebase 동기화, 개인코드 관리
  */
 
 import { firebase, STORAGE_KEYS } from '../../shared/store/Store.js';
@@ -23,22 +23,40 @@ export const studentMixin = {
         return students.find(s => String(s.id) === String(studentId));
     },
 
-    addStudent(student) {
+    async addStudent(student) {
         const students = this.getStudents() || [];
         // number가 전달되면 그것을 id로 사용, 아니면 기존 숫자 ID 중 최대값+1
         const numericIds = students.map(s => s.id).filter(id => typeof id === 'number' && !isNaN(id));
         const newId = student.number || (numericIds.length > 0 ? Math.max(...numericIds) + 1 : 1);
         const newNumber = student.number || students.length + 1;
+
+        // 개인코드 생성
+        let studentCode = null;
+        const teacherUid = this.getCurrentTeacherUid();
+        const classId = this.getCurrentClassId();
+        if (this.firebaseEnabled && teacherUid && classId) {
+            studentCode = await firebase.generateStudentCode();
+            if (studentCode) {
+                await firebase.saveStudentCode(studentCode, {
+                    teacherUid,
+                    classId,
+                    studentId: String(newId)
+                });
+            }
+        }
+
         const newStudent = {
             id: newId,
             number: newNumber,
-            pin: String(newNumber).padStart(4, '0'),
+            studentCode: studentCode,
             exp: 0,
             level: 1,
             totalPraises: 0,
             petType: null,
             completedPets: [],
-            ...student
+            ...student,
+            // student에 studentCode가 없으면 생성한 것 사용
+            studentCode: student.studentCode || studentCode
         };
         students.push(newStudent);
         students.sort((a, b) => a.number - b.number);
@@ -65,8 +83,15 @@ export const studentMixin = {
         return null;
     },
 
-    deleteStudent(studentId) {
+    async deleteStudent(studentId) {
         let students = this.getStudents() || [];
+        const student = students.find(s => String(s.id) === String(studentId));
+
+        // 학생코드 삭제
+        if (student?.studentCode) {
+            await firebase.deleteStudentCode(student.studentCode);
+        }
+
         students = students.filter(s => String(s.id) !== String(studentId));
         // 번호 재정렬 하지 않음 — 출석부 번호 유지
         this.saveStudents(students);
@@ -150,32 +175,38 @@ export const studentMixin = {
         }
     },
 
-    // === PIN 관련 ===
+    // === 개인코드 관련 ===
 
-    verifyStudentPin(studentId, pin) {
-        const student = this.getStudent(studentId);
-        if (!student) return false;
-        const studentPin = student.pin || String(student.number).padStart(4, '0');
-        return studentPin === pin;
-    },
-
-    resetStudentPin(studentId) {
+    /**
+     * 학생코드 재발급 (기존 코드 무효화 + 새 코드 생성)
+     */
+    async regenerateStudentCode(studentId) {
         const student = this.getStudent(studentId);
         if (!student) return null;
-        const defaultPin = String(student.number).padStart(4, '0');
-        return this.updateStudent(studentId, { pin: defaultPin });
-    },
 
-    updateStudentPin(studentId, newPin) {
-        if (!newPin || newPin.length !== 4 || !/^\d{4}$/.test(newPin)) {
-            return null;
+        const teacherUid = this.getCurrentTeacherUid();
+        const classId = this.getCurrentClassId();
+        if (!teacherUid || !classId || !this.firebaseEnabled) return null;
+
+        // 기존 코드 삭제
+        if (student.studentCode) {
+            await firebase.deleteStudentCode(student.studentCode);
         }
-        return this.updateStudent(studentId, { pin: newPin });
-    },
 
-    getDefaultPin(studentId) {
-        const student = this.getStudent(studentId);
-        if (!student) return null;
-        return String(student.number).padStart(4, '0');
+        // 새 코드 생성
+        const newCode = await firebase.generateStudentCode();
+        if (!newCode) return null;
+
+        // 새 코드 문서 생성
+        await firebase.saveStudentCode(newCode, {
+            teacherUid,
+            classId,
+            studentId: String(studentId)
+        });
+
+        // 학생 문서 업데이트
+        this.updateStudent(studentId, { studentCode: newCode });
+
+        return newCode;
     }
 };
