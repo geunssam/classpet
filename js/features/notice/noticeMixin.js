@@ -159,11 +159,15 @@ export const noticeMixin = {
     // ==================== 학생용 알림장 읽음 추적 ====================
 
     getLastSeenStudentNoticeId() {
-        return sessionStorage.getItem('lastSeenStudentNoticeId') || '';
+        const student = this.getCurrentStudent?.();
+        const key = student ? `lastSeenStudentNoticeId_${student.id}` : 'lastSeenStudentNoticeId';
+        return localStorage.getItem(key) || '';
     },
 
     setLastSeenStudentNoticeId(noticeId) {
-        sessionStorage.setItem('lastSeenStudentNoticeId', noticeId || '');
+        const student = this.getCurrentStudent?.();
+        const key = student ? `lastSeenStudentNoticeId_${student.id}` : 'lastSeenStudentNoticeId';
+        localStorage.setItem(key, noticeId || '');
     },
 
     getUnreadStudentNoticeCount(studentId) {

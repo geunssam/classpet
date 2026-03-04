@@ -11,7 +11,7 @@ import { showToast } from '../../shared/utils/animations.js';
 import { getNameWithSuffix } from '../../shared/utils/nameUtils.js';
 import { playPetClickAnimation } from '../../shared/utils/petAnimations.js';
 import { getEmotionImageHTML, getEmotionInfo, mapLegacyEmotion, getEmotionVideoPath } from '../../shared/utils/emotionHelpers.js';
-import { showPetDetail } from '../pet/PetCollection.js';
+import { showPetDetail, showPetCollectionModal } from '../pet/PetCollection.js';
 
 let currentStudentTab = 'send'; // 'send' | 'history'
 
@@ -67,9 +67,14 @@ export function render() {
         <div class="student-mode-container pb-8">
             <!-- 펫 영역 (2열 그리드) -->
             <div class="pet-display-area px-4 py-6 mb-6 relative">
-                <button id="petInfoBtn" class="pet-info-btn" title="성장 과정 보기">
-                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-                </button>
+                <div class="pet-area-actions">
+                    <button id="petCollectionBtn" class="pet-action-btn" title="펫 도감">
+                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                    </button>
+                    <button id="petInfoBtn" class="pet-action-btn" title="성장 과정 보기">
+                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                    </button>
+                </div>
                 <div class="pet-speech-row">
                     <!-- 왼쪽: 이미지 + 레벨·이름 + 경험치바 -->
                     <div class="pet-left-column">
@@ -219,6 +224,15 @@ export function afterRender() {
         petEmoji.addEventListener('click', () => {
             const currentStudent = store.getCurrentStudent();
             playPetClickAnimation(petEmoji, currentStudent?.petType, currentStudent?.level);
+        });
+    }
+
+    // 펫 도감 버튼
+    const petCollectionBtn = document.getElementById('petCollectionBtn');
+    if (petCollectionBtn) {
+        petCollectionBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            showPetCollectionModal();
         });
     }
 

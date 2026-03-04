@@ -164,6 +164,97 @@ export function afterRender() {
 }
 
 /**
+ * 펫 도감 모달 표시 (학생 메인 화면에서 호출)
+ */
+export function showPetCollectionModal() {
+    const student = store.getCurrentStudent();
+    if (!student) return;
+
+    const petTypes = Object.entries(PET_TYPES);
+    const completedPets = student.completedPets || [];
+
+    const petCards = petTypes.map(([key, pet]) => {
+        const isCurrentPet = student.petType === key;
+        const completedPet = completedPets.find(p => p.type === key);
+        const isCompleted = !!completedPet;
+        let status = 'locked';
+        if (isCompleted) status = 'completed';
+        else if (isCurrentPet) status = 'current';
+        return renderPetCard(key, pet, status, student.level, completedPet);
+    }).join('');
+
+    const existing = document.getElementById('petCollectionModal');
+    if (existing) existing.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'petCollectionModal';
+    modal.className = 'fixed inset-0 z-50 flex items-end justify-center';
+    modal.innerHTML = `
+        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm pet-detail-backdrop" style="animation: fadeIn 0.2s ease"></div>
+        <div class="relative bg-white w-full rounded-t-3xl p-5 pb-8 shadow-xl" style="animation: slideUp 0.3s ease; max-height: 75vh; overflow-y: auto;">
+            <!-- 핸들 바 -->
+            <div class="flex justify-center mb-3">
+                <div class="w-10 h-1 bg-gray-300 rounded-full"></div>
+            </div>
+            <!-- 헤더 -->
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-bold text-gray-800 flex items-center gap-1.5">
+                    <svg class="w-5 h-5 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                    펫 도감
+                </h3>
+                <div class="flex items-center gap-2">
+                    <span class="text-sm text-amber-600 font-medium">${completedPets.length} / ${petTypes.length}</span>
+                    <button id="closePetCollection" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100">
+                        <svg class="w-5 h-5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                </div>
+            </div>
+            <!-- 펫 그리드 -->
+            <div class="grid grid-cols-4 gap-2">
+                ${petCards}
+            </div>
+            <!-- 범례 -->
+            <div class="mt-4 bg-gray-50 rounded-xl p-2.5">
+                <div class="flex justify-around text-xs text-gray-500">
+                    <div class="flex items-center gap-1">
+                        <span class="w-2.5 h-2.5 rounded-full bg-blue-400"></span>
+                        <span>키우는 중</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <span class="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-amber-400 to-yellow-400 pet-collection-sparkle"></span>
+                        <span>완성</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <span class="w-2.5 h-2.5 rounded-full bg-gray-300"></span>
+                        <span>미소유</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // 닫기
+    const close = () => {
+        modal.querySelector('.pet-detail-backdrop').style.animation = 'fadeOut 0.15s ease forwards';
+        modal.querySelector('.relative').style.animation = 'slideDown 0.25s ease forwards';
+        setTimeout(() => modal.remove(), 250);
+    };
+    modal.querySelector('#closePetCollection').addEventListener('click', close);
+    modal.querySelector('.pet-detail-backdrop').addEventListener('click', close);
+
+    // 카드 클릭 → 상세 모달
+    modal.querySelectorAll('.pet-collection-card').forEach(card => {
+        card.addEventListener('click', () => {
+            const petKey = card.dataset.pet;
+            const status = card.dataset.status;
+            showPetDetail(petKey, status);
+        });
+    });
+}
+
+/**
  * 펫 상세 정보 모달 표시
  */
 export function showPetDetail(petKey, status) {

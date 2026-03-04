@@ -314,7 +314,7 @@ export const emotionMixin = {
      */
     addStudentMessage(emotionId, message) {
         const log = this.getEmotionLog() || [];
-        const index = log.findIndex(e => e.id === emotionId || e.firebaseId === emotionId);
+        const index = log.findIndex(e => e.id == emotionId || e.firebaseId == emotionId);
 
         if (index !== -1 && message) {
             const conversations = log[index].conversations || [];
@@ -382,7 +382,7 @@ export const emotionMixin = {
      */
     markReplyAsRead(emotionId, conversationIndex = -1) {
         const log = this.getEmotionLog() || [];
-        const index = log.findIndex(e => e.id === emotionId || e.firebaseId === emotionId);
+        const index = log.findIndex(e => e.id == emotionId || e.firebaseId == emotionId);
 
         if (index !== -1) {
             const conversations = log[index].conversations || [];
