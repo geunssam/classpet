@@ -6,6 +6,7 @@
 // init.js - 초기화, 전역 상태, 유틸리티
 export {
     initializeFirebase,
+    ensureFirebaseReady,
     isFirebaseInitialized,
     getCurrentClassId,
     setCurrentClassId,

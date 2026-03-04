@@ -21,7 +21,8 @@ import {
     getAuthInstance,
     setCurrentTeacherUid,
     clearCurrentSession,
-    serverTimestamp
+    serverTimestamp,
+    ensureFirebaseReady
 } from '../../shared/firebase/init.js';
 import { TERMS_VERSION, PRIVACY_VERSION } from '../../shared/utils/termsContent.js';
 
@@ -59,6 +60,9 @@ async function processGoogleSignInResult(result) {
  * Google 로그인 (팝업 우선, 실패 시 리다이렉트)
  */
 export async function signInWithGoogle() {
+    // Firebase 초기화 완료 대기 (레이스 컨디션 방지)
+    await ensureFirebaseReady();
+
     const auth = getAuthInstance();
     if (!auth) return { success: false, error: 'Firebase가 초기화되지 않았습니다' };
 

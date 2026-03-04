@@ -29,6 +29,7 @@ let app = null;
 let db = null;
 let auth = null;
 let isInitialized = false;
+let initPromise = null; // 진행 중인 초기화 Promise 캐싱
 
 // 현재 학급 정보 (계층 구조용)
 let currentClassId = null;
@@ -46,28 +47,45 @@ let legacyClassCode = null;
 export async function initializeFirebase(config = null) {
     if (isInitialized) return { app, db, auth };
 
-    try {
-        const configToUse = config || firebaseConfig;
+    // 이미 초기화 진행 중이면 기존 Promise 반환 (중복 호출 방지)
+    if (initPromise) return initPromise;
 
-        if (configToUse.apiKey === "YOUR_API_KEY") {
-            console.warn('Firebase 설정이 필요합니다.');
+    initPromise = (async () => {
+        try {
+            const configToUse = config || firebaseConfig;
+
+            if (configToUse.apiKey === "YOUR_API_KEY") {
+                console.warn('Firebase 설정이 필요합니다.');
+                return null;
+            }
+
+            app = initializeApp(configToUse);
+            db = getFirestore(app);
+            auth = getAuth(app);
+
+            await setPersistence(auth, browserLocalPersistence);
+
+            isInitialized = true;
+
+            console.log('Firebase 초기화 완료');
+            return { app, db, auth };
+        } catch (error) {
+            console.error('Firebase 초기화 실패:', error);
+            initPromise = null; // 실패 시 재시도 허용
             return null;
         }
+    })();
 
-        app = initializeApp(configToUse);
-        db = getFirestore(app);
-        auth = getAuth(app);
+    return initPromise;
+}
 
-        await setPersistence(auth, browserLocalPersistence);
-
-        isInitialized = true;
-
-        console.log('Firebase 초기화 완료');
-        return { app, db, auth };
-    } catch (error) {
-        console.error('Firebase 초기화 실패:', error);
-        return null;
-    }
+/**
+ * Firebase 준비 완료 보장 - 로그인 등 Firebase 의존 작업 전 호출
+ */
+export async function ensureFirebaseReady() {
+    if (isInitialized) return { app, db, auth };
+    if (initPromise) return initPromise;
+    return initializeFirebase();
 }
 
 export function isFirebaseInitialized() {
