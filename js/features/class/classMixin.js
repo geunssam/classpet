@@ -4,6 +4,7 @@
  */
 
 import { firebase, STORAGE_KEYS } from '../../shared/store/Store.js';
+import { LEVEL_EXP_TABLE } from '../../shared/utils/petLogic.js';
 
 export const classMixin = {
     /**
@@ -421,8 +422,10 @@ export const classMixin = {
             // 4. 각 학생별 pets 하위 컬렉션에서 펫 데이터 로드 (정본)
             const mergedStudents = await Promise.all(studentList.map(async (student) => {
                 try {
-                    const activePet = await firebase.getActivePet(teacherUid, classId, student.id);
-                    const completedPets = await firebase.getCompletedPets(teacherUid, classId, student.id);
+                    const [activePet, completedPets] = await Promise.all([
+                        firebase.getActivePet(teacherUid, classId, student.id),
+                        firebase.getCompletedPets(teacherUid, classId, student.id)
+                    ]);
 
                     const petData = {};
                     if (activePet) {
@@ -435,8 +438,8 @@ export const classMixin = {
                         const lastCompleted = completedPets[completedPets.length - 1];
                         petData.petType = lastCompleted.petType;
                         petData.petName = lastCompleted.petName;
-                        petData.exp = 300;
-                        petData.level = 15;
+                        petData.exp = LEVEL_EXP_TABLE[LEVEL_EXP_TABLE.length - 1];
+                        petData.level = LEVEL_EXP_TABLE.length;
                         petData.petCompleted = true;
                     }
 

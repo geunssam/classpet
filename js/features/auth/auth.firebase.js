@@ -180,9 +180,8 @@ export async function createOrUpdateTeacherProfile(user) {
         const teacherRef = doc(db, 'teachers', user.uid);
         const teacherDoc = await getDoc(teacherRef);
 
-        // 기존 문서의 termsAgreed 값 보존
+        // 기존 문서의 약관 동의 정보 보존
         const existingData = teacherDoc.exists() ? teacherDoc.data() : {};
-        const termsAgreed = existingData.termsAgreed === true;
 
         const profileData = {
             email: user.email,
@@ -196,7 +195,13 @@ export async function createOrUpdateTeacherProfile(user) {
         }
 
         await setDoc(teacherRef, profileData, { merge: true });
-        return { uid: user.uid, termsAgreed, ...profileData };
+        return {
+            uid: user.uid,
+            termsAgreed: existingData.termsAgreed === true,
+            termsAgreedVersion: existingData.termsAgreedVersion || null,
+            privacyAgreedVersion: existingData.privacyAgreedVersion || null,
+            ...profileData
+        };
     } catch (error) {
         console.error('교사 프로필 저장 실패:', error);
         return null;

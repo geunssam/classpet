@@ -5,7 +5,7 @@
 
 import { firebase } from '../../shared/store/Store.js';
 import { PET_TYPES } from '../../shared/constants/index.js';
-import { calculateLevel, LEVEL_EXP_TABLE } from '../../shared/utils/petLogic.js';
+import { calculateLevel, LEVEL_EXP_TABLE, isMaxLevel as checkMaxLevel } from '../../shared/utils/petLogic.js';
 
 export const petMixin = {
     /**
@@ -143,8 +143,7 @@ export const petMixin = {
         const oldLevel = student.level || 1;
         const newLevel = calculateLevel(newExp);
         const levelUp = newLevel > oldLevel;
-        const maxLevel = LEVEL_EXP_TABLE.length - 1;
-        const isMaxLevel = newLevel >= maxLevel;
+        const isMaxLevel = checkMaxLevel(newLevel);
 
         // 최대 레벨 경험치 상한
         const maxExp = LEVEL_EXP_TABLE[LEVEL_EXP_TABLE.length - 1];

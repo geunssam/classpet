@@ -56,8 +56,7 @@ export const praiseMixin = {
         if (praise.studentId) {
             const expResult = await this.addPetExp(praise.studentId, expAmount);
             if (expResult?.isMaxLevel) {
-                const student = this.getStudent(praise.studentId);
-                const petName = student?.petName || '펫';
+                const petName = expResult.student?.petName || '펫';
                 showToast(`${petName}이(가) 최고 레벨에 도달했어요!`, 'success');
             }
         }
