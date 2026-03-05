@@ -430,7 +430,14 @@ export const classMixin = {
                         petData.petName = activePet.petName;
                         petData.exp = activePet.exp || 0;
                         petData.level = activePet.level || 1;
-                        console.log(`학생 ${student.name} 펫 로드: petType=${activePet.petType}, exp=${activePet.exp || 0}, level=${activePet.level || 1}`);
+                    } else if (completedPets && completedPets.length > 0) {
+                        // 활성 펫 없음 + 완성 펫 있음 → 마지막 완성 펫으로 복원
+                        const lastCompleted = completedPets[completedPets.length - 1];
+                        petData.petType = lastCompleted.petType;
+                        petData.petName = lastCompleted.petName;
+                        petData.exp = 300;
+                        petData.level = 15;
+                        petData.petCompleted = true;
                     }
 
                     if (completedPets && completedPets.length > 0) {
@@ -451,7 +458,8 @@ export const classMixin = {
                         exp: petData.exp ?? student.exp ?? 0,
                         level: petData.level ?? student.level ?? 1,
                         completedPets: petData.completedPets ?? student.completedPets ?? [],
-                        totalPraises: studentPraises.length
+                        totalPraises: studentPraises.length,
+                        ...(petData.petCompleted ? { petCompleted: true } : {})
                     };
                 } catch (petError) {
                     console.warn(`학생 ${student.name} 펫 로드 실패:`, petError);
@@ -490,6 +498,19 @@ export const classMixin = {
                 }
                 if (migrationCount > 0) {
                     console.log(`개인코드 마이그레이션: ${migrationCount}명 발급 완료`);
+                }
+            }
+
+            // 4.6. 학생 세션이면 알림장 읽음 상태 Firebase → localStorage 복원
+            if (isStudentSession) {
+                const studentSession = JSON.parse(sessionStorage.getItem('classpet_student_session') || '{}');
+                const currentStudentId = studentSession.studentId;
+                if (currentStudentId) {
+                    const currentStudent = mergedStudents.find(s => String(s.id) === String(currentStudentId));
+                    if (currentStudent?.lastSeenNoticeId) {
+                        const key = `lastSeenStudentNoticeId_${currentStudentId}`;
+                        localStorage.setItem(key, currentStudent.lastSeenNoticeId);
+                    }
                 }
             }
 

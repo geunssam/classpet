@@ -54,7 +54,12 @@ export const praiseMixin = {
         // 펫 경험치 추가 (칭찬 카테고리에 따른 경험치)
         const expAmount = this.getPraiseCategories()[praise.category]?.exp || 10;
         if (praise.studentId) {
-            this.addPetExp(praise.studentId, expAmount);
+            const expResult = await this.addPetExp(praise.studentId, expAmount);
+            if (expResult?.isMaxLevel) {
+                const student = this.getStudent(praise.studentId);
+                const petName = student?.petName || '펫';
+                showToast(`${petName}이(가) 최고 레벨에 도달했어요!`, 'success');
+            }
         }
 
         return newPraise;

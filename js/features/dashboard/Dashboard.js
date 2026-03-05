@@ -30,7 +30,6 @@ export function render() {
     const isTeacher = store.isTeacherLoggedIn(); // 교사 세션 확인
     const isGoogleTeacher = store.isGoogleTeacher(); // Google 로그인 여부
     const currentClassId = store.getCurrentClassId();
-    const settings = store.getSettings();
 
     // 오늘 요일 계산
     const days = ['일', '월', '화', '수', '목', '금', '토'];
@@ -153,11 +152,11 @@ export function render() {
 
     return `
         <div class="space-y-4">
-            <!-- 학급 정보 + 오늘의 한마디 통합 카드 -->
+            <!-- 오늘의 한마디 카드 -->
             <div class="card border border-gray-100" style="background: #ffffff !important; padding-top: 4px; padding-bottom: 8px;">
-                <!-- 1행: 타이틀 + 액션 버튼 -->
+                <!-- 타이틀 + 액션 버튼 -->
                 <div class="flex items-center justify-between px-2">
-                    <h3 class="section-title m-0 flex-shrink-0 flex items-center gap-1.5" style="white-space:nowrap; position:relative; top:3px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block;flex-shrink:0"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-4h6v4"/><line x1="10" y1="11" x2="14" y2="11"/></svg>학급 정보</h3>
+                    <h3 class="section-title m-0 flex-shrink-0 flex items-center gap-1.5" style="white-space:nowrap; position:relative; top:3px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block;flex-shrink:0"><path d="M12 2L15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>오늘의 한마디</h3>
                     <div class="flex items-center gap-1">
                         ${isGoogleTeacher ? `<button id="switchClassBtn" class="liquid-btn-small" style="font-size:11px; padding:1px 6px;">전환</button>` : ''}
                         <button id="goStudentPageBtn" class="liquid-btn-small" style="font-size:11px; padding:1px 6px;" title="학생 페이지 미리보기">
@@ -169,61 +168,19 @@ export function render() {
                         </button>
                     </div>
                 </div>
-                <!-- 2행: 학급 정보 3열 그리드 -->
-                <div class="grid grid-cols-3 items-center text-center mt-2 px-2">
-                    <!-- 학급명 -->
-                    <div>
-                        <p class="text-sm font-semibold text-gray-600 mb-0.5">학급명</p>
-                        <p class="font-bold text-gray-800 truncate">${settings?.className || '미설정'}</p>
-                    </div>
-                    <!-- 학급코드 -->
-                    <div>
-                        <p class="text-sm font-semibold text-gray-600 mb-0.5">학급코드</p>
-                        <div class="flex items-center justify-center gap-1">
-                            <span class="font-mono font-bold text-primary">${settings?.classCode || '------'}</span>
-                            ${settings?.classCode ? `<button id="dashboardCodeCopyBtn" class="mobile-code-copy-btn" title="학급코드 복사" style="display:inline-flex; color:#9ca3af;">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12">
-                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-                                </svg>
-                            </button>` : ''}
-                        </div>
-                    </div>
-                    <!-- QR 코드 -->
-                    <div>
-                        <p class="text-sm font-semibold text-gray-600 mb-0.5">QR코드</p>
-                        <div id="qrCodeContainer" class="w-10 h-10 mx-auto bg-white rounded-lg p-0.5 shadow-sm flex items-center justify-center cursor-pointer hover:shadow-md transition-shadow" title="클릭하면 크게 보기"></div>
-                    </div>
-                </div>
-                <!-- 구분선 -->
-                <div class="border-t border-gray-100 mt-3 mb-2 mx-2"></div>
-                <!-- 오늘의 한마디 (인라인) -->
-                <div class="flex items-center gap-2 px-2">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block;flex-shrink:0"><path d="M12 2L15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <!-- 한마디 입력 -->
+                <div class="flex items-center gap-2 px-2 mt-2">
                     <input type="text" id="dailyMessageInput" class="flex-1 text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-primary/50" placeholder="한마디를 입력하세요..." value="${store.getDailyMessage() || ''}" maxlength="60" />
                     <button id="dailyMessageSaveBtn" class="liquid-btn-small">저장</button>
                     <button id="dailyMessageClearBtn" class="liquid-btn-small" style="background: #f3f4f6; color: #6b7280;">지우기</button>
                 </div>
-                <p class="text-xs text-gray-400 mt-1 px-2" style="padding-left: 34px;">비어있으면 랜덤 명언이 학생에게 표시됩니다</p>
+                <p class="text-xs text-gray-400 mt-1 px-2" style="padding-left: 8px;">비어있으면 랜덤 명언이 학생에게 표시됩니다</p>
                 <!-- 학생 개인코드 안내 -->
                 <div class="border-t border-gray-100 mt-2 pt-2 px-2">
                     <div class="flex items-center justify-between">
                         <p class="text-xs text-gray-400">학생들은 <strong class="text-gray-600">개인코드 4자리</strong>로 로그인합니다</p>
                         <button id="goToCodesBtn" class="liquid-btn-small" style="font-size:10px; padding:1px 6px;">코드 관리</button>
                     </div>
-                </div>
-            </div>
-
-            <!-- QR 코드 전체화면 모달 (칠판용) -->
-            <div id="qrFullscreenModal" class="hidden fixed inset-0 bg-white z-[9999] flex flex-col items-center justify-center cursor-pointer">
-                <div class="text-center">
-                    <p class="text-2xl font-bold text-gray-800 mb-2">${settings?.className || '학급'}</p>
-                    <p class="text-gray-500 mb-6">아래 QR 코드를 스캔하여 참가하세요</p>
-                    <div id="qrCodeLarge" class="inline-block bg-white p-4 rounded-2xl shadow-lg mb-6">
-                        <!-- 큰 QR 코드 -->
-                    </div>
-                    <p class="text-4xl font-mono font-bold text-primary mb-4">${settings?.classCode || '------'}</p>
-                    <p class="text-gray-400 text-sm">화면을 클릭하면 닫힙니다</p>
                 </div>
             </div>
 
@@ -426,34 +383,34 @@ export function afterRender() {
     // SVG 도넛 차트 커스텀 툴팁
     setupSvgTooltips(content);
 
-    // 빠른 칭찬 버튼
+    // 빠른 칭찬 버튼 (onclick 할당으로 중복 바인딩 방지)
     const dashboardPraiseBtn = document.getElementById('dashboardPraiseBtn');
     if (dashboardPraiseBtn) {
-        dashboardPraiseBtn.addEventListener('click', showQuickPraise);
+        dashboardPraiseBtn.onclick = showQuickPraise;
     }
 
     // 학급 전환 버튼 (Google 로그인 시)
     const switchClassBtn = document.getElementById('switchClassBtn');
     if (switchClassBtn) {
-        switchClassBtn.addEventListener('click', () => {
+        switchClassBtn.onclick = () => {
             router.navigate('class-select');
-        });
+        };
     }
 
     // 학생 페이지 바로가기 버튼
     const goStudentPageBtn = document.getElementById('goStudentPageBtn');
     if (goStudentPageBtn) {
-        goStudentPageBtn.addEventListener('click', () => {
+        goStudentPageBtn.onclick = () => {
             window.open(`${location.origin}${location.pathname}#student-login`, '_blank');
-        });
+        };
     }
 
     // 학생 코드 관리 바로가기
     const goToCodesBtn = document.getElementById('goToCodesBtn');
     if (goToCodesBtn) {
-        goToCodesBtn.addEventListener('click', () => {
+        goToCodesBtn.onclick = () => {
             router.navigate('settings');
-        });
+        };
     }
 
     // 오늘의 한마디 저장/지우기
@@ -462,7 +419,7 @@ export function afterRender() {
     const dailyMsgClearBtn = document.getElementById('dailyMessageClearBtn');
 
     if (dailyMsgSaveBtn && dailyMsgInput) {
-        dailyMsgSaveBtn.addEventListener('click', async () => {
+        dailyMsgSaveBtn.onclick = async () => {
             const text = dailyMsgInput.value.trim();
             if (!text) {
                 showToast('한마디를 입력해주세요', 'warning');
@@ -471,11 +428,11 @@ export function afterRender() {
             const ok = await store.setDailyMessage(text);
             if (ok) showToast('한마디가 저장되었어요', 'success');
             else showToast('저장에 실패했어요', 'error');
-        });
+        };
     }
 
     if (dailyMsgClearBtn && dailyMsgInput) {
-        dailyMsgClearBtn.addEventListener('click', async () => {
+        dailyMsgClearBtn.onclick = async () => {
             const ok = await store.setDailyMessage('');
             if (ok) {
                 dailyMsgInput.value = '';
@@ -483,95 +440,9 @@ export function afterRender() {
             } else {
                 showToast('삭제에 실패했어요', 'error');
             }
-        });
+        };
     }
 
-    // 학급코드 복사 버튼
-    const codeCopyBtn = document.getElementById('dashboardCodeCopyBtn');
-    if (codeCopyBtn) {
-        const classCode = store.getSettings()?.classCode;
-        codeCopyBtn.addEventListener('click', () => {
-            navigator.clipboard.writeText(classCode).then(() => {
-                showToast('학급코드가 복사되었어요', 'success');
-            }).catch(() => {});
-        });
-    }
-
-    // QR 코드 생성 및 전체화면 모달
-    const qrCodeContainer = document.getElementById('qrCodeContainer');
-    const qrCodeLarge = document.getElementById('qrCodeLarge');
-    const qrFullscreenModal = document.getElementById('qrFullscreenModal');
-
-    if (qrCodeContainer) {
-        const settings = store.getSettings();
-        const classCode = settings?.classCode;
-
-        if (classCode) {
-            // QR 코드에 담을 URL (학급 참가 링크)
-            const joinUrl = `https://classpet.netlify.app/#student-login?code=${classCode}`;
-
-            // QR 라이브러리 로드 후 QR 코드 생성
-            const generateQRCodes = async () => {
-                // loadQRLibrary가 있으면 호출하여 라이브러리 로드
-                if (typeof window.loadQRLibrary === 'function') {
-                    await window.loadQRLibrary();
-                }
-
-                // QRCode 라이브러리 사용 (qrcodejs)
-                if (typeof QRCode !== 'undefined') {
-                    try {
-                        // 기존 QR 코드 제거 (중복 방지)
-                        qrCodeContainer.innerHTML = '';
-
-                        // 작은 QR 코드 (카드용)
-                        new QRCode(qrCodeContainer, {
-                            text: joinUrl,
-                            width: 52,
-                            height: 52,
-                            colorDark: '#6366f1',
-                            colorLight: '#ffffff',
-                            correctLevel: QRCode.CorrectLevel.M
-                        });
-
-                        // 큰 QR 코드 (전체화면용)
-                        if (qrCodeLarge) {
-                            qrCodeLarge.innerHTML = '';
-                            new QRCode(qrCodeLarge, {
-                                text: joinUrl,
-                                width: 280,
-                                height: 280,
-                                colorDark: '#6366f1',
-                                colorLight: '#ffffff',
-                                correctLevel: QRCode.CorrectLevel.M
-                            });
-                        }
-                    } catch (error) {
-                        console.error('QR 코드 생성 실패:', error);
-                        qrCodeContainer.innerHTML = '<span class="text-xl">📱</span>';
-                    }
-                } else {
-                    qrCodeContainer.innerHTML = '<span class="text-xl">📱</span>';
-                }
-            };
-
-            // QR 코드 생성 실행
-            generateQRCodes();
-
-            // QR 코드 클릭 → 전체화면 모달 열기
-            qrCodeContainer.addEventListener('click', () => {
-                if (qrFullscreenModal) {
-                    qrFullscreenModal.classList.remove('hidden');
-                }
-            });
-
-            // 전체화면 모달 클릭 → 닫기
-            if (qrFullscreenModal) {
-                qrFullscreenModal.addEventListener('click', () => {
-                    qrFullscreenModal.classList.add('hidden');
-                });
-            }
-        }
-    }
 }
 
 /** SVG 도넛 차트 data-tooltip → 커스텀 툴팁 표시 */

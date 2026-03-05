@@ -168,6 +168,22 @@ export const noticeMixin = {
         const student = this.getCurrentStudent?.();
         const key = student ? `lastSeenStudentNoticeId_${student.id}` : 'lastSeenStudentNoticeId';
         localStorage.setItem(key, noticeId || '');
+
+        // Firebase에도 저장 (재로그인 시 복원용)
+        if (student && noticeId) {
+            const teacherUid = this.getCurrentTeacherUid();
+            const classId = this.getCurrentClassId();
+            if (teacherUid && classId && this.firebaseEnabled) {
+                firebase.saveStudent(teacherUid, classId, {
+                    id: student.id,
+                    number: student.number,
+                    name: student.name,
+                    lastSeenNoticeId: noticeId
+                }).catch(err => {
+                    console.error('알림장 읽음 상태 Firebase 저장 실패:', err);
+                });
+            }
+        }
     },
 
     getUnreadStudentNoticeCount(studentId) {

@@ -9,6 +9,7 @@ import { router } from '../../router.js';
 import {
     getPetEmoji,
     getPetImageHTML,
+    getPetStageImageHTML,
     getPetName,
     getExpProgress,
     getGrowthStage,
@@ -139,6 +140,22 @@ export function render(params) {
                     </div>
                 </div>
             </div>
+
+            <!-- 완성한 펫 -->
+            ${(student.completedPets && student.completedPets.length > 0) ? `
+            <div class="card">
+                <div class="text-sm font-semibold text-gray-600 mb-2">완성한 펫</div>
+                <div class="flex gap-3 overflow-x-auto pb-1">
+                    ${student.completedPets.map(p => `
+                        <div class="flex flex-col items-center flex-shrink-0">
+                            ${getPetStageImageHTML(p.type, 'adult', 'sm')}
+                            <span class="text-xs font-medium mt-1">${p.name || getPetName(p.type)}</span>
+                            <span class="text-xs text-gray-400">${p.completedAt ? new Date(p.completedAt).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' }) : ''}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+            ` : ''}
 
             <!-- 최근 감정 -->
             ${emotionInfo ? `

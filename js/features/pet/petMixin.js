@@ -143,6 +143,8 @@ export const petMixin = {
         const oldLevel = student.level || 1;
         const newLevel = calculateLevel(newExp);
         const levelUp = newLevel > oldLevel;
+        const maxLevel = LEVEL_EXP_TABLE.length - 1;
+        const isMaxLevel = newLevel >= maxLevel;
 
         // 최대 레벨 경험치 상한
         const maxExp = LEVEL_EXP_TABLE[LEVEL_EXP_TABLE.length - 1];
@@ -157,7 +159,7 @@ export const petMixin = {
         // Firebase 펫 업데이트
         await this.updatePetExpInFirebase(studentId, finalExp, newLevel);
 
-        return { student: updatedStudent, levelUp, newLevel };
+        return { student: updatedStudent, levelUp, newLevel, isMaxLevel };
     },
 
     /**
@@ -173,8 +175,7 @@ export const petMixin = {
             if (activePet) {
                 await firebase.updatePet(teacherUid, classId, studentId, activePet.id, {
                     exp,
-                    level,
-                    ...(level >= 15 ? { status: 'completed', completedAt: new Date().toISOString() } : {})
+                    level
                 });
                 console.log('✅ Firebase 펫 경험치 업데이트:', { exp, level });
             }

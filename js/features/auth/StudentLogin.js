@@ -147,10 +147,16 @@ async function verifyAndLogin(code) {
 
         // 펫 선택 여부 확인
         const hasPet = store.hasSelectedPet(studentId);
+        const student = store.getStudent(studentId);
 
         setTimeout(() => {
             if (hasPet) {
-                router.navigate('student-home');
+                if (student?.petCompleted) {
+                    // 펫 완성 상태 → 메인으로 (축하 UI 표시됨)
+                    router.navigate('student-main');
+                } else {
+                    router.navigate('student-home');
+                }
             } else {
                 router.navigate('pet-selection');
             }
@@ -268,10 +274,15 @@ async function handleAutoLogin() {
         // 성공 — URL 코드 초기화
         urlStudentCode = null;
         const hasPet = store.hasSelectedPet(studentId);
+        const student = store.getStudent(studentId);
 
         setTimeout(() => {
             if (hasPet) {
-                router.navigate('student-home');
+                if (student?.petCompleted) {
+                    router.navigate('student-main');
+                } else {
+                    router.navigate('student-home');
+                }
             } else {
                 router.navigate('pet-selection');
             }

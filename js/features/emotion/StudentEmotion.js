@@ -248,14 +248,6 @@ export function afterRender() {
         });
     }
 
-    // 펫 도감 버튼
-    const collectionBtn = document.getElementById('petCollectionBtn');
-    if (collectionBtn) {
-        collectionBtn.addEventListener('click', () => {
-            router.navigate('pet-collection');
-        });
-    }
-
     // 새 펫 선택 버튼 (레벨 15 달성 시)
     const selectNewPetBtn = document.getElementById('selectNewPetBtn');
     if (selectNewPetBtn) {
