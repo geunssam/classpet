@@ -128,7 +128,10 @@ export const emotionMixin = {
                                 read: localReplyRead ? true : (fe.reply.read ?? false)
                             };
                         }
-                        // 기존 감정은 알림 재생성하지 않음 (onSnapshot 재트리거 시 중복 방지)
+                        // 기존 데이터지만 알림이 없을 수 있음 (같은 브라우저 탭 분리 시 localStorage 공유로 누락)
+                        if (fe.source === 'student') {
+                            this.createEmotionNotification(fe.studentId, fe.emotion, noteText, fe.id);
+                        }
                     }
                 } else {
                     // 새 데이터 추가

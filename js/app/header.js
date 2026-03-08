@@ -571,11 +571,16 @@ export function showStudentNotifications() {
         localStorage.setItem(praiseKey, praises.length.toString());
     }
 
-    // 알림장 클릭 시 알림장 페이지로 이동
+    // 알림장 클릭 시 읽음 처리 + 알림장 페이지로 이동
     document.querySelectorAll('[data-notice-id]').forEach(item => {
         item.addEventListener('click', () => {
+            // 알림장 읽음 처리
+            if (sharedNotices.length > 0) {
+                store.setLastSeenStudentNoticeId(sharedNotices[0].id);
+            }
             closeModal();
             router.navigate('student-notice');
+            updateStudentNotificationBadge();
         });
     });
 

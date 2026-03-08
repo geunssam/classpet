@@ -5,6 +5,7 @@
 
 import { firebase, STORAGE_KEYS } from '../../shared/store/Store.js';
 import { LEVEL_EXP_TABLE } from '../../shared/utils/petLogic.js';
+import { toDateString } from '../../shared/utils/dateUtils.js';
 
 export const classMixin = {
     /**
@@ -30,6 +31,7 @@ export const classMixin = {
         // 학급 전환 시 이전 학급의 Firebase 구독 해제
         if (this.currentClassId && this.currentClassId !== classId) {
             this.unsubscribeAllFirebase();
+            this.saveNotifications([]);  // 학급 전환 시에만 알림 초기화
         }
         this.currentClassId = classId;
         firebase.setCurrentClassId(classId);
@@ -521,7 +523,15 @@ export const classMixin = {
             this.saveStudents(mergedStudents);
             this.savePraiseLog(praiseLog);
             this.saveEmotionLog(emotionLog);
-            this.saveNotifications([]);  // 학급 전환 시 알림 초기화
+            // 교사 세션이면 오늘 학생 감정의 알림 보충 (새로고침 후 알림 유지)
+            if (isTeacherSession) {
+                const today = toDateString();
+                emotionLog
+                    .filter(e => e.source === 'student' && toDateString(new Date(e.timestamp)) === today)
+                    .forEach(e => {
+                        this.createEmotionNotification(e.studentId, e.emotion, e.memo || e.note, e.firebaseId);
+                    });
+            }
 
             // 6. 설정 정보 로드 (classData에서) - 계층 구조
             const classData = await firebase.getClass(teacherUid, classId);

@@ -115,7 +115,7 @@ function playPetVideo(element, videoSrc, petType) {
     video.src = videoSrc;
     video.autoplay = true;
     video.playsInline = true;
-    video.muted = false;
+    video.muted = true;
     video.className = img.className;
     Object.assign(video.style, {
         position: 'absolute',
@@ -128,6 +128,13 @@ function playPetVideo(element, videoSrc, petType) {
     });
 
     element.appendChild(video);
+
+    // autoplay 실패 시 명시적 play 시도
+    video.play().catch(err => {
+        console.warn('펫 영상 재생 실패:', err);
+        video.remove();
+        element.classList.add('pet-pulse');
+    });
 
     // 영상 끝나기 1.2초 전부터 서서히 페이드아웃 시작
     let fadeStarted = false;
