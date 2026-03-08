@@ -506,19 +506,6 @@ export const classMixin = {
                 }
             }
 
-            // 4.6. 학생 세션이면 알림장 읽음 상태 Firebase → localStorage 복원
-            if (isStudentSession) {
-                const studentSession = JSON.parse(sessionStorage.getItem('classpet_student_session') || '{}');
-                const currentStudentId = studentSession.studentId;
-                if (currentStudentId) {
-                    const currentStudent = mergedStudents.find(s => String(s.id) === String(currentStudentId));
-                    if (currentStudent?.lastSeenNoticeId) {
-                        const key = `lastSeenStudentNoticeId_${currentStudentId}`;
-                        localStorage.setItem(key, currentStudent.lastSeenNoticeId);
-                    }
-                }
-            }
-
             // 5. localStorage에 완전한 데이터 저장
             this.saveStudents(mergedStudents);
             this.savePraiseLog(praiseLog);

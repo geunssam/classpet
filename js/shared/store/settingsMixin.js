@@ -171,6 +171,13 @@ export const settingsMixin = {
         localStorage.removeItem('classpet_class_code');
         localStorage.removeItem(STORAGE_KEYS.CURRENT_CLASS_ID);
         localStorage.removeItem(STORAGE_KEYS.CURRENT_TEACHER_UID);
+        // 레거시 ID 기반 키 정리
+        Object.keys(localStorage).forEach(key => {
+            if (key.startsWith('lastSeenStudentNoticeId_') ||
+                key.startsWith('lastSeenPraiseCount_')) {
+                localStorage.removeItem(key);
+            }
+        });
         this.notify('studentLogout', null);
     },
 

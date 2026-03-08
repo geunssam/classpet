@@ -217,14 +217,17 @@ export function afterRender() {
 
     // 로그아웃 버튼은 header.js에서 처리
 
-    // 펫 이미지 클릭 애니메이션
+    // 펫 이미지 클릭 애니메이션 (onclick으로 중복 방지 + 최신 DOM 참조)
     const petEmoji = document.getElementById('petEmoji');
     if (petEmoji) {
         petEmoji.style.cursor = 'pointer';
-        petEmoji.addEventListener('click', () => {
+        petEmoji.onclick = () => {
+            const el = document.getElementById('petEmoji');
             const currentStudent = store.getCurrentStudent();
-            playPetClickAnimation(petEmoji, currentStudent?.petType, currentStudent?.level);
-        });
+            if (el && currentStudent?.petType) {
+                playPetClickAnimation(el, currentStudent.petType, currentStudent.level);
+            }
+        };
     }
 
     // 펫 도감 버튼

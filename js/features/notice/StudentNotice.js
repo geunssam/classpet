@@ -79,13 +79,10 @@ function renderStudentNoticeList(notices) {
 export function afterRender() {
     const student = store.getCurrentStudent();
 
-    // 읽음 처리: 현재 알림장 중 가장 최신 ID 기록
+    // 읽음 처리: readBy 방식으로 전체 읽음
     if (student) {
-        const notices = store.getSharedNoticesForStudent(student.id);
-        if (notices.length > 0) {
-            store.setLastSeenStudentNoticeId(notices[0].id);
-            updateStudentNotificationBadge();
-        }
+        store.markAllNoticesAsRead(student.id);
+        updateStudentNotificationBadge();
     }
 
     // 카드 클릭 → 칠판 스타일 상세 모달

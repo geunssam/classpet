@@ -434,10 +434,10 @@ export function showStudentNotifications() {
     const newCount = Math.max(0, praises.length - lastSeen);
     const newPraises = praises.slice(0, newCount);
 
-    // 3. 새 알림장 목록
-    const unreadNoticeCount = store.getUnreadStudentNoticeCount?.(student.id) || 0;
+    // 3. 새 알림장 목록 (readBy 기반)
     const sharedNotices = store.getSharedNoticesForStudent?.(student.id) || [];
-    const newNotices = sharedNotices.slice(0, unreadNoticeCount);
+    const sid = String(student.id);
+    const newNotices = sharedNotices.filter(n => !(n.readBy || []).includes(sid));
 
     const hasAnyNotifications = unreadReplies.length > 0 || newPraises.length > 0 || newNotices.length > 0;
 
@@ -556,10 +556,8 @@ export function showStudentNotifications() {
             });
             // 칭찬 모두 확인 (학생별 키)
             localStorage.setItem(praiseKey, praises.length.toString());
-            // 알림장 모두 확인
-            if (sharedNotices.length > 0) {
-                store.setLastSeenStudentNoticeId(sharedNotices[0].id);
-            }
+            // 알림장 모두 확인 (readBy 방식)
+            store.markAllNoticesAsRead(student.id);
             showToast('모든 알림을 읽음 처리했어요', 'info');
             closeModal();
             updateStudentNotificationBadge();
@@ -574,10 +572,8 @@ export function showStudentNotifications() {
     // 알림장 클릭 시 읽음 처리 + 알림장 페이지로 이동
     document.querySelectorAll('[data-notice-id]').forEach(item => {
         item.addEventListener('click', () => {
-            // 알림장 읽음 처리
-            if (sharedNotices.length > 0) {
-                store.setLastSeenStudentNoticeId(sharedNotices[0].id);
-            }
+            // 알림장 읽음 처리 (readBy 방식)
+            store.markAllNoticesAsRead(student.id);
             closeModal();
             router.navigate('student-notice');
             updateStudentNotificationBadge();

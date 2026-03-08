@@ -232,11 +232,10 @@ export function afterRender() {
     const content = document.getElementById('content');
     fadeInCards(content, '.card');
 
-    // 펫 카드 클릭 → 마음보내기
+    // 펫 카드 클릭 → 마음보내기 (onclick으로 중복 방지 + 최신 DOM 참조)
     const petCard = document.getElementById('petSectionCard');
     if (petCard) {
-        petCard.addEventListener('click', (e) => {
-            // 펫 클릭 애니메이션
+        petCard.onclick = () => {
             const petContainer = document.getElementById('homePetContainer');
             if (petContainer) {
                 const student = store.getCurrentStudent();
@@ -245,7 +244,7 @@ export function afterRender() {
                 }
             }
             setTimeout(() => router.navigate('student-main'), 300);
-        });
+        };
     }
 
     // 전체보기 버튼 → 받은 칭찬 페이지

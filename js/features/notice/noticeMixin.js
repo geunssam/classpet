@@ -88,17 +88,32 @@ export const noticeMixin = {
         if (!teacherUid || !classId || !this.firebaseEnabled) return null;
 
         return firebase.subscribeToNotices(teacherUid, classId, (firebaseNotices) => {
-            const notices = firebaseNotices.map(n => ({
-                id: n.id,
-                title: n.title || '',
-                content: n.content || '',
-                plainText: n.plainText || '',
-                date: n.date || '',
-                sharedTo: n.sharedTo || null,
-                sharedAt: n.sharedAt || '',
-                createdAt: n.createdAt?.toDate?.()?.toISOString() || n.createdAt || '',
-                updatedAt: n.updatedAt?.toDate?.()?.toISOString() || n.updatedAt || ''
-            }));
+            // 로컬 readBy 보존 (학생 세션에서는 Firebase에 쓸 수 없으므로)
+            const localNotices = this.getNotices();
+            const localReadByMap = {};
+            localNotices.forEach(n => {
+                if (n.readBy && n.readBy.length > 0) {
+                    localReadByMap[n.id] = n.readBy;
+                }
+            });
+
+            const notices = firebaseNotices.map(n => {
+                const firebaseReadBy = n.readBy || [];
+                const localReadBy = localReadByMap[n.id] || [];
+                const mergedReadBy = [...new Set([...firebaseReadBy, ...localReadBy])];
+                return {
+                    id: n.id,
+                    title: n.title || '',
+                    content: n.content || '',
+                    plainText: n.plainText || '',
+                    date: n.date || '',
+                    sharedTo: n.sharedTo || null,
+                    sharedAt: n.sharedAt || '',
+                    createdAt: n.createdAt?.toDate?.()?.toISOString() || n.createdAt || '',
+                    updatedAt: n.updatedAt?.toDate?.()?.toISOString() || n.updatedAt || '',
+                    readBy: mergedReadBy
+                };
+            });
             this.saveNoticesLocal(notices);
             if (callback) callback(notices);
         });
@@ -156,45 +171,54 @@ export const noticeMixin = {
         return lastSeenIndex;
     },
 
-    // ==================== 학생용 알림장 읽음 추적 ====================
-
-    getLastSeenStudentNoticeId() {
-        const student = this.getCurrentStudent?.();
-        const key = student ? `lastSeenStudentNoticeId_${student.id}` : 'lastSeenStudentNoticeId';
-        return localStorage.getItem(key) || '';
-    },
-
-    setLastSeenStudentNoticeId(noticeId) {
-        const student = this.getCurrentStudent?.();
-        const key = student ? `lastSeenStudentNoticeId_${student.id}` : 'lastSeenStudentNoticeId';
-        const current = localStorage.getItem(key) || '';
-        localStorage.setItem(key, noticeId || '');
-
-        // Firebase에도 저장 (재로그인 시 복원용, 값이 변경된 경우만)
-        if (student && noticeId && noticeId !== current) {
-            const teacherUid = this.getCurrentTeacherUid();
-            const classId = this.getCurrentClassId();
-            if (teacherUid && classId && this.firebaseEnabled) {
-                firebase.saveStudent(teacherUid, classId, {
-                    id: student.id,
-                    lastSeenNoticeId: noticeId
-                }).catch(err => {
-                    console.error('알림장 읽음 상태 Firebase 저장 실패:', err);
-                });
-            }
-        }
-    },
+    // ==================== 학생용 알림장 읽음 추적 (readBy 방식) ====================
 
     getUnreadStudentNoticeCount(studentId) {
         const notices = this.getSharedNoticesForStudent(studentId);
         if (notices.length === 0) return 0;
+        const sid = String(studentId);
+        return notices.filter(n => !(n.readBy || []).includes(sid)).length;
+    },
 
-        const lastSeenId = this.getLastSeenStudentNoticeId();
-        if (!lastSeenId) return notices.length;
+    markNoticeAsRead(noticeId, studentId) {
+        const notices = this.getNotices();
+        const notice = notices.find(n => n.id === noticeId);
+        if (!notice) return;
+        if (!notice.readBy) notice.readBy = [];
+        const sid = String(studentId);
+        if (!notice.readBy.includes(sid)) {
+            notice.readBy.push(sid);
+            this.saveNoticesLocal(notices);
+            // 학생 세션에서는 Firebase sync 스킵 (권한 없음)
+            if (!sessionStorage.getItem('classpet_student_session')) {
+                this.syncNoticeToFirebase(notice);
+            }
+        }
+    },
 
-        const lastSeenIndex = notices.findIndex(n => n.id === lastSeenId);
-        if (lastSeenIndex === -1) return notices.length;
-
-        return lastSeenIndex;
+    markAllNoticesAsRead(studentId) {
+        const notices = this.getNotices();
+        if (notices.length === 0) return;
+        const sid = String(studentId);
+        let changed = false;
+        // notices 배열에서 직접 수정 (getSharedNoticesForStudent는 별도 배열 반환)
+        notices.forEach(n => {
+            if (n.sharedTo && Array.isArray(n.sharedTo) && n.sharedTo.includes(sid)) {
+                if (!n.readBy) n.readBy = [];
+                if (!n.readBy.includes(sid)) {
+                    n.readBy.push(sid);
+                    changed = true;
+                }
+            }
+        });
+        if (changed) {
+            this.saveNoticesLocal(notices);
+            // 학생 세션에서는 Firebase sync 스킵 (권한 없음)
+            if (!sessionStorage.getItem('classpet_student_session')) {
+                notices.filter(n => (n.readBy || []).includes(sid) &&
+                    n.sharedTo && Array.isArray(n.sharedTo) && n.sharedTo.includes(sid))
+                    .forEach(n => this.syncNoticeToFirebase(n));
+            }
+        }
     }
 };

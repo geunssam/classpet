@@ -92,7 +92,7 @@ export function playPetClickAnimation(element, petType, level) {
  * 영상 재생: img 숨기기 → video 생성 → 재생 → 페이드아웃 → img 페이드인 복원
  */
 function playPetVideo(element, videoSrc, petType) {
-    const img = element.querySelector('.pet-img');
+    const img = element.querySelector('.pet-img') || element.querySelector('img') || element;
     if (!img) return;
 
     // 이미 영상 재생 중이면 무시
