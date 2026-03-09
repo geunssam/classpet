@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>개인정보처리방침 — 클래스펫</title>
+  <meta name="description" content="클래스펫 개인정보처리방침 v2.2">
+  <link rel="icon" href="icons/icon-512x512.png" type="image/png">
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+  <style>
+    @font-face {
+      font-family: 'Paperlogy';
+      src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-4Regular.woff2') format('woff2');
+      font-weight: 400;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Paperlogy';
+      src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-5Medium.woff2') format('woff2');
+      font-weight: 500;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Paperlogy';
+      src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-6SemiBold.woff2') format('woff2');
+      font-weight: 600;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Paperlogy';
+      src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-7Bold.woff2') format('woff2');
+      font-weight: 700;
+      font-style: normal;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+    body {
+      font-family: 'Paperlogy', 'Pretendard Variable', -apple-system, sans-serif;
+      color: #1f2937;
+      background: #ffffff;
+      line-height: 1.6;
+    }
+    a { text-decoration: none; color: inherit; }
+
+    :root {
+      --primary: #7C9EF5;
+      --primary-dark: #6366f1;
+      --accent: #A78BFA;
+      --text-primary: #111827;
+      --text-secondary: #4B5563;
+      --text-tertiary: #9CA3AF;
+      --max-width: 720px;
+    }
+
+    /* ===== Nav ===== */
+    .nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(255, 255, 255, 0.82);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      padding: 0 24px;
+    }
+    .nav-inner {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: 10px;
+      font-weight: 700; font-size: 18px; color: var(--text-primary);
+    }
+    .nav-logo img { width: 32px; height: 32px; border-radius: 8px; }
+    .nav-back {
+      font-size: 14px; font-weight: 500;
+      color: var(--primary);
+      padding: 8px 16px;
+      border-radius: 100px;
+      transition: background 0.2s;
+    }
+    .nav-back:hover { background: rgba(124, 158, 245, 0.08); }
+
+    /* ===== Hero ===== */
+    .policy-hero {
+      padding: 64px 24px 40px;
+      text-align: center;
+      background: linear-gradient(180deg, #f0f4ff 0%, #ffffff 100%);
+    }
+    .policy-hero-inner { max-width: var(--max-width); margin: 0 auto; }
+    .policy-hero h1 {
+      font-size: 32px; font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1.3;
+      margin-bottom: 12px;
+    }
+    .policy-meta {
+      display: inline-flex; align-items: center; gap: 16px;
+      font-size: 14px; color: var(--text-tertiary);
+    }
+    .policy-meta-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 4px 12px;
+      background: rgba(124, 158, 245, 0.1);
+      color: var(--primary);
+      border-radius: 100px;
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    /* ===== Content ===== */
+    .policy-content {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
+
+    .policy-article {
+      margin-bottom: 48px;
+    }
+    .policy-article:last-child { margin-bottom: 0; }
+
+    .policy-article h2 {
+      font-size: 20px; font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #f3f4f6;
+    }
+
+    .policy-article h3 {
+      font-size: 15px; font-weight: 600;
+      color: var(--text-secondary);
+      margin: 20px 0 8px;
+    }
+
+    .policy-article ul {
+      list-style: none;
+      padding: 0;
+    }
+    .policy-article li {
+      position: relative;
+      padding: 6px 0 6px 20px;
+      font-size: 15px;
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
+    .policy-article li::before {
+      content: '';
+      position: absolute;
+      left: 4px; top: 14px;
+      width: 6px; height: 6px;
+      background: var(--primary);
+      border-radius: 50%;
+      opacity: 0.5;
+    }
+
+    .policy-article p {
+      font-size: 15px;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      margin-bottom: 8px;
+    }
+
+    /* info box */
+    .policy-info-box {
+      margin: 16px 0;
+      padding: 16px 20px;
+      background: #f8fafc;
+      border-radius: 12px;
+      border-left: 3px solid var(--primary);
+    }
+    .policy-info-box p,
+    .policy-info-box li {
+      font-size: 14px;
+    }
+
+    .policy-warn-box {
+      margin: 16px 0;
+      padding: 16px 20px;
+      background: #fef9f0;
+      border-radius: 12px;
+      border-left: 3px solid #f59e0b;
+    }
+    .policy-warn-box p {
+      font-size: 14px;
+      color: #92400e;
+    }
+
+    /* table */
+    .policy-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 14px;
+    }
+    .policy-table th {
+      background: #f8fafc;
+      padding: 10px 14px;
+      text-align: left;
+      font-weight: 600;
+      color: var(--text-primary);
+      border-bottom: 2px solid #e5e7eb;
+    }
+    .policy-table td {
+      padding: 10px 14px;
+      color: var(--text-secondary);
+      border-bottom: 1px solid #f3f4f6;
+      line-height: 1.5;
+    }
+
+    /* ===== Footer ===== */
+    .policy-footer {
+      padding: 40px 24px;
+      text-align: center;
+      background: #ffffff;
+      border-top: 1px solid #f3f4f6;
+    }
+    .policy-footer p {
+      font-size: 13px;
+      color: var(--text-tertiary);
+    }
+    .policy-footer a {
+      color: var(--primary);
+      font-weight: 500;
+    }
+
+    /* ===== Responsive ===== */
+    @media (max-width: 767px) {
+      .policy-hero { padding: 48px 20px 32px; }
+      .policy-hero h1 { font-size: 26px; }
+      .policy-content { padding: 32px 20px 64px; }
+      .policy-article h2 { font-size: 18px; }
+      .policy-meta { flex-direction: column; gap: 8px; }
+      .policy-table { font-size: 13px; }
+      .policy-table th, .policy-table td { padding: 8px 10px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">
+      <img src="icons/icon-512x512.png" alt="클래스펫">
+      클래스펫
+    </a>
+    <a href="index.html" class="nav-back">
+      <svg style="width:16px;height:16px;vertical-align:middle;margin-right:4px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>홈으로
+    </a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="policy-hero">
+  <div class="policy-hero-inner">
+    <h1>개인정보처리방침</h1>
+    <div class="policy-meta">
+      <span class="policy-meta-badge">v2.2</span>
+      <span>시행일: 2026-03-06</span>
+    </div>
+  </div>
+</section>
+
+<!-- Content -->
+<main class="policy-content">
+
+  <!-- 제1조 -->
+  <article class="policy-article">
+    <h2>제1조 (총칙)</h2>
+    <p>클래스펫(이하 "서비스")은 「개인정보 보호법」에 따라 이용자의 개인정보를 보호하고, 관련 고충을 신속히 처리하기 위해 본 개인정보처리방침을 수립·공개합니다.</p>
+  </article>
+
+  <!-- 제2조 -->
+  <article class="policy-article">
+    <h2>제2조 (14세 미만 아동 보호)</h2>
+    <ul>
+      <li>본 서비스의 학생 이용자는 14세 미만 아동(초등학생)이며, 아동은 직접 서비스에 가입하지 않습니다</li>
+      <li>학생 계정은 교사가 개인코드를 통해 간접적으로 생성·관리하며, 별도의 회원가입 절차가 없습니다</li>
+      <li>학생 정보의 입력 및 관리 책임은 해당 교사에게 있습니다</li>
+      <li>교사는 학생의 서비스 이용에 대해 학부모(법정대리인)에게 안내할 의무가 있습니다</li>
+    </ul>
+  </article>
+
+  <!-- 제3조 -->
+  <article class="policy-article">
+    <h2>제3조 (수집 항목 및 이용 목적)</h2>
+
+    <h3>가. 교사 정보</h3>
+    <table class="policy-table">
+      <tr><th>수집 항목</th><td>Google 계정 정보 (이름, 이메일, 프로필 사진)</td></tr>
+      <tr><th>이용 목적</th><td>로그인 인증, 학급 생성 및 관리</td></tr>
+    </table>
+
+    <h3>나. 학생 정보</h3>
+    <table class="policy-table">
+      <tr><th>수집 항목</th><td>이름, 번호, 개인코드</td></tr>
+      <tr><th>이용 목적</th><td>학급 내 본인 확인, 학습 활동 기록</td></tr>
+    </table>
+
+    <h3>다. 학급 활동 데이터</h3>
+    <table class="policy-table">
+      <tr><th>수집 항목</th><td>감정 기록, 칭찬 내역, 펫 성장 데이터, 시간표, 알림장</td></tr>
+      <tr><th>이용 목적</th><td>학급 경영 지원, 교육 활동 기록</td></tr>
+    </table>
+
+    <h3>라. 자동 수집 정보</h3>
+    <ul>
+      <li>접속 로그, localStorage 데이터 (브라우저 기기 내 저장, 세션 관리 및 캐시 용도, 브라우저 설정에서 삭제 가능)</li>
+    </ul>
+
+    <div class="policy-warn-box">
+      <p><strong>수집하지 않는 정보</strong> — 주민등록번호, 전화번호, 주소 등 민감 개인정보는 수집하지 않습니다.</p>
+    </div>
+  </article>
+
+  <!-- 제4조 -->
+  <article class="policy-article">
+    <h2>제4조 (보유 및 이용 기간)</h2>
+    <ul>
+      <li>교사 탈퇴(계정 삭제) 시 교사 정보를 즉시 파기합니다</li>
+      <li>학급 삭제 시 해당 학급의 학생 데이터를 즉시 파기합니다</li>
+      <li>교사는 학기 또는 학년 종료 시 학급 데이터를 초기화(삭제)하여야 합니다</li>
+    </ul>
+  </article>
+
+  <!-- 제5조 -->
+  <article class="policy-article">
+    <h2>제5조 (제3자 제공 및 외부 서비스 이용)</h2>
+    <ul>
+      <li>이용자의 개인정보를 제3자에게 제공하지 않으며, 별도의 개인정보 처리 위탁 계약을 체결한 업체는 없습니다</li>
+      <li>본 서비스는 다음의 외부 클라우드 서비스를 인프라로 이용하고 있으며, 각 서비스의 보안 환경은 아래와 같습니다</li>
+    </ul>
+
+    <table class="policy-table">
+      <thead>
+        <tr><th>서비스</th><th>용도</th><th>보안 환경</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Google LLC (Firebase)</strong></td>
+          <td>데이터 저장 및 인증</td>
+          <td>전송 시 TLS 암호화, 저장 시 AES-256 암호화, SOC 2 / ISO 27001 인증</td>
+        </tr>
+        <tr>
+          <td><strong>Netlify Inc.</strong></td>
+          <td>정적 파일 호스팅</td>
+          <td>이용자의 개인정보를 별도로 보관하지 않음</td>
+        </tr>
+      </tbody>
+    </table>
+  </article>
+
+  <!-- 제6조 -->
+  <article class="policy-article">
+    <h2>제6조 (정보주체의 권리)</h2>
+    <ul>
+      <li><strong>교사</strong>: 설정 화면에서 본인 정보를 직접 열람, 수정, 삭제할 수 있습니다</li>
+      <li><strong>학생/학부모</strong>: 교사를 통해 학생 정보의 열람, 수정, 삭제를 요청할 수 있습니다</li>
+      <li>정보주체의 요청은 지체 없이 처리합니다</li>
+    </ul>
+  </article>
+
+  <!-- 제7조 -->
+  <article class="policy-article">
+    <h2>제7조 (파기 절차 및 방법)</h2>
+    <ul>
+      <li>보유 기간이 경과하거나 처리 목적이 달성된 개인정보는 지체 없이 파기합니다</li>
+      <li>교사는 설정 화면에서 학급 데이터 및 계정을 직접 삭제할 수 있습니다</li>
+      <li><strong>파기 방법</strong>: Firebase Firestore 문서 삭제를 통해 전자적으로 파기하며, 복구가 불가능한 기술적 조치를 취합니다</li>
+    </ul>
+  </article>
+
+  <!-- 제8조 -->
+  <article class="policy-article">
+    <h2>제8조 (안전성 확보 조치)</h2>
+    <ul>
+      <li>HTTPS 암호화 통신을 통해 데이터를 안전하게 전송합니다</li>
+      <li>Google OAuth 2.0 인증을 통해 교사 계정을 보호합니다</li>
+      <li>Firebase Security Rules를 적용하여 데이터 접근을 제한합니다</li>
+      <li>모든 데이터는 학급 단위로 분리되어 다른 학급에서 접근할 수 없습니다</li>
+    </ul>
+  </article>
+
+  <!-- 제9조 -->
+  <article class="policy-article">
+    <h2>제9조 (개인정보 보호책임자)</h2>
+    <div class="policy-info-box">
+      <ul>
+        <li><strong>성명</strong>: 클래스펫 운영자</li>
+        <li><strong>이메일</strong>: <a href="mailto:classpet_help@gmail.com" style="color: var(--primary);">classpet_help@gmail.com</a></li>
+      </ul>
+      <p style="margin-top: 8px;">개인정보 관련 문의, 불만, 권리 행사는 위 이메일로 연락해 주시면 지체 없이 처리하겠습니다.</p>
+    </div>
+  </article>
+
+  <!-- 제10조 -->
+  <article class="policy-article">
+    <h2>제10조 (학생 정보 관리)</h2>
+    <ul>
+      <li>학생 이름의 입력 내용 및 관리에 대한 책임은 해당 교사에게 있습니다</li>
+      <li>서비스는 최소한의 개인정보만으로 모든 기능을 정상적으로 이용할 수 있도록 설계되어 있습니다</li>
+    </ul>
+  </article>
+
+  <!-- 제11조 -->
+  <article class="policy-article">
+    <h2>제11조 (사용자 의무 및 책임)</h2>
+    <ul>
+      <li>교사는 학생의 개인정보 보호를 위해 최선을 다하여야 합니다</li>
+      <li>주민등록번호, 전화번호, 주소 등 민감한 개인정보를 서비스에 입력해서는 안 됩니다</li>
+      <li>학기 또는 학년 종료 시 학급 데이터를 초기화(삭제)하여야 합니다</li>
+      <li>계정의 보안을 적절히 관리하여야 합니다</li>
+      <li>학생의 서비스 이용에 대해 학부모(법정대리인)에게 안내하여야 합니다</li>
+      <li>위 의무를 위반하여 발생하는 문제에 대한 책임은 해당 교사에게 있습니다</li>
+    </ul>
+  </article>
+
+  <!-- 제12조 -->
+  <article class="policy-article">
+    <h2>제12조 (변경 고지 및 기타)</h2>
+    <ul>
+      <li>본 방침을 변경할 경우, 시행일 7일 전 서비스 내에서 공지합니다. 다만, 이용자의 권리에 중대한 변경이 있는 경우 최소 30일 전에 고지합니다</li>
+    </ul>
+
+    <h3>개인정보 침해 관련 외부 구제기관</h3>
+    <table class="policy-table">
+      <tbody>
+        <tr><td><strong>개인정보침해신고센터</strong></td><td>전화 118 · privacy.kisa.or.kr</td></tr>
+        <tr><td><strong>개인정보분쟁조정위원회</strong></td><td>kopico.go.kr</td></tr>
+        <tr><td><strong>대검찰청 사이버범죄수사과</strong></td><td>전화 1301 · www.spo.go.kr</td></tr>
+        <tr><td><strong>경찰청 사이버수사국</strong></td><td>전화 182 · ecrm.cyber.go.kr</td></tr>
+      </tbody>
+    </table>
+  </article>
+
+</main>
+
+<!-- Footer -->
+<footer class="policy-footer">
+  <p>클래스펫 · <a href="mailto:classpet_help@gmail.com">classpet_help@gmail.com</a></p>
+  <p style="margin-top: 8px;">시행일: 2026-03-06</p>
+</footer>
+
+</body>
+</html>

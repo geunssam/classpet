@@ -148,11 +148,12 @@ export function getPrivacyPolicyHTML() {
             </ul>
         </div>
         <div>
-            <p class="font-semibold text-gray-700 mb-1">제5조 (제3자 제공 및 처리 위탁)</p>
+            <p class="font-semibold text-gray-700 mb-1">제5조 (제3자 제공 및 외부 서비스 이용)</p>
             <ul class="list-disc list-inside space-y-0.5 text-xs text-gray-500">
-                <li>이용자의 개인정보를 제3자에게 제공하지 않습니다</li>
-                <li>데이터 저장 및 인증: Google LLC (Firebase) — 미국 소재, 전송 시 TLS 암호화, 저장 시 AES-256 암호화, SOC 2/ISO 27001 인증 보안 환경 (firebase.google.com/support/privacy)</li>
-                <li>웹 호스팅: Netlify Inc. — 미국 소재, 정적 파일 호스팅, 개인정보 미보관 (netlify.com/privacy)</li>
+                <li>이용자의 개인정보를 제3자에게 제공하지 않으며, 별도의 개인정보 처리 위탁 계약을 체결한 업체는 없습니다</li>
+                <li>본 서비스는 다음의 외부 클라우드 서비스를 인프라로 이용하고 있습니다</li>
+                <li>데이터 저장 및 인증: Google LLC (Firebase) — 전송 시 TLS 암호화, 저장 시 AES-256 암호화, SOC 2/ISO 27001 인증 (firebase.google.com/support/privacy)</li>
+                <li>웹 호스팅: Netlify Inc. — 정적 파일 호스팅만 제공하며, 이용자의 개인정보를 별도로 보관하지 않음 (netlify.com/privacy)</li>
             </ul>
         </div>
         <div>
