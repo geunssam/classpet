@@ -68,7 +68,7 @@
   for = "/*"
   [headers.values]
     # Firebase Google 로그인 팝업 허용 (핵심!)
-    Cross-Origin-Opener-Policy = "same-origin-allow-popups"
+    Cross-Origin-Opener-Policy = "unsafe-none"
     Cross-Origin-Embedder-Policy = "unsafe-none"
 
     # 기존 보안 헤더
