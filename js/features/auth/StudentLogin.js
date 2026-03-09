@@ -150,15 +150,15 @@ async function verifyAndLogin(code) {
         store.setCurrentClass(teacherUid, classId);
         store.firebaseEnabled = true;
 
-        // 학급 데이터 로드
-        await store.loadClassDataFromFirebase();
-
-        // 학생 로그인 세션 설정
+        // 학생 세션을 먼저 설정 (loadClassDataFromFirebase에서 학생 판별용)
         const session = store.studentLogin(studentId);
         if (!session) {
             showCodeError('학생 정보를 찾을 수 없어요');
             return;
         }
+
+        // 학급 데이터 로드 (학생 세션이므로 칭찬/감정 collectionGroup 스킵)
+        await store.loadClassDataFromFirebase();
 
         navigateAfterLogin(studentId);
 
@@ -262,14 +262,17 @@ async function handleAutoLogin() {
         const { teacherUid, classId, studentId } = studentInfo;
         store.setCurrentClass(teacherUid, classId);
         store.firebaseEnabled = true;
-        await store.loadClassDataFromFirebase();
 
+        // 학생 세션을 먼저 설정 (loadClassDataFromFirebase에서 학생 판별용)
         const session = store.studentLogin(studentId);
         if (!session) {
             showError('학생 정보를 찾을 수 없어요');
             setupManualInputBtn();
             return;
         }
+
+        // 학급 데이터 로드 (학생 세션이므로 칭찬/감정 collectionGroup 스킵)
+        await store.loadClassDataFromFirebase();
 
         // 성공 — URL 코드 초기화
         urlStudentCode = null;
