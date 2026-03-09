@@ -14,7 +14,7 @@ import { praiseMixin } from '../../features/praise/praiseMixin.js';
 import { emotionMixin } from '../../features/emotion/emotionMixin.js';
 import { settingsMixin } from './settingsMixin.js';
 import { notificationMixin } from './notificationMixin.js';
-import { thermostatMixin } from '../../features/praise/thermostatMixin.js';
+import { thermostatMixin } from './thermostatMixin.js';
 import { noticeMixin } from '../../features/notice/noticeMixin.js';
 
 // 상수 re-export (하위 호환성)

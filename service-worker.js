@@ -1,5 +1,5 @@
 // 클래스펫 Service Worker
-const CACHE_NAME = 'classpet-v1773056825241';
+const CACHE_NAME = 'classpet-v1773059050661';
 const OFFLINE_URL = '/offline.html';
 
 // 캐시할 정적 파일들 (앱 셸)
@@ -54,6 +54,7 @@ const STATIC_ASSETS = [
     '/js/shared/constants/storageKeys.js',
     '/js/shared/constants/settings.js',
     '/js/shared/constants/quotes.js',
+    '/js/shared/constants/icons.js',
     // shared/utils/
     '/js/shared/utils/animations.js',
     '/js/shared/utils/petLogic.js',
@@ -89,7 +90,7 @@ const STATIC_ASSETS = [
     '/js/features/praise/PraiseManagement.js',
     '/js/features/praise/StudentPraise.js',
     '/js/features/praise/praiseMixin.js',
-    '/js/features/praise/thermostatMixin.js',
+    '/js/shared/store/thermostatMixin.js',
     '/js/features/praise/praises.firebase.js',
     '/js/features/praise/praise.constants.js',
     // features/emotion/

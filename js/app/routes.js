@@ -40,29 +40,76 @@ import { updateHeaderForStudentMode, syncActiveTab, updateNotificationBadge, upd
 // 학생 모드 글로벌 알림장 구독 (StudentNotice 페이지 밖에서도 배지 갱신)
 let studentNoticeUnsubscribe = null;
 
+/* ── 라우트 헬퍼 ── */
+const AUTH_DENIED = '<div class="text-center p-8">로그인이 필요합니다...</div>';
+
+/** 공개 라우트 (인증 불필요) */
+function open(component) {
+    return {
+        render: (params) => {
+            const html = component.render(params);
+            setTimeout(() => component.afterRender?.(params), 0);
+            return html;
+        },
+        unmount: () => component.unmount?.()
+    };
+}
+
+/** 교사 전용 라우트 */
+function teacher(component) {
+    return {
+        render: (params) => {
+            if (!store.isTeacherLoggedIn()) {
+                setTimeout(() => router.navigate('login'), 0);
+                return AUTH_DENIED;
+            }
+            const html = component.render(params);
+            setTimeout(() => component.afterRender?.(params), 0);
+            return html;
+        },
+        unmount: () => component.unmount?.()
+    };
+}
+
+/** 학생 전용 라우트 (인증 체크 + 헤더 업데이트) */
+function student(component) {
+    return {
+        render: (params) => {
+            if (!store.isStudentLoggedIn()) {
+                setTimeout(() => router.navigate('student-login'), 0);
+                return AUTH_DENIED;
+            }
+            updateHeaderForStudentMode(true, true);
+            const html = component.render(params);
+            setTimeout(() => component.afterRender?.(params), 0);
+            return html;
+        },
+        unmount: () => component.unmount?.()
+    };
+}
+
+/** 학생 라우트 (인증 체크 없이 헤더만 업데이트) */
+function studentOpen(component) {
+    return {
+        render: (params) => {
+            updateHeaderForStudentMode(true, true);
+            const html = component.render(params);
+            setTimeout(() => component.afterRender?.(params), 0);
+            return html;
+        },
+        unmount: () => component.unmount?.()
+    };
+}
+
 /**
  * 라우터 초기화
  */
 export function initRouter() {
     // 라우트 등록
     router.registerAll({
-        // 로그인 관련 라우트
-        'login': {
-            render: () => {
-                const html = LoginSelect.render();
-                setTimeout(() => LoginSelect.afterRender?.(), 0);
-                return html;
-            },
-            unmount: () => LoginSelect.unmount?.()
-        },
-        'teacher-login': {
-            render: () => {
-                const html = TeacherLogin.render();
-                setTimeout(() => TeacherLogin.afterRender?.(), 0);
-                return html;
-            },
-            unmount: () => TeacherLogin.unmount?.()
-        },
+        // 로그인 관련
+        'login': open(LoginSelect),
+        'teacher-login': open(TeacherLogin),
         'class-select': {
             render: async () => {
                 const html = await ClassSelect.render();
@@ -71,140 +118,21 @@ export function initRouter() {
             },
             unmount: () => ClassSelect.unmount?.()
         },
-        // 교사 모드 라우트
-        'dashboard': {
-            render: () => {
-                if (!store.isTeacherLoggedIn()) {
-                    setTimeout(() => router.navigate('login'), 0);
-                    return '<div class="text-center p-8">로그인이 필요합니다...</div>';
-                }
-                const html = Dashboard.render();
-                setTimeout(() => Dashboard.afterRender?.(), 0);
-                return html;
-            },
-            unmount: () => Dashboard.unmount?.()
-        },
-        'timetable': {
-            render: () => {
-                if (!store.isTeacherLoggedIn()) {
-                    setTimeout(() => router.navigate('login'), 0);
-                    return '<div class="text-center p-8">로그인이 필요합니다...</div>';
-                }
-                const html = Timetable.render();
-                setTimeout(() => Timetable.afterRender?.(), 0);
-                return html;
-            },
-            unmount: () => Timetable.unmount?.()
-        },
-        'petfarm': {
-            render: () => {
-                if (!store.isTeacherLoggedIn()) {
-                    setTimeout(() => router.navigate('login'), 0);
-                    return '<div class="text-center p-8">로그인이 필요합니다...</div>';
-                }
-                const html = PetFarm.render();
-                setTimeout(() => PetFarm.afterRender?.(), 0);
-                return html;
-            },
-            unmount: () => PetFarm.unmount?.()
-        },
-        'student': {
-            render: (params) => {
-                if (!store.isTeacherLoggedIn()) {
-                    setTimeout(() => router.navigate('login'), 0);
-                    return '<div class="text-center p-8">로그인이 필요합니다...</div>';
-                }
-                const html = StudentDetail.render(params);
-                setTimeout(() => StudentDetail.afterRender?.(params), 0);
-                return html;
-            },
-            unmount: () => StudentDetail.unmount?.()
-        },
-        'emotion': {
-            render: () => {
-                if (!store.isTeacherLoggedIn()) {
-                    setTimeout(() => router.navigate('login'), 0);
-                    return '<div class="text-center p-8">로그인이 필요합니다...</div>';
-                }
-                const html = Emotion.render();
-                setTimeout(() => Emotion.afterRender?.(), 0);
-                return html;
-            },
-            unmount: () => Emotion.unmount?.()
-        },
-        'praise': {
-            render: () => {
-                if (!store.isTeacherLoggedIn()) {
-                    setTimeout(() => router.navigate('login'), 0);
-                    return '<div class="text-center p-8">로그인이 필요합니다...</div>';
-                }
-                const html = PraiseManagement.render();
-                setTimeout(() => PraiseManagement.afterRender?.(), 0);
-                return html;
-            },
-            unmount: () => PraiseManagement.unmount?.()
-        },
-        'stats': {
-            render: () => {
-                if (!store.isTeacherLoggedIn()) {
-                    setTimeout(() => router.navigate('login'), 0);
-                    return '<div class="text-center p-8">로그인이 필요합니다...</div>';
-                }
-                const html = Stats.render();
-                setTimeout(() => Stats.afterRender?.(), 0);
-                return html;
-            },
-            unmount: () => Stats.unmount?.()
-        },
-        'settings': {
-            render: () => {
-                if (!store.isTeacherLoggedIn()) {
-                    setTimeout(() => router.navigate('login'), 0);
-                    return '<div class="text-center p-8">로그인이 필요합니다...</div>';
-                }
-                const html = Settings.render();
-                setTimeout(() => Settings.afterRender?.(), 0);
-                return html;
-            },
-            unmount: () => Settings.unmount?.()
-        },
-        'picker': {
-            render: () => {
-                if (!store.isTeacherLoggedIn()) {
-                    setTimeout(() => router.navigate('login'), 0);
-                    return '<div class="text-center p-8">로그인이 필요합니다...</div>';
-                }
-                const html = Picker.render();
-                setTimeout(() => Picker.afterRender?.(), 0);
-                return html;
-            },
-            unmount: () => Picker.unmount?.()
-        },
-        'timer': {
-            render: () => {
-                if (!store.isTeacherLoggedIn()) {
-                    setTimeout(() => router.navigate('login'), 0);
-                    return '<div class="text-center p-8">로그인이 필요합니다...</div>';
-                }
-                const html = TimerView.render();
-                setTimeout(() => TimerView.afterRender?.(), 0);
-                return html;
-            },
-            unmount: () => TimerView.unmount?.()
-        },
-        'notice': {
-            render: () => {
-                if (!store.isTeacherLoggedIn()) {
-                    setTimeout(() => router.navigate('login'), 0);
-                    return '<div class="text-center p-8">로그인이 필요합니다...</div>';
-                }
-                const html = Notice.render();
-                setTimeout(() => Notice.afterRender?.(), 0);
-                return html;
-            },
-            unmount: () => Notice.unmount?.()
-        },
-        // 학생 모드 라우트
+
+        // 교사 모드
+        'dashboard': teacher(Dashboard),
+        'timetable': teacher(Timetable),
+        'petfarm': teacher(PetFarm),
+        'student': teacher(StudentDetail),
+        'emotion': teacher(Emotion),
+        'praise': teacher(PraiseManagement),
+        'stats': teacher(Stats),
+        'settings': teacher(Settings),
+        'picker': teacher(Picker),
+        'timer': teacher(TimerView),
+        'notice': teacher(Notice),
+
+        // 학생 모드
         'student-login': {
             render: (params) => {
                 updateHeaderForStudentMode(true, false);
@@ -214,42 +142,14 @@ export function initRouter() {
             },
             unmount: () => StudentLogin.unmount?.()
         },
-        'student-home': {
-            render: () => {
-                if (!store.isStudentLoggedIn()) {
-                    setTimeout(() => router.navigate('student-login'), 0);
-                    return '<div class="text-center p-8">로그인이 필요합니다...</div>';
-                }
-                updateHeaderForStudentMode(true, true);
-                const html = StudentHome.render();
-                setTimeout(() => StudentHome.afterRender?.(), 0);
-                return html;
-            },
-            unmount: () => StudentHome.unmount?.()
-        },
-        'student-main': {
-            render: () => {
-                updateHeaderForStudentMode(true, true);
-                const html = StudentEmotion.render();
-                setTimeout(() => StudentEmotion.afterRender?.(), 0);
-                return html;
-            },
-            unmount: () => StudentEmotion.unmount?.()
-        },
-        'student-chat': {
-            render: () => {
-                updateHeaderForStudentMode(true, true);
-                const html = PetChat.render();
-                setTimeout(() => PetChat.afterRender?.(), 0);
-                return html;
-            },
-            unmount: () => PetChat.unmount?.()
-        },
+        'student-home': student(StudentHome),
+        'student-main': studentOpen(StudentEmotion),
+        'student-chat': studentOpen(PetChat),
         'pet-selection': {
             render: () => {
                 if (!store.isStudentLoggedIn()) {
                     setTimeout(() => router.navigate('student-login'), 0);
-                    return '<div class="text-center p-8">로그인이 필요합니다...</div>';
+                    return AUTH_DENIED;
                 }
                 // 이미 펫이 있으면 홈으로 리다이렉트 (뒤로가기 중복 선택 방지)
                 const session = store.getStudentSession();
@@ -264,58 +164,10 @@ export function initRouter() {
             },
             unmount: () => PetSelection.unmount?.()
         },
-        'pet-collection': {
-            render: () => {
-                if (!store.isStudentLoggedIn()) {
-                    setTimeout(() => router.navigate('student-login'), 0);
-                    return '<div class="text-center p-8">로그인이 필요합니다...</div>';
-                }
-                updateHeaderForStudentMode(true, true);
-                const html = PetCollection.render();
-                setTimeout(() => PetCollection.afterRender?.(), 0);
-                return html;
-            },
-            unmount: () => PetCollection.unmount?.()
-        },
-        'student-timetable': {
-            render: () => {
-                if (!store.isStudentLoggedIn()) {
-                    setTimeout(() => router.navigate('student-login'), 0);
-                    return '<div class="text-center p-8">로그인이 필요합니다...</div>';
-                }
-                updateHeaderForStudentMode(true, true);
-                const html = StudentTimetable.render();
-                setTimeout(() => StudentTimetable.afterRender?.(), 0);
-                return html;
-            },
-            unmount: () => StudentTimetable.unmount?.()
-        },
-        'student-praise': {
-            render: () => {
-                if (!store.isStudentLoggedIn()) {
-                    setTimeout(() => router.navigate('student-login'), 0);
-                    return '<div class="text-center p-8">로그인이 필요합니다...</div>';
-                }
-                updateHeaderForStudentMode(true, true);
-                const html = StudentPraise.render();
-                setTimeout(() => StudentPraise.afterRender?.(), 0);
-                return html;
-            },
-            unmount: () => StudentPraise.unmount?.()
-        },
-        'student-notice': {
-            render: () => {
-                if (!store.isStudentLoggedIn()) {
-                    setTimeout(() => router.navigate('student-login'), 0);
-                    return '<div class="text-center p-8">로그인이 필요합니다...</div>';
-                }
-                updateHeaderForStudentMode(true, true);
-                const html = StudentNotice.render();
-                setTimeout(() => StudentNotice.afterRender?.(), 0);
-                return html;
-            },
-            unmount: () => StudentNotice.unmount?.()
-        }
+        'pet-collection': student(PetCollection),
+        'student-timetable': student(StudentTimetable),
+        'student-praise': student(StudentPraise),
+        'student-notice': student(StudentNotice),
     });
 
     // 라우터 초기화

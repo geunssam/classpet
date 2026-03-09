@@ -14,20 +14,7 @@
     box-shadow: 0 8px 24px rgba(0,0,0,0.1);
 }
 
-/* 칭찬 히스토리 아이템 */
-.praise-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px;
-    background: #F9FAFB;
-    border-radius: 12px;
-    transition: background 0.2s ease;
-}
-
-.praise-item:hover {
-    background: #FFF9F0;
-}
+/* .praise-item → praise.css로 통합 */
 
 /* 통계 카드 (레거시) */
 .stat-card {
