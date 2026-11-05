@@ -532,6 +532,11 @@ export const classMixin = {
                     teacherUid: teacherUid
                 });
 
+                // 학급 문서(오늘의 한마디 등) 캐시 + 학급코드 동기화
+                // 개인코드 로그인 학생은 학급코드가 비어 있어 실시간 구독이 건너뛰어지던 문제 수정
+                this.setCurrentClassData(classData);
+                if (classData.classCode) firebase.setClassCode(classData.classCode);
+
                 // 칭찬 카테고리 동기화 (Firestore → localStorage)
                 if (classData.praiseCategories) {
                     this.savePraiseCategoriesLocal(classData.praiseCategories);
