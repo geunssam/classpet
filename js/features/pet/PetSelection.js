@@ -5,7 +5,7 @@
 
 import { store, PET_TYPES } from '../../store.js';
 import { router } from '../../router.js';
-import { getNameWithSuffix } from '../../shared/utils/nameUtils.js';
+import { getNameWithSuffix, hasFinalConsonant } from '../../shared/utils/nameUtils.js';
 import { getPetStageImageHTML } from '../../shared/utils/petLogic.js';
 
 // 선택된 펫 타입
@@ -168,7 +168,7 @@ export function render() {
                     만나서 반가워!
                 </h3>
                 <p class="text-gray-600 mb-2">
-                    나는 <span id="welcomePetName" class="font-bold text-primary">초코</span>야!
+                    나는 <span id="welcomePetName" class="font-bold text-primary">초코</span><span id="welcomePetSuffix">야</span>!
                 </p>
                 <p class="text-sm text-gray-500 mb-6">
                     앞으로 같이 성장하자! 🌟
@@ -287,7 +287,10 @@ function openWelcomeModal() {
     const modal = document.getElementById('welcomePetModal');
 
     document.getElementById('welcomePetEmoji').innerHTML = getPetStageImageHTML(selectedPetType, 'child', '2xl');
-    document.getElementById('welcomePetName').textContent = inputPetName.trim();
+    const petName = inputPetName.trim();
+    document.getElementById('welcomePetName').textContent = petName;
+    // 받침 있으면 '이야', 없으면 '야' (예: 멍멍이야 / 테스트멍이야)
+    document.getElementById('welcomePetSuffix').textContent = hasFinalConsonant(petName) ? '이야' : '야';
 
     modal.classList.remove('hidden');
 }

@@ -21,6 +21,8 @@ function hexToRgba(hex, alpha) {
     return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
+let praiseCountUnsub = null;
+
 export function render() {
     const students = store.getStudents() || [];
     const timetable = store.getTimetable() || {};
@@ -199,7 +201,7 @@ export function render() {
                         </div>
                         <div>
                             <p class="text-sm font-semibold text-gray-600 mb-0.5">칭찬</p>
-                            <p class="font-bold text-secondary">${stats.todayPraises}<span class="text-xs font-semibold text-gray-400 ml-0.5">건</span></p>
+                            <p class="font-bold text-secondary"><span id="todayPraiseCount">${stats.todayPraises}</span><span class="text-xs font-semibold text-gray-400 ml-0.5">건</span></p>
                         </div>
                         <div>
                             <p class="text-sm font-semibold text-gray-600 mb-0.5">감정</p>
@@ -412,6 +414,14 @@ export function afterRender() {
             router.navigate('settings');
         };
     }
+
+    // 칭찬하면 '오늘 칭찬 n건' 바로 갱신 (새로고침 없이)
+    if (praiseCountUnsub) praiseCountUnsub();
+    praiseCountUnsub = store.subscribe((type) => {
+        if (type !== 'praiseLog') return;
+        const el = document.getElementById('todayPraiseCount');
+        if (el) el.textContent = store.getStats().todayPraises;
+    });
 
     // 오늘의 한마디 저장/지우기
     const dailyMsgInput = document.getElementById('dailyMessageInput');

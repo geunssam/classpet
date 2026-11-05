@@ -173,7 +173,7 @@ function renderRankingSection(currentStudent) {
                 우리 반 펫 레벨
             </h3>
 
-            ${myRank > 0 ? `
+            ${myRank > 5 ? `
             <div class="rounded-xl p-2.5 mb-2" style="background: rgba(99, 102, 241, 0.08); border: 1.5px solid rgba(99, 102, 241, 0.2);">
                 <div class="flex items-center gap-2.5">
                     <span class="text-sm font-bold text-primary w-6 text-center">${myRank <= 3 ? medalIcons[myRank - 1] : myRank + '위'}</span>
